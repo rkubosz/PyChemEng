@@ -26,6 +26,6 @@ N. Bannerman.
 package, developed at the NASA Glenn research centre
 http://www.grc.nasa.gov/WWW/CEAWeb/
 
- * Test calculations for the chemical reaction equilibrium
+* Test calculations for the chemical reaction equilibrium
 calculations were calculated using GasEq program
 http://www.gaseq.co.uk/
