@@ -8,8 +8,8 @@ import ThermoData
 ##################################################################
 from Components import Components
 
-### Components are used in mass balances. They are dictionaries of
-### species and their molar amounts/flows.
+#Components are used in mass balances. They are dictionaries of
+#species and their molar amounts/flows.
 Air = Components({"N2":78.084, "O2":20.9476,  "Ar":0.934, "CO2":0.0314, "Ne":0.001818, "He": 0.000524, "CH4":0.0002})
 
 #Each species can be accessed by its formula
@@ -32,15 +32,16 @@ print StoichiometricFuel.elementalComposition()
 ##################################################################
 from Stream import IdealGasStream
 
-#Streams are components with associated temperature information
+#Streams are components with an associated temperature and pressure
 fuelstream = IdealGasStream(298.15, StoichiometricFuel, P=1.01325e5)
 
-#Here we can calculate a range of parameters:
+#Once these are fixed, we can calculate a range of parameters:
 print fuelstream.Cp(), fuelstream.enthalpy(), fuelstream.entropy(), fuelstream.gibbsFreeEnergy(), fuelstream.helmholtzFreeEnergy()
 #29.7267355968 -7184.68907772 200.139970908 -66856.4214039 -69335.3925604 668.375700264
 
-#If we add together streams, enthalpy is conserved and the new stream
-#temperature is calculated
+#If we add together streams, the output has the lowest pressure of the
+#input streams, and enthalpy conservation is used to calculate the
+#exit temperature
 outletstream = fuelstream + IdealGasStream(800, {"CO2":1, "H2O":1}, P=1.01325e5)
 print outletstream.T
 #668.375700264
@@ -50,9 +51,10 @@ print outletstream.T
 ##################################################################
 import Reaction
 
-#We can calculate reaction equilibria by specifying a stream, possible
-#output components, and if it is at constant Pressure/Volume or
-#Temperature/Adiabatic.
+#We can calculate reaction equilibria just by specifying an input
+#stream, any possible product species and if it is either at constant
+#Pressure or Volume and if it is either at constant Temperature or
+#Adiabatic.
 OutStream = Reaction.react(fuelstream, {"N2", "H2O", "CO2", "CO", "O2"}, constP=True, constT=False)
 
 print OutStream
