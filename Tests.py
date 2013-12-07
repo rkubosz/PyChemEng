@@ -49,6 +49,15 @@ validate(Input.enthalpy() / Input.components.total() / Input.components.avgMolar
 validate(Input.entropy() * 1000.0 / Input.components.total() / Input.components.avgMolarMass(), 9498.39)
 validate(Input.gibbsFreeEnergy() / Input.components.total() / Input.components.avgMolarMass(), -24856.19)
 
+#Test mixing of streams
+Input1 = IdealGasStream(300, {"N2":1, "O2":1})
+Input2 = IdealGasStream(600, {"N2":0.5, "O2":2})
+Output = Input1 + Input2
+validate(Output.components["N2"], 1.5)
+validate(Output.components["O2"], 3)
+validate(Output.enthalpy(), Input1.enthalpy() + Input2.enthalpy())
+
+### Test reaction calculations
 #When checking the calculations below in GasEq, ensure that the
 #reactants are present in the products, otherwise GasEq does not
 #converge!
