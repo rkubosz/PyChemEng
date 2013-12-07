@@ -55,7 +55,7 @@ import Reaction
 #stream, any possible product species and if it is either at constant
 #Pressure or Volume and if it is either at constant Temperature or
 #Adiabatic.
-OutStream = Reaction.react(fuelstream, {"N2", "H2O", "CO2", "CO", "O2"}, constP=True, constT=False)
+OutStream = Reaction.react(fuelstream, {"N2", "H2O", "CO2", "CO", "O2", "OH", "H2", "O", "H"}, constP=True, constT=False)
 
 print OutStream
-#<1.00523 mol/s, 2257.3 K, 1.01325 bar, C{'CO2':0.0846323, 'CO':0.0104622, 'Ne':1.64565e-05, 'H2O':0.18962, 'Ar':0.00845453, 'CH4':3.65721e-18, 'N2':0.706813, 'O2':0.00522747, 'He':4.74323e-06}>
+#<1.00736 mol/s, 2230.04 K, 1.01325 bar, C{'CO2':0.0863113, 'CO':0.00878318, 'OH':0.00334971, 'H2':0.00345241, 'H':0.000384071, 'Ne':1.64565e-05, 'O':0.000234096, 'H2O':0.184301, 'Ar':0.00845453, 'CH4':0, 'N2':0.706813, 'O2':0.00525572, 'He':4.74323e-06}>

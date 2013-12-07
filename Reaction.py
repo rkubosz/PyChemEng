@@ -19,7 +19,7 @@ def react(InputStream, extraComponents, constT=False, constP=False, outputlevel=
 
     import math
     Output=InputStream
-    for iteration in range(10):
+    for iteration in range(100):
         Told = Output.T
         oldVol = Output.volume()
         Output = IsothermalReact(Output, constP, outputlevel)
@@ -133,7 +133,8 @@ def IsothermalReact(InputStream, constP=False, outputlevel=0):
                                 initialStateVariables,
                                 f_eqcons=constraintFunc,
                                 bounds=variableBounds,
-                                iprint=outputlevel)
+                                iprint=outputlevel,
+                                )
     
     ###Return a Stream with the optimised composition (and temperature)
     return variablesToStream(optimisedState)
