@@ -96,26 +96,27 @@ def IsothermalReact(InputStream, constP=False, outputlevel=0):
     maxmoles = InputStream.components.elementalComposition().total()
     variableBounds = [(0.0, maxmoles)  for i in range(len(indexToComponent))]
 
-    ### Problem scaling
-    #The SLSQP algorithm might assume the function/gradients is of
-    #order "1", so we also need to scale our problem. We choose to
-    #scale by the initial Gibbs free energy.
-    import math
-    scale = 1.0 / math.fabs(InputStream.gibbsFreeEnergy())
+    ### Problem scaling and optimisation function
+    #The SLSQP algorithm seems to assume the function/gradients are of
+    #order "1", so we also need to scale our problem carefully. We
+    #divide by the number of moles to make the problem intensive. We
+    #also subtract the initial Gibbs free energy and divide by 1000 to bring the energy down to O(100).
+    totalInputMoles = 1000.0 * InputStream.components.total()
+    optfunc = None
+    if constP:
+        initialval = variablesToStream(initialStateVariables).gibbsFreeEnergy()
+        optfunc = lambda variables: (variablesToStream(variables).gibbsFreeEnergy() - initialval) / totalInputMoles
+    else:
+        initialval = variablesToStream(initialStateVariables).gibbsFreeEnergy()
+        optfunc = lambda variables: (variablesToStream(variables).helmholtzFreeEnergy() - initialval) / totalInputMoles
 
     ### Constraints
     # This function returns an array of the deviations of the constraints
     constraintFunc = lambda variables : [(val1 - val2) for val1, val2 in zip(constraintCalc(variables), constraintTargets)]
-
-    func = None
-    if constP:
-        func = lambda variables: variablesToStream(variables).gibbsFreeEnergy() * scale
-    else:
-        func = lambda variables: variablesToStream(variables).helmholtzFreeEnergy() * scale
-        
+    
     ### Optimisation
     from scipy.optimize import fmin_slsqp
-    optimisedState = fmin_slsqp(func,
+    optimisedState = fmin_slsqp(optfunc,
                                 initialStateVariables,
                                 f_eqcons=constraintFunc,
                                 bounds=variableBounds,
