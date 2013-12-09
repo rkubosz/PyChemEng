@@ -218,6 +218,8 @@ def parseNASADataFile(filename, quiet=True):
                 if error > HfMaxError:
                     raise Exception("Component \""+component+"\" has a relative error of "+str(error)+" for Hf at 298.15")
 
+            print "\rLoaded",len(speciesData),"thermodynamic components",
+
         except Exception as e:
             if not quiet:
                 import traceback
@@ -232,3 +234,4 @@ import os
 ###thermo.inp database takes priority over the Burcat database
 parseNASADataFile(os.path.join(os.path.dirname(__file__), 'thermo.inp'), quiet=False)
 parseNASADataFile(os.path.join(os.path.dirname(__file__), 'NEWNASA.inp'), quiet=True)
+print ""

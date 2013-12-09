@@ -2963,3 +2963,6 @@ for line in massdata.split('\n'):
     protoncount, sym, iso = isotope.split('-')
     if sym not in elements:
         registerElement(sym, float(avgmass.replace("[","").replace("]","").split("(")[0]), protoncount)
+        print "\rLoaded",len(elements),"elements",
+
+print ""
