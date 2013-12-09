@@ -2,6 +2,14 @@
 from Stream import  R, IdealGasStream
 from Components import Components
 
+def dictToIndex(dictionary):
+    keyToIndex={}
+    indexToKey=[]
+    for key in dictionary:
+        keyToIndex[key] = len(indexToKey)
+        indexToKey.append(key)
+    return keyToIndex, indexToKey
+
 def react(InputStream, extraComponents, constT=False, constP=False, outputlevel=0):
     """Performs gas-phase reaction equilibrium calculations. If the
     temperature is constant, this simply calls the IsothermalReact
@@ -37,66 +45,44 @@ def IsothermalReact(InputStream, constP=False, outputlevel=0):
     """Performs a Gibbs or Helmholz free energy minimisation to
     calculate the equilibrium concentrations of a set of species"""
 
-
     #Define a mapping from component keys to sequential indices (and
     #back) as we need to be able to turn everything into a matrix and
     #vector representation.
-    componentIndex={}
-    componentKey={}
-    nextindex=0
-    for component in InputStream.components:
-        if component not in componentIndex:
-            componentIndex[component] = nextindex
-            componentKey[nextindex] = component
-            nextindex += 1
+    componentToIndex, indexToComponent = dictToIndex(InputStream.components)
 
     #Perform the same operation as above, but for elements as these
     #are used to constrain the optimisation to ensure elements (and
     #charge) are conserved.
-    elementIndex={}
-    elementKey={}
-    nextindex=0
-    for element in InputStream.components.elementalComposition():
-        if element not in elementIndex:
-            elementIndex[element] = nextindex
-            elementKey[nextindex] = element
-            nextindex += 1
+    elementToIndex, indexToElement = dictToIndex(InputStream.components.elementalComposition())
 
     #Set up the initial "state" of the system. The initial state
     #"variables" are all of the product (and reactant) species
     #concentrations at the start.
-    initialStateVariables=[]
-    for i in range(len(componentIndex)):
-        initialStateVariables.append(InputStream.components[componentKey[i]])
+    initialStateVariables=[InputStream.components[component] for component in indexToComponent]
 
     #Describe how to turn from the "variables" back into a stream for
     #the gibbs calculations.
     def variablesToStream(variables):
         """Turns the optimised variables into a Stream class for
         calculations."""
-        output = IdealGasStream(InputStream.T, {componentKey[i]: max(variables[i], 0.0) for i in range(len(variables))})
+        output = IdealGasStream(InputStream.T, {component: max(variables[index], 0.0) for index, component in enumerate(indexToComponent)})
         if constP:
             output.P = InputStream.P
         else:
             output.P = InputStream.P * output.components.total() * output.T / (InputStream.components.total() * InputStream.T)
         return output
 
-    #Describe how to determine the elemental concentrations and, if
-    #required, the enthalpy of a set of state variables.
+    #Generate a vector of the elemental composition
     def constraintCalc(variables):
         stream = variablesToStream(variables)
         elementalcomposition = stream.components.elementalComposition()
-        constraints=[]
-        for i in range(len(elementIndex)):
-            constraints.append(elementalcomposition[elementKey[i]])
-        return constraints
+        return [elementalcomposition[element] for index,element in enumerate(indexToElement)]
 
     #Store the initial elemental concentrations to use this as a
     #constraint (it must be preserved)
     constraintTargets = constraintCalc(initialStateVariables)
 
     ####### Numerical optimisation
-    
     ### Step size
     #The step size should be some small fraction of the available
     #moles in the system. The same value is used for temperature, so
@@ -108,7 +94,7 @@ def IsothermalReact(InputStream, constP=False, outputlevel=0):
     #than there are total moles of elements in the input. This may be
     #broken if free electrons are generated in significant amounts?
     maxmoles = InputStream.components.elementalComposition().total()
-    variableBounds = [(0.0, maxmoles)  for i in range(len(componentIndex))]
+    variableBounds = [(0.0, maxmoles)  for i in range(len(indexToComponent))]
 
     ### Problem scaling
     #The SLSQP algorithm might assume the function/gradients is of

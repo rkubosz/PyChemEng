@@ -17,6 +17,12 @@ def validate(output, expected, error=0.025):
 
 from Stream import IdealGasStream
 
+Input=IdealGasStream(300, {"C2H5OH":1})
+validate(len(Input.components.elementalComposition()), 3)
+validate(Input.components.elementalComposition()["C"], 2)
+validate(Input.components.elementalComposition()["H"], 6)
+validate(Input.components.elementalComposition()["O"], 1)
+
 #Reference test from GasEq program
 #print "N2 test"
 Input=IdealGasStream(300, {"N2":0.79})
