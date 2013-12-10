@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from Streams import *
+from Stream import *
 import math
 from collections import namedtuple
 from Elements import elements
@@ -8,7 +8,6 @@ from Data import speciesData, R, T0, P0
 
 class PrexistingComponentError(Exception):
     pass
-
 
 ViscosityDataType = namedtuple('speciesViscosityData', ['Tmin','Tmax','dataset'])
 ThermcondDataType = namedtuple('speciesThermCondData', ['Tmin','Tmax','dataset'])
@@ -90,6 +89,17 @@ def IdealKinematicViscosity(component,T):# in m2/s
     return Viscosity(component,T)/(IdealDensity(component,T))
   
 
+def Phi (component1, component2, T):
+    return 0.25*(1 + ((Viscosity(component1,T)/Viscosity(component2,T))**0.5) * (((Components({component2:1}).avgMolarMass()) / (Components({component1:1}).avgMolarMass()))**0.25))**2 * (2*(Components({component2:1}).avgMolarMass()) / ((Components({component1:1}).avgMolarMass()) + (Components({component2:1}).avgMolarMass())))**0.25
+
+def Psi (component1, component2,T):
+    return Phi(component1,component2,T) * (1 + (2.41*((Components({component1:1}).avgMolarMass()) - (Components({component2:1}).avgMolarMass())) * ((Components({component1:1}).avgMolarMass()) - 0.142*(Components({component2:1}).avgMolarMass()))) / (((Components({component1:1}).avgMolarMass()) + (Components({component2:1}).avgMolarMass()))**2)) 
+
+
+print Phi ("O2","N2",300.0)
+print Phi ("N2","O2",300.0)
+print Psi ("O2","N2",300.0)
+print Psi ("N2","O2",300.0)
 print IdealKinematicViscosity("N2",300) 
 print IdealKinematicViscosity("N2",350) 
 print IdealKinematicViscosity("N2",600) 
