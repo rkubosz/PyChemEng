@@ -1,12 +1,30 @@
 #!/usr/bin/env python
 from Streams import *
+import math
+from collections import namedtuple
+from Elements import elements
+from Components import Components
+from Data import speciesData, R, T0, P0
 
-speciesTransportData = {}
+class PrexistingComponentError(Exception):
+    pass
 
-def registerTransportProperty(component, dataset):
-    if component in speciesTransportData:
+
+ViscosityDataType = namedtuple('speciesViscosityData', ['Tmin','Tmax','dataset'])
+ThermcondDataType = namedtuple('speciesThermCondData', ['Tmin','Tmax','dataset'])
+speciesViscosityData = {}
+speciesThermCondData = {}
+
+def registerviscositydata(component, dataset):
+    if component in speciesViscosityData:
         raise PrexistingComponentError("Species \""+component+"\" already exists in the database")
-    speciesTransportData[component] = dataset
+    speciesViscosityData[component] = dataset
+ 
+def registerthermconddata(component, dataset):
+    if component in speciesThermCondData:
+        raise PrexistingComponentError("Species \""+component+"\" already exists in the database")
+    speciesThermCondData[component] = dataset
+
 
 file = open("trans.inp", "r")
 lineit = iter(file)
@@ -42,15 +60,42 @@ while True:
             exponent=line[start:end][-3:].strip()
             C.append(float(mantissa+exponent))
         if line[1] == 'V':
-            visc_coeffs.append([[Tlow, Thigh], C])
+            visc_coeffs.append(ViscosityDataType(Tlow, Thigh, C))
         elif line[1] == 'C':
-            therm_coeffs.append([[Tlow, Thigh], C])
+            therm_coeffs.append(ThermcondDataType(Tlow, Thigh, C))
         else:
             raise Exception("Unexpected data type")
 
     if component2 != "":#Skip the mixture data for now
         continue
-    coeffs.append([therm_coeffs,visc_coeffs])
-    registerTransportProperty(component1,coeffs)   
-     
-print speciesTransportData["O2"]
+    registerviscositydata(component1,visc_coeffs)
+    registerthermconddata(component1,therm_coeffs) 
+
+def Viscosity(component,T): # Viscosity in Pascal.s
+    for Tmin, Tmax, C in speciesViscosityData[component]:
+        if T >= Tmin and T <= Tmax:
+            return math.exp((C[0] * math.log(T) + C[1]/T + C[2]/(T**2) + C[3]))/1e7 # Divided by 1 e7 to convert to Pascal*S
+    raise Exception("Cannot find valid Viscosity expression for "+str(T)+"K")
+
+def ThermalConductivity(component,T) : # Thermal Conductivity in W/m*K 
+    for Tmin, Tmax, C in speciesThermCondData [component]:
+        if T >= Tmin and T <= Tmax:
+	    return (math.exp(C[0] * math.log(T) + C[1]/T + C[2]/(T**2) + C[3]))/1e4 # Divided by 1 e4 to convert to watts per meter kelvin
+    raise Exception("Cannot find valid Viscosity expression for "+str(T)+"K")
+
+def IdealDensity(component,T): # kg/m3
+    return (101325*(Components({component:1}).avgMolarMass())/(R*T))/1000
+
+def IdealKinematicViscosity(component,T):# in m2/s
+    return Viscosity(component,T)/(IdealDensity(component,T))
+  
+
+print IdealKinematicViscosity("N2",300) 
+print IdealKinematicViscosity("N2",350) 
+print IdealKinematicViscosity("N2",600) 
+print IdealKinematicViscosity("N2",1000) 
+print IdealKinematicViscosity("N2",1300) 
+print IdealKinematicViscosity("N2",1500) 
+
+
+
