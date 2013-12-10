@@ -95,6 +95,14 @@ def Phi (component1, component2, T):
 def Psi (component1, component2,T):
     return Phi(component1,component2,T) * (1 + (2.41*((Components({component1:1}).avgMolarMass()) - (Components({component2:1}).avgMolarMass())) * ((Components({component1:1}).avgMolarMass()) - 0.142*(Components({component2:1}).avgMolarMass()))) / (((Components({component1:1}).avgMolarMass()) + (Components({component2:1}).avgMolarMass()))**2)) 
 
+def ViscosityofMixture(Components, T):
+    components = []
+    for key, value in Components.iteritems():
+        components.append(key)
+    NM = len(Components)
+    return sum([Components(i).normalised() * Viscosity(components[i],T) / [Components(i).normalised() +   for i in range NM])
+
+
 
 print Phi ("O2","N2",300.0)
 print Phi ("N2","O2",300.0)
