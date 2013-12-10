@@ -112,16 +112,42 @@ def ViscosityofMixture(Components, T):
     components2.append(firstitemC)
     molefractions2.pop(0)
     molefractions2.append(firstitemM)
-    print components
-    print components2
-    print molefractions
-    print molefractions2
-    Denominatorsum = sum(molefractions2[i] * Phi(components[i],components2[i],T) for i in range NM) 
-    #return sum(molefractions[i] * Viscosity(components[i],T) / molefractions[i] + sum(molefractions2[i] * Phi(components[i],components2[i],T))) for i in range NM
+    return sum(molefractions[i] * Viscosity(components[i],T) / (molefractions[i] + sum(molefractions2[i] * Phi(components[i],components2[i],T) for i in range (NM) if components[i] != components2[i])) for i in range (NM)) 
 
-DryAir = Components({"N2":78.084, "O2":20.946,  "Ar":0.934, "CO2":0.0397, "Ne":0.001818, "He": 0.000524, "CH4":0.000179, "Kr":0.000114})
 
+def ThermCondofMixture(Components, T):
+    CompenentsN = Components.normalised
+    components = []
+    molefractions = []
+    for key, value in Components.iteritems():
+        components.append(key)
+        molefractions.append(value)
+    components2 = copy.deepcopy(components)
+    molefractions2 = copy.deepcopy(molefractions)
+    NM = len(Components)
+    firstitemC = components2[0]
+    firstitemM = molefractions2[0]
+    components2.pop(0)
+    components2.append(firstitemC)
+    molefractions2.pop(0)
+    molefractions2.append(firstitemM)
+    return sum(molefractions[i] * ThermalConductivity(components[i],T) / (molefractions[i] + sum(molefractions2[i] * Psi(components[i],components2[i],T) for i in range (NM) if components[i] != components2[i])) for i in range (NM)) 
+
+
+#DryAir = Components({"N2":78.084, "O2":20.946,  "Ar":0.934, "CO2":0.0397, "Ne":0.001818, "He": 0.000524, "CH4":0.000179, "Kr":0.000114})
+DryAir = Components({"N2":78.0, "O2":21.0,  "Ar":1.0})
+DryAir2 = Components({"Ar":1.0,"N2":78.0, "O2":21.0})
+
+print ThermCondofMixture (DryAir,300.0)
 print ViscosityofMixture(DryAir,300.0)
+print ThermCondofMixture (DryAir2,300.0)
+print ViscosityofMixture(DryAir2,300.0)
+
+print ThermalConductivity("N2",300.0)
+
+print Phi ("O2","O2",300.0)
+print Viscosity("O2",300.0)
+print Viscosity("N2",300.0)
 print Phi ("O2","N2",300.0)
 print Phi ("N2","O2",300.0)
 print Psi ("O2","N2",300.0)
