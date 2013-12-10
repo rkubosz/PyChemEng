@@ -112,7 +112,7 @@ def ViscosityofMixture(Components, T):
     components2.append(firstitemC)
     molefractions2.pop(0)
     molefractions2.append(firstitemM)
-    return sum((molefractions[i] * Viscosity(components[i],T)) / (molefractions[i] + sum(molefractions2[i] * Phi(components[i],components2[i],T) for i in range (NM) if components[i] != components2[i])) for i in range (NM)) 
+    return sum((molefractions[i] * Viscosity(components[i],T)) / (molefractions[i] + sum(molefractions2[i] * Phi(components[i],components2[i],T) for i in range (NM) )) for i in range (NM)) 
 
 
 def ThermCondofMixture(Components, T):
@@ -131,25 +131,34 @@ def ThermCondofMixture(Components, T):
     components2.append(firstitemC)
     molefractions2.pop(0)
     molefractions2.append(firstitemM)
-    return sum(molefractions[i] * ThermalConductivity(components[i],T) / (molefractions[i] + sum(molefractions2[i] * Psi(components[i],components2[i],T) for i in range (NM) if components[i] != components2[i])) for i in range (NM)) 
+    return sum(molefractions[i] * ThermalConductivity(components[i],T) / (molefractions[i] + sum(molefractions2[i] * Psi(components[i],components2[i],T) for i in range (NM) )) for i in range (NM)) 
   
-def ViscosityofmixtureHerningandZippererequation(Components,T):
-    Components = Components.normalised()
-    components = Components.keys()
-    molefractions = Components.values()
-    NM = len(Components)
-    print components, molefractions, NM
+def ViscosityofmixtureHerningandZippererequation(Component,T):
+    Component = Component.normalised()
+    components = Component.keys()
+    molefractions = Component.values()
+    NM = len(Component)
     return sum(molefractions[i] * Viscosity(components[i],T) * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))/sum(molefractions[i] * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))
 
 
+def ThermCondofmixtureHerningandZippererequation(Component,T):
+    Component = Component.normalised()
+    components = Component.keys()
+    molefractions = Component.values()
+    NM = len(Component)
+    return sum(molefractions[i] * ThermalConductivity(components[i],T) * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))/sum(molefractions[i] * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))
 
 
-DryAir = Components({"N2":78.084, "O2":20.946,  "Ar":0.934, "CO2":0.0397, "Ne":0.001818, "He": 0.000524, "CH4":0.000179, "Kr":0.000114})
-#DryAir = Components({"N2":78.0, "O2":21.0,  "Ar":1.0})
 
+#DryAir = Components({"N2":78.084, "O2":20.946,  "Ar":0.934, "CO2":0.0397, "Ne":0.001818, "He": 0.000524, "CH4":0.000179, "Kr":0.000114})
+DryAir = Components({"N2":78.0, "O2":21.0})
 
+print Phi("N2","O2",300)
+print Phi("O2","N2",300)
 print ViscosityofMixture(DryAir,300.0)
 print ViscosityofmixtureHerningandZippererequation(DryAir,300.0)
+print ThermCondofMixture(DryAir,300.0)
+print ThermCondofmixtureHerningandZippererequation(DryAir,3000.0)
 
 
 
