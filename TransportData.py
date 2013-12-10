@@ -7,6 +7,14 @@ from Components import Components
 from Data import speciesData, R, T0, P0
 import copy
 
+def relativeError(val, ref):
+    import math
+    return math.fabs((val - ref) / (ref + (ref==0)))
+  
+def validate(output, expected, error=0.025):
+    if relativeError(output, expected) > error:
+        raise Exception("Failed test with error of "+str(relativeError(output, expected)))
+
 class PrexistingComponentError(Exception):
     pass
 
@@ -86,7 +94,7 @@ def ThermalConductivity(component,T) : # Thermal Conductivity in W/m*K
 def IdealDensity(component,T): # kg/m3
     return (101325*(Components({component:1}).avgMolarMass())/(R*T))/1000
 
-def IdealKinematicViscosity(component,T):# in m2/s
+def KinematicViscosity(component,T):# in m2/s
     return Viscosity(component,T)/(IdealDensity(component,T))
   
 
@@ -96,16 +104,16 @@ def Phi (component1, component2, T):
 def Psi (component1, component2,T):
     return Phi(component1,component2,T) * (1 + (2.41*((Components({component1:1}).avgMolarMass()) - (Components({component2:1}).avgMolarMass())) * ((Components({component1:1}).avgMolarMass()) - 0.142*(Components({component2:1}).avgMolarMass()))) / (((Components({component1:1}).avgMolarMass()) + (Components({component2:1}).avgMolarMass()))**2)) 
 
-def ViscosityofMixture(Components, T):
-    Components = Components.normalised()
+def ViscosityofMixture(Component, T):
+    Component = Component.normalised()
     components = []
     molefractions = []
-    for key, value in Components.iteritems():
+    for key, value in Component.iteritems():
         components.append(key)
         molefractions.append(value)
     components2 = copy.deepcopy(components)
     molefractions2 = copy.deepcopy(molefractions)
-    NM = len(Components)
+    NM = len(Component)
     firstitemC = components2[0]
     firstitemM = molefractions2[0]
     components2.pop(0)
@@ -115,16 +123,16 @@ def ViscosityofMixture(Components, T):
     return sum((molefractions[i] * Viscosity(components[i],T)) / (molefractions[i] + sum(molefractions2[i] * Phi(components[i],components2[i],T) for i in range (NM) )) for i in range (NM)) 
 
 
-def ThermCondofMixture(Components, T):
-    Components = Components.normalised()
+def ThermCondofMixture(Component, T):
+    Component = Component.normalised()
     components = []
     molefractions = []
-    for key, value in Components.iteritems():
+    for key, value in Component.iteritems():
         components.append(key)
         molefractions.append(value)
     components2 = copy.deepcopy(components)
     molefractions2 = copy.deepcopy(molefractions)
-    NM = len(Components)
+    NM = len(Component)
     firstitemC = components2[0]
     firstitemM = molefractions2[0]
     components2.pop(0)
@@ -133,7 +141,7 @@ def ThermCondofMixture(Components, T):
     molefractions2.append(firstitemM)
     return sum(molefractions[i] * ThermalConductivity(components[i],T) / (molefractions[i] + sum(molefractions2[i] * Psi(components[i],components2[i],T) for i in range (NM) )) for i in range (NM)) 
   
-def ViscosityofmixtureHerningandZippererequation(Component,T):
+def ViscosityofmixtureHZE(Component,T): # Herning Zipperer Equation
     Component = Component.normalised()
     components = Component.keys()
     molefractions = Component.values()
@@ -141,25 +149,34 @@ def ViscosityofmixtureHerningandZippererequation(Component,T):
     return sum(molefractions[i] * Viscosity(components[i],T) * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))/sum(molefractions[i] * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))
 
 
-def ThermCondofmixtureHerningandZippererequation(Component,T):
+def ThermCondofmixtureHZE(Component,T): # Herning Zipperer Equation
     Component = Component.normalised()
     components = Component.keys()
     molefractions = Component.values()
     NM = len(Component)
     return sum(molefractions[i] * ThermalConductivity(components[i],T) * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))/sum(molefractions[i] * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))
-
-
+  
+def KinematicViscosityofmixtureHZE(Component,T): # Herning Zipperer Equation
+    Component = Component.normalised()
+    components = Component.keys()
+    molefractions = Component.values()
+    NM = len(Component)
+    return sum(molefractions[i] * KinematicViscosity(components[i],T) * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))/sum(molefractions[i] * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))
 
 #DryAir = Components({"N2":78.084, "O2":20.946,  "Ar":0.934, "CO2":0.0397, "Ne":0.001818, "He": 0.000524, "CH4":0.000179, "Kr":0.000114})
-DryAir = Components({"N2":78.0, "O2":21.0})
+DryAir = Components({"N2":78.0, "O2":21.0,"Ar":1.0})
 
+validate(KinematicViscosityofmixtureHZE(DryAir,300.0),1.5918E-05)# Chemkin @ http://navier.engr.colostate.edu/~dandy/code/code-2/
+validate(ThermCondofmixtureHZE(DryAir,300.0),2.6351E-02)# Chemkin @ http://navier.engr.colostate.edu/~dandy/code/code-2/
+validate(KinematicViscosityofmixtureHZE(DryAir,1100.0),1.4270E-4)# Chemkin @ http://navier.engr.colostate.edu/~dandy/code/code-2/
+#validate(ThermCondofmixtureHZE(DryAir,1100.0),7.5246E-02 )# Chemkin @ http://navier.engr.colostate.edu/~dandy/code/code-2/
 print Phi("N2","O2",300)
 print Phi("O2","N2",300)
 print ViscosityofMixture(DryAir,300.0)
-print ViscosityofmixtureHerningandZippererequation(DryAir,300.0)
+print ViscosityofmixtureHZE(DryAir,300.0)
 print ThermCondofMixture(DryAir,300.0)
-print ThermCondofmixtureHerningandZippererequation(DryAir,3000.0)
-
+print ThermCondofmixtureHZE(DryAir,300.0)
+print KinematicViscosityofmixtureHZE(DryAir,300.0)
 
 
 
