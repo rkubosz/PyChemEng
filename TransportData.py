@@ -5,6 +5,7 @@ from collections import namedtuple
 from Elements import elements
 from Components import Components
 from Data import speciesData, R, T0, P0
+import copy
 
 class PrexistingComponentError(Exception):
     pass
@@ -96,14 +97,31 @@ def Psi (component1, component2,T):
     return Phi(component1,component2,T) * (1 + (2.41*((Components({component1:1}).avgMolarMass()) - (Components({component2:1}).avgMolarMass())) * ((Components({component1:1}).avgMolarMass()) - 0.142*(Components({component2:1}).avgMolarMass()))) / (((Components({component1:1}).avgMolarMass()) + (Components({component2:1}).avgMolarMass()))**2)) 
 
 def ViscosityofMixture(Components, T):
+    CompenentsN = Components.normalised
     components = []
+    molefractions = []
     for key, value in Components.iteritems():
         components.append(key)
+        molefractions.append(value)
+    components2 = copy.deepcopy(components)
+    molefractions2 = copy.deepcopy(molefractions)
     NM = len(Components)
-    return sum([Components(i).normalised() * Viscosity(components[i],T) / [Components(i).normalised() +   for i in range NM])
+    firstitemC = components2[0]
+    firstitemM = molefractions2[0]
+    components2.pop(0)
+    components2.append(firstitemC)
+    molefractions2.pop(0)
+    molefractions2.append(firstitemM)
+    print components
+    print components2
+    print molefractions
+    print molefractions2
+    Denominatorsum = sum(molefractions2[i] * Phi(components[i],components2[i],T) for i in range NM) 
+    #return sum(molefractions[i] * Viscosity(components[i],T) / molefractions[i] + sum(molefractions2[i] * Phi(components[i],components2[i],T))) for i in range NM
 
+DryAir = Components({"N2":78.084, "O2":20.946,  "Ar":0.934, "CO2":0.0397, "Ne":0.001818, "He": 0.000524, "CH4":0.000179, "Kr":0.000114})
 
-
+print ViscosityofMixture(DryAir,300.0)
 print Phi ("O2","N2",300.0)
 print Phi ("N2","O2",300.0)
 print Psi ("O2","N2",300.0)
