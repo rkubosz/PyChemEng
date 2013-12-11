@@ -40,7 +40,7 @@ registerFitFunction("Poly",
 #entropy.
 from collections import namedtuple
 ThermoDataType = namedtuple('ThermoData', ['Tmin', 'Tmax', 'fitFunction', 'constants', 'HConst', 'SConst'])
-SpeciesDataType = namedtuple('SpeciesData', ['elementalComposition','dataset'])
+SpeciesDataType = namedtuple('SpeciesData', ['elementalComposition','dataset', 'mass'])
 
 def inDataRange(component, T):
     for Tmin, Tmax, func, C, Hconst, Sconst in speciesData[component].dataset:
@@ -69,15 +69,24 @@ def S(component, T):#J / K
 class PrexistingComponentError(Exception):
     pass
 
-def registerComponent(component, dataset, elementalComposition):
+def registerComponent(component, dataset, elementalComposition, molMass=None):
     if component in speciesData:
         raise PrexistingComponentError("Species \""+component+"\" already exists in the database")
-    speciesData[component] = SpeciesDataType(elementalComposition, dataset)
-    #Check the elemental composition has no unknown elements
-    for element in elementalComposition:
+    #Check the elemental composition has no unknown elements and calculate the molecular mass
+    calcMolMass = 0
+    for element, amount in elementalComposition.iteritems():
         if element not in elements:
             raise Exception("Component "+component+" with composition "+str(elementalComposition)+" has an unknown element, "+element)
+        else:
+            calcMolMass += elements[element].mass * amount
+    if molMass is None:
+        molMass = calcMolMass
+    else:
+        if relativeError(calcMolMass, molMass) > 0.0001:
+            raise Exception("Calculated component mass is significantly different when compared to passed value. Is the elemental composition or molMass correct?\n" + component + ", " + str(elementalComposition) + ", " + str(molMass) + ", " + str(calcMolMass))
+    speciesData[component] = SpeciesDataType(elementalComposition, dataset, molMass)
 
+    
 ####################################################################
 # Test functions
 ####################################################################
@@ -204,15 +213,11 @@ def parseNASADataFile(filename, quiet=True):
                 continue
             
             try:
-                registerComponent(component, coeffs, Components(MolecularFormula))
+                registerComponent(component, coeffs, Components(MolecularFormula), MW)
             except PrexistingComponentError:
                 if not quiet:
                     print "Failed to add component",component," to database as component already exists:File:",filename,"at line",linecount
                     
-            error = relativeError(Components({component:1}).avgMolarMass(), MW)
-            if error > MWMaxError:
-                raise Exception("Component \""+component+"\" has a relative MW error of "+str(error))
-
             if inDataRange(component, 298.15):
                 error = relativeError(Hf(component, 298.15), HfRef)
                 if error > HfMaxError:
