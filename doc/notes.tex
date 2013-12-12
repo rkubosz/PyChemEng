@@ -1,0 +1,131 @@
+\documentclass[12pt]{article}
+
+\usepackage{times}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+
+Most commonly used equations of state or free energy models are
+explicit in the temperature and species densities; they typically only
+implicitly depend on the temperature.  In this case, the chemical
+potential is given as
+\begin{equation}
+\mu_\alpha(T,{\bf c}) = \mu_\alpha^{\rm ig}(T,{\bf c})
++ \mu_\alpha^{\rm res}(T,{\bf c})
+\end{equation}
+Unfortunately, this is not convenient for phase equilibria
+calculations; however, we can obtain an expression for the chemical
+potential of the system at a fixed temperature, pressure, and
+composition as:
+\begin{align*}
+\mu_\alpha(T,p,{\bf x}) &= \mu_\alpha^{\rm ig}(T,{\bf c})
++ \mu_\alpha^{\rm res}(T,{\bf c})
+\\
+&= \mu_\alpha^{\rm ig}(T,p) + RT\ln x_\alpha
+- RT\ln Z(T,{\bf c})
++ \mu_\alpha^{\rm res}(T,{\bf c})
+\end{align*}
+where $Z=pV/(RT)$ is the compressibility factor.
+
+
+For an activity coefficient model, the chemical potential is given as
+\begin{align}
+\mu_\alpha = \mu_\alpha^{\rm l}(T,p)
++ RT \ln x_\alpha \gamma_\alpha
+\end{align}
+
+
+\section{Notes on the reference state}
+
+Each molecule (component) should contain a member function that
+returns the chemical potential (molar Gibbs free energy) of the pure
+species at a specified temperature, pressure, and phase.  Possible
+states are the ideal gas state, the liquid state, or a crystalline
+state.
+\begin{align}
+\mu(T,p) &= \mu(T_0,p_0) 
++ \int_{P_0}^{P} dP' \left(\frac{\partial\mu}{\partial p}\right)_T 
++ \int_{T_0}^{T} dT' 
+  \left(\frac{\partial \mu}{\partial T}\right)_p 
+\nonumber
+%\\
+%&= \mu(T_0,p_0) 
+%+ \int_{p_0}^{p} dp' V(T,p')
+%- \int_{T_0}^{T} dT' S(T,p_0)
+%\nonumber
+%\\
+%&= \mu(T_0,p_0) 
+%+ \int_{p_0}^{p} dp' V(T,p')
+%- \int_{T_0}^{T} dT' \left[
+%    S(T_0,p_0) + \int_{T_0}^{T'} dT'' \frac{C_p(T'',p_0)}{T''} \right]
+%\nonumber
+\\
+\begin{split}
+&= \mu(T_0,p_0) 
++ \int_{P_0}^{P} dP' V(T,p')
++ \left(\frac{T}{T_0}-1\right) [\mu(T_0,p_0)-H(T_0,p_0)]
+\\ & \qquad
+- \int_{T_0}^{T} dT' \left(\frac{T}{T'}-1\right) C_p(T',p_0)
+\end{split}
+\end{align}
+
+
+In the case of an ideal gas reference state, this becomes
+\begin{equation}
+\begin{split}
+\mu^{\rm ig}(T,p) &= \mu^{\rm ig}(T_0,p_0) 
++ RT \ln \frac{p}{p_0}
++ \left(\frac{T}{T_0}-1\right) [G^{\rm ig}(T_0,p_0)-H^{\rm ig}(T_0,p_0)]
+\\ & \qquad
+- \int_{T_0}^{T} dT' \left(\frac{T}{T'}-1\right) C_p^{\rm ig}(T',p_0)
+\end{split}
+\end{equation}
+
+
+The NIST database should provide us with information for a wide
+variety of components in the ideal gas state.
+
+
+In the case of a liquid where we are missing the information of the
+reference state, we can estimate this from information from the ideal
+gas chemical potential and its vapor-liquid equilibria:
+\begin{align}
+\mu^{\rm l}(T,p) &= \mu^{\rm l}(T,p^{\rm vap}(T)) 
++ [\mu^{\rm l}(T,p) - \mu^{\rm l}(T,p^{\rm vap}(T))]
+\nonumber
+\\
+&= \mu^{\rm g}(T,p^{\rm vap}(T)) 
++ \int_{p^{\rm vap}(T)}^p dp' V^{\rm l}(T,p')
+\nonumber
+\\
+&= \mu^{\rm ig}(T,p^{\rm vap}(T)) 
++ [\mu^{\rm g}(T,p^{\rm vap}(T))-\mu^{\rm ig}(T,p^{\rm vap}(T))] 
++ \int_{p^{\rm vap}(T)}^p dp' V^{\rm l}(T,p')
+\nonumber
+\\
+\begin{split}
+&= \mu^{\rm ig}(T,p) + RT\ln\frac{p^{\rm vap}(T) }{p}
++ [\mu^{\rm g}(T,p^{\rm vap}(T))-\mu^{\rm ig}(T,p^{\rm vap}(T))] 
+\\ & \qquad
++ \int_{p^{\rm vap}(T)}^p dp' V^{\rm l}(T,p')
+\end{split}
+\end{align}
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
