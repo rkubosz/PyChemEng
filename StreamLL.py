@@ -55,7 +55,10 @@ class StreamLL:
                 index += 1
 
         G = 0.0
-        return 0.0
+        for A in self.phase_dict:
+            G += self.phase_dict[A].gibbsFreeEnergy()
+            
+        return G
 
     def moleBalance(self, x):
         f = []

@@ -20,6 +20,7 @@ class IdealGas(Phase):
         print "Ideal Gas"
 
     def chemicalPotential(self):
+        mu = {}
         for i in self.molecule_dict:
             mu[i] = self.mu_ref[i] + R*self.T*log(self.x[i])
         return mu

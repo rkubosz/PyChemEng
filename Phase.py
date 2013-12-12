@@ -67,6 +67,6 @@ class Phase:
         mu = self.chemicalPotential()
         G = 0.0
         for i in self.molecule_dict:
-            G += self.conc[i]*mu[u]
+            G += self.conc[i]*mu[i]
         return G
 
