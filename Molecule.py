@@ -47,3 +47,7 @@ class Molecule:
 
     def get_G(self):
         return self.G
+
+    def gRef(self):
+        return 0.0
+

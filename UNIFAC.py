@@ -23,7 +23,7 @@ class UNIFAC(Phase):
         self.L = {}
         self.x = {}
 
-    def get_method_name(self):
+    def methodName(self):
         print 'UNIFAC'
 
     def get_tau(self, g1, g2):
@@ -119,3 +119,9 @@ class UNIFAC(Phase):
 #            print i, ln_gamma_R[i]
 #            print self.x[i], J[i], L[i], term[i], ln_gamma_R[i], self.x[i]
         return ln_gamma
+
+    def chemicalPotential(self):
+        for i in self.molecule_dict:
+            mu[i] = mu_ref[i] + R*self.T*log(self.x[i])
+        return mu
+

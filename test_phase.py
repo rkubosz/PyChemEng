@@ -4,7 +4,9 @@ from numpy import *
 from collections import defaultdict
 
 from Phase import Phase
+from IdealGas import IdealGas
 from UNIFAC import UNIFAC
+from Solid import *
 from freeenergy import FreeEnergy
 
 from UNIFACGroup import UNIFACGroup
@@ -93,6 +95,16 @@ liquid.set_conc('n-heptane', 0.6)
 liquid.print_conc()
 
 
-liquid.get_method_name()
+liquid.methodName()
 ln_gamma = liquid.get_lngamma()
 print ln_gamma
+
+
+################################################################################
+################################################################################
+vapor = IdealGas('vapor')
+
+
+################################################################################
+################################################################################
+solid = Solid('solid')

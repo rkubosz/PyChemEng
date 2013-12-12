@@ -41,6 +41,16 @@ class Phase:
         for name in self.molecule_dict.keys():
             print name, self.conc[name]
 
-    def get_method_name(self):
+    def methodName(self):
         pass
+
+    def chemicalPotential(self):
+        pass
+
+    def gibbsFreeEnergy(self):
+        mu = self.chemicalPotential()
+        G = 0.0
+        for i in self.molecule_dict:
+            G += self.conc[i]*mu[u]
+        return G
 
