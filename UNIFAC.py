@@ -24,6 +24,7 @@ class UNIFAC(Phase):
         self.L = {}
         self.x = {}
         self.T = 298.15
+        self.p = 1.0e5
 
     def methodName(self):
         print 'UNIFAC'
@@ -126,7 +127,8 @@ class UNIFAC(Phase):
         mu = {}
         mu_ref = {}
         for i in self.molecule_dict:
-            mu_ref[i] = 0.0
+            pvap = self.molecule_dict[i].vaporPressure(self.T)
+            mu_ref[i] = R*self.T*log(pvap/self.p)
             mu[i] = mu_ref[i] + R*self.T*log(self.x[i])
         return mu
 

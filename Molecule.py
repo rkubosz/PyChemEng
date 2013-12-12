@@ -12,9 +12,9 @@ class Molecule:
         self.r = 0.0
         self.q = 0.0
         self.G = {}
-        self.AntoineA = 0.0
-        self.AntoineB = 0.0
-        self.AntoineC = 0.0
+        self.antoineA = 0.0
+        self.antoineB = 0.0
+        self.antoineC = 0.0
 
     def get_name(self):
         return self.name
@@ -42,9 +42,9 @@ class Molecule:
         self.q = q
 
     def setAntoineCoefficients(self, coeff):
-        self.AntoineA = coeff[0]
-        self.AntoineB = coeff[1]
-        self.AntoineC = coeff[2]
+        self.antoineA = coeff[0]
+        self.antoineB = coeff[1]
+        self.antoineC = coeff[2]
 
     def vaporPressure(self, T):
         p = 10.0 ** (self.antoineA - self.antoineB/(T+self.antoineC))

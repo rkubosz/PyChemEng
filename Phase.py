@@ -29,6 +29,9 @@ class Phase:
 
     def set_T(self, T):
         self.T = T
+
+    def setPressure(self, p):
+        self.p = p
     
     def set_conc(self, name, conc):
         self.conc[name] = conc
