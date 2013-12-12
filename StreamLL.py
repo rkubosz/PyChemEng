@@ -60,17 +60,19 @@ class StreamLL:
             
         return G
 
+
     def moleBalance(self, x):
-        f = []
+        res = []
         moleculeList = self.molecule_dict.keys()
         moleculeList.sort()
         for a in moleculeList:
-            res = - self.moleNumbers[a]
+            f = - self.moleNumbers[a]
             for A in self.phase_dict:
-                res += self.phase_dict[A].getMoleNumber(a)
-            f.append( res )
-        return f
+                f += self.phase_dict[A].getMoleNumber(a)
+            res.append( f )
+        return res
                 
+
     def equilibrate(self):
         x_init = []
         index = 0
@@ -88,6 +90,9 @@ class StreamLL:
         print x_init
         
         res = self.moleBalance(x_init)
+        print res
+
+        print self.gibbsFreeEnergy(x_init)
 #        x_equil = fmin_slsqp(self.gibbsFreeEnergy,
 #                             initialStateVariables,
 #                             f_eqcons=self.moleBalance,

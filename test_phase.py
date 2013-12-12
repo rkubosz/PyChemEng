@@ -17,6 +17,18 @@ from StreamLL import *
 ################################################################################
 ################################################################################
 ################################################################################
+f = open('antoine.dat')
+lines = f.readlines()
+f.close()
+
+antoineCoeff = {}
+for line in lines:
+    data = line.split()
+    name = data[0]
+    antoineCoeff[name] = [float(data[1]), float(data[2]), float(data[3])]
+
+
+################################################################################
 ################################################################################
 f = open('param_example.dat')
 lines = f.readlines()
@@ -71,6 +83,7 @@ print liquid.get_tau('CH3', 'CH3')
 print '---'
 name = 'diethylamine'
 mol = Molecule(name, 1)
+mol.setAntoineCoefficients(antoineCoeff[name])
 mol.add_group( group_dict['CH3'], 2 )
 mol.add_group( group_dict['CH2'], 1 )
 mol.add_group( group_dict['CH2NH'], 1 )
@@ -81,6 +94,7 @@ liquid.add_molecule(mol)
 print '---'
 name = 'n-heptane'
 mol = Molecule(name, 2)
+mol.setAntoineCoefficients(antoineCoeff[name])
 mol.add_group( group_dict['CH3'], 2 )
 mol.add_group( group_dict['CH2'], 5 )
 mol.set_parameters()
