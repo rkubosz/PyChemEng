@@ -11,7 +11,7 @@ def relativeError(val, ref):
     import math
     return math.fabs((val - ref) / (ref + (ref==0)))
   
-def validate(output, expected, error=0.025):
+def validate(output, expected, error=0.05): ######Maximum allowable Error at 5%######
     if relativeError(output, expected) > error:
         raise Exception("Failed test with error of "+str(relativeError(output, expected)))
 
@@ -32,7 +32,6 @@ def registerthermconddata(component, dataset):
     if component in speciesThermCondData:
         raise PrexistingComponentError("Species \""+component+"\" already exists in the database")
     speciesThermCondData[component] = dataset
-
 
 file = open("trans.inp", "r")
 lineit = iter(file)
@@ -91,12 +90,11 @@ def ThermalConductivity(component,T) : # Thermal Conductivity in W/m*K
 	    return (math.exp(C[0] * math.log(T) + C[1]/T + C[2]/(T**2) + C[3]))/1e4 # Divided by 1 e4 to convert to watts per meter kelvin
     raise Exception("Cannot find valid Viscosity expression for "+str(T)+"K")
 
-def IdealDensity(component,T): # kg/m3
-    return (101325*(Components({component:1}).avgMolarMass())/(R*T))/1000
+def IdealGasDensity(component,T): # kg/m3
+    return (101325*(Components({component:1}).avgMolarMass())/(R*T))/1000 ###### NOT SURE ABOUT THIS ######
 
 def KinematicViscosity(component,T):# in m2/s
-    return Viscosity(component,T)/(IdealDensity(component,T))
-  
+    return Viscosity(component,T)/(IdealGasDensity(component,T))
 
 def Phi (component1, component2, T):
     return 0.25*(1 + ((Viscosity(component1,T)/Viscosity(component2,T))**0.5) * (((Components({component2:1}).avgMolarMass()) / (Components({component1:1}).avgMolarMass()))**0.25))**2 * (2*(Components({component2:1}).avgMolarMass()) / ((Components({component1:1}).avgMolarMass()) + (Components({component2:1}).avgMolarMass())))**0.25
@@ -104,43 +102,54 @@ def Phi (component1, component2, T):
 def Psi (component1, component2,T):
     return Phi(component1,component2,T) * (1 + (2.41*((Components({component1:1}).avgMolarMass()) - (Components({component2:1}).avgMolarMass())) * ((Components({component1:1}).avgMolarMass()) - 0.142*(Components({component2:1}).avgMolarMass()))) / (((Components({component1:1}).avgMolarMass()) + (Components({component2:1}).avgMolarMass()))**2)) 
 
-def ViscosityofMixture(Mixture, T):
+def ViscosityofMixtureGordon(Mixture, T):
     Mixture = Mixture.normalised()
     components = []
     molefractions = []
-    for key, value in Mixture.iteritems():
-        components.append(key)
-        molefractions.append(value)
-    components2 = copy.deepcopy(components)
-    molefractions2 = copy.deepcopy(molefractions)
-    NM = len(Mixture)
-    firstitemC = components2[0]
-    firstitemM = molefractions2[0]
-    components2.pop(0)
-    components2.append(firstitemC)
-    molefractions2.pop(0)
-    molefractions2.append(firstitemM)
-    return sum((molefractions[i] * Viscosity(components[i],T)) / (molefractions[i] + sum(molefractions2[j] * Phi(components[i],components2[j],T) for j in range (NM) )) for i in range (NM)) 
+    runningsum=0
+    for component1, value1 in Mixture.iteritems():
+        visc1 = Viscosity(component1, T)
+        numerator = value1 * visc1
+        denominator = value1
+        for component2, value2 in Mixture.iteritems():
+            if component1 == component2:
+                continue
+            denominator += value2 * Phi(component1, component2, T)
+        runningsum += numerator / denominator
+    return runningsum
 
-
-def ThermCondofMixture(Mixture, T):
+def ThermCondofMixtureGordon(Mixture, T):
     Mixture = Mixture.normalised()
     components = []
     molefractions = []
-    for key, value in Mixture.iteritems():
-        components.append(key)
-        molefractions.append(value)
-    components2 = copy.deepcopy(components)
-    molefractions2 = copy.deepcopy(molefractions)
-    NM = len(Mixture)
-    firstitemC = components2[0]
-    firstitemM = molefractions2[0]
-    components2.pop(0)
-    components2.append(firstitemC)
-    molefractions2.pop(0)
-    molefractions2.append(firstitemM)
-    return sum(molefractions[i] * ThermalConductivity(components[i],T) / (molefractions[i] + sum(molefractions2[j] * Psi(components[i],components2[j],T) for j in range (NM) )) for i in range (NM)) 
-  
+    runningsum=0
+    for component1, value1 in Mixture.iteritems():
+        visc1 = ThermalConductivity(component1, T)
+        numerator = value1 * visc1
+        denominator = value1
+        for component2, value2 in Mixture.iteritems():
+            if component1 == component2:
+                continue
+            denominator += value2 * Psi(component1, component2, T)
+        runningsum += numerator / denominator
+    return runningsum
+
+def GasMixtureKinematicViscosityGordon(Mixture,T): 
+    Mixture = Mixture.normalised()
+    components = []
+    molefractions = []
+    runningsum=0
+    for component1, value1 in Mixture.iteritems():
+        visc1 = KinematicViscosity(component1, T)
+        numerator = value1 * visc1
+        denominator = value1
+        for component2, value2 in Mixture.iteritems():
+            if component1 == component2:
+                continue
+            denominator += value2 * Phi(component1, component2, T)
+        runningsum += numerator / denominator
+    return runningsum
+
 def ViscosityofmixtureHZE(Mixture,T): # Herning Zipperer Equation
     Mixture = Mixture.normalised()
     components = Mixture.keys()
@@ -148,46 +157,45 @@ def ViscosityofmixtureHZE(Mixture,T): # Herning Zipperer Equation
     NM = len(Mixture)
     return sum(molefractions[i] * Viscosity(components[i],T) * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))/sum(molefractions[i] * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))
 
-
 def ThermCondofmixtureHZE(Mixture,T): # Herning Zipperer Equation
     Mixture = Mixture.normalised()
     components = Mixture.keys()
     molefractions = Mixture.values()
     NM = len(Mixture)
     return sum(molefractions[i] * ThermalConductivity(components[i],T) * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))/sum(molefractions[i] * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))
-  
-def KinematicViscosityofmixtureHZE(Mixture,T): # Herning Zipperer Equation
+
+def GasMixtureKinematicViscosityHZE(Mixture,T): # Herning Zipperer Equation
     Mixture = Mixture.normalised()
     components = Mixture.keys()
     molefractions = Mixture.values()
     NM = len(Mixture)
     return sum(molefractions[i] * KinematicViscosity(components[i],T) * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))/sum(molefractions[i] * (Components({components[i]:1}).avgMolarMass())**0.5 for i in range (NM))
-  
+
+GasMixtureViscosity = ViscosityofMixtureGordon #Selected this equation for Viscosity of gaseous mixtures
+GasMixtureThermalConductivity = ThermCondofMixtureGordon #Selected this equation for Thermal Conductivity of gaseous mixtures
+GasMixtureKinematicViscosity = GasMixtureKinematicViscosityGordon #Selected this equation for Kinematic Viscosity of gaseous mixtures
+
 def PrandtlFr(Mixture,T):
-    return IdealGasStream(T, Mixture).Cp() / (Mixture.totalMass()/1000) * ViscosityofmixtureHZE(Mixture,T)/ThermCondofmixtureHZE(Mixture,T)
-
-
+    return IdealGasStream(T, Mixture).Cp() / (Mixture.totalMass()/1000) * GasMixtureViscosity(Mixture,T)/GasMixtureThermalConductivity(Mixture,T)
 
 DryAir = Components({"N2":78.084, "O2":20.946,  "Ar":0.934, "CO2":0.0397, "Ne":0.001818, "He": 0.000524, "CH4":0.000179, "Kr":0.000114})
 DryAir = DryAir.normalised()
-#DryAir = Components({"N2":78.0, "O2":21.0,"Ar":1.0})
-
-
 
 validate(PrandtlFr(DryAir,293.15),0.713)
 
-validate(KinematicViscosityofmixtureHZE(DryAir,300.0),1.5918E-05)# Chemkin @ http://navier.engr.colostate.edu/~dandy/code/code-2/
-validate(ThermCondofmixtureHZE(DryAir,300.0),2.6351E-02)# Chemkin @ http://navier.engr.colostate.edu/~dandy/code/code-2/
-validate(KinematicViscosityofmixtureHZE(DryAir,1100.0),1.4270E-4)# Chemkin @ http://navier.engr.colostate.edu/~dandy/code/code-2/
+validate(GasMixtureKinematicViscosity(DryAir,300.0),1.5918E-05)# Chemkin @ http://navier.engr.colostate.edu/~dandy/code/code-2/
+validate(GasMixtureKinematicViscosity(DryAir,700.0),6.6405E-5)# Chemkin @ http://navier.engr.colostate.edu/~dandy/code/code-2/
+validate(GasMixtureKinematicViscosity(DryAir,1500.0),2.3489E-4)# Chemkin @ http://navier.engr.colostate.edu/~dandy/code/code-2/
+validate(GasMixtureKinematicViscosity(DryAir,1000.0),1.2026E-4)# Chemkin @ http://navier.engr.colostate.edu/~dandy/code/code-2/
 
-#validate(ThermCondofmixtureHZE(DryAir,1100.0),7.5246E-02 )# Chemkin @ http://navier.engr.colostate.edu/~dandy/code/code-2/
-print Phi("N2","O2",300)
-print Phi("O2","N2",300)
-print ViscosityofMixture(DryAir,300.0)
-print ViscosityofmixtureHZE(DryAir,300.0)
-print ThermCondofMixture(DryAir,300.0)
-print ThermCondofmixtureHZE(DryAir,300.0)
-print KinematicViscosityofmixtureHZE(DryAir,300.0)
-
-
+validate(GasMixtureViscosity(DryAir,300.0),18.57e-6) #Kadoya Matsunga and Nagashima Viscosity and Thermal Conductivity of Dryair 
+validate(GasMixtureThermalConductivity(DryAir,300.0),26.23e-3)#Kadoya Matsunga and Nagashima Viscosity and Thermal Conductivity of Dryair 
+validate(GasMixtureViscosity(DryAir,400.0),23.10e-6) #Kadoya Matsunga and Nagashima Viscosity and Thermal Conductivity of Dryair 
+validate(GasMixtureThermalConductivity(DryAir,400.0),33.28e-3)#Kadoya Matsunga and Nagashima Viscosity and Thermal Conductivity of Dryair 
+validate(GasMixtureViscosity(DryAir,800.0),37.47e-6) #Kadoya Matsunga and Nagashima Viscosity and Thermal Conductivity of Dryair 
+validate(GasMixtureThermalConductivity(DryAir,800.0),56.99e-3)#Kadoya Matsunga and Nagashima Viscosity and Thermal Conductivity of Dryair 
+validate(GasMixtureViscosity(DryAir,1500.0),56.48e-6) #Kadoya Matsunga and Nagashima Viscosity and Thermal Conductivity of Dryair 
+validate(GasMixtureThermalConductivity(DryAir,1500.0),92.96e-3)#Kadoya Matsunga and Nagashima Viscosity and Thermal Conductivity of Dryair 
+validate(GasMixtureViscosity(DryAir,2000.0),67.91e-6) #Kadoya Matsunga and Nagashima Viscosity and Thermal Conductivity of Dryair 
+validate(GasMixtureThermalConductivity(DryAir,2000.0),117.5e-3)#Kadoya Matsunga and Nagashima Viscosity and Thermal Conductivity of Dryair 
 
