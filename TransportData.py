@@ -120,7 +120,7 @@ def ViscosityofMixture(Mixture, T):
     components2.append(firstitemC)
     molefractions2.pop(0)
     molefractions2.append(firstitemM)
-    return sum((molefractions[i] * Viscosity(components[i],T)) / (molefractions[i] + sum(molefractions2[i] * Phi(components[i],components2[i],T) for i in range (NM) )) for i in range (NM)) 
+    return sum((molefractions[i] * Viscosity(components[i],T)) / (molefractions[i] + sum(molefractions2[j] * Phi(components[i],components2[j],T) for j in range (NM) )) for i in range (NM)) 
 
 
 def ThermCondofMixture(Mixture, T):
@@ -139,7 +139,7 @@ def ThermCondofMixture(Mixture, T):
     components2.append(firstitemC)
     molefractions2.pop(0)
     molefractions2.append(firstitemM)
-    return sum(molefractions[i] * ThermalConductivity(components[i],T) / (molefractions[i] + sum(molefractions2[i] * Psi(components[i],components2[i],T) for i in range (NM) )) for i in range (NM)) 
+    return sum(molefractions[i] * ThermalConductivity(components[i],T) / (molefractions[i] + sum(molefractions2[j] * Psi(components[i],components2[j],T) for j in range (NM) )) for i in range (NM)) 
   
 def ViscosityofmixtureHZE(Mixture,T): # Herning Zipperer Equation
     Mixture = Mixture.normalised()
