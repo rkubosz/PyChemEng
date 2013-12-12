@@ -4,10 +4,26 @@
 class Phase:
     def __init__(self, name):
         self.name = name
-
+        self.conc = {}
+        
     def get_name(self):
-        return name
+        return self.name
 
+    def molecules(self):
+        return self.molecule_dict
+    
+    def moleculeList(self):
+        return self.conc.keys()
+    
+    def moleNumbers(self):
+        return self.conc
+
+    def getMoleNumber(self, a):
+        N = 0.0
+        if (a in self.conc):
+            N = self.conc[a]
+        return N
+    
     def get_T(self):
         return self.T
 

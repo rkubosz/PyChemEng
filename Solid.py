@@ -14,7 +14,7 @@ class Solid(Phase):
         self.name = name
         self.molecule_dict = {}
         self.x = {}
-
+        self.conc = {}
 
     def methodName(self):
         print "Solid"

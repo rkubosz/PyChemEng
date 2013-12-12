@@ -12,7 +12,10 @@ from freeenergy import FreeEnergy
 from UNIFACGroup import UNIFACGroup
 from Molecule import Molecule
 
+from StreamLL import *
 
+################################################################################
+################################################################################
 ################################################################################
 ################################################################################
 f = open('param_example.dat')
@@ -103,8 +106,32 @@ print ln_gamma
 ################################################################################
 ################################################################################
 vapor = IdealGas('vapor')
+vapor.set_conc('diethylamine', 0.4)
+vapor.set_conc('n-heptane', 0.6)
 
 
 ################################################################################
 ################################################################################
 solid = Solid('solid')
+solid.set_conc('diethylamine', 1.0)
+
+
+phase_dict = {}
+phase_dict['liquid'] = liquid
+phase_dict['vapor'] = vapor
+phase_dict['solid'] = solid
+
+
+stream = StreamLL()
+stream.addPhase(liquid)
+stream.addPhase(vapor)
+stream.addPhase(solid)
+
+
+stream.setMoleNumber('diethylamine', 1.0)
+stream.setMoleNumber('n-heptane', 1.0)
+print stream.getMoleNumbers()
+
+x = 0.0
+stream.gibbsFreeEnergy(x)
+stream.equilibrate()
