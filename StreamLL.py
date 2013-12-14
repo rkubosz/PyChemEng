@@ -71,6 +71,20 @@ class StreamLL:
 
 
     def moleBalance(self, x):
+#   translate x to component mole numbers
+        index = 0
+        phaseList = self.phase_dict.keys()
+        phaseList.sort()
+        for A in phaseList:
+            moleculeList = self.phase_dict[A].moleNumbers().keys()
+            moleculeList.sort()
+#            print '--- ', A, ' ---'
+            N = self.phase_dict[A].moleNumbers()
+            for a in moleculeList:
+                self.phase_dict[A].set_conc(a, x[index])
+#                print a, index, N[a], x[index]
+                index += 1
+
         res = []
         moleculeList = self.molecule_dict.keys()
         moleculeList.sort()
@@ -116,6 +130,21 @@ class StreamLL:
                              bounds=variableBounds,
                              iprint=outputlevel,
                              )
+        print x_equil
+
+#       translate x to component mole numbers
+        index = 0
+        phaseList = self.phase_dict.keys()
+        phaseList.sort()
+        for A in phaseList:
+            moleculeList = self.phase_dict[A].moleNumbers().keys()
+            moleculeList.sort()
+            print '--- ', A, ' ---'
+            N = self.phase_dict[A].moleNumbers()
+            for a in moleculeList:
+                self.phase_dict[A].set_conc(a, x_equil[index])
+                print a, index, N[a], x_equil[index]
+                index += 1
 
 
 ################################################################################
