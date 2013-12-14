@@ -165,7 +165,7 @@ stream.addPhase(solid)
 
 stream.setMoleNumber('diethylamine', 1.0)
 stream.setMoleNumber('n-heptane', 1.0)
-print stream.getMoleNumbers()
+print 'stream mole numbers = ', stream.getMoleNumbers()
 
 x = 0.0
 stream.gibbsFreeEnergy(x)

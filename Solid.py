@@ -29,7 +29,6 @@ class Solid(Phase):
         for i in self.conc:
             self.x[i] = self.conc[i]/Ntot
 
-        print Phase.moleculeDict
         self.setReferenceState()
         mu = {}
         for i in self.conc:

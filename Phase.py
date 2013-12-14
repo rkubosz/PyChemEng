@@ -72,6 +72,7 @@ class Phase:
         mu = self.chemicalPotential()
         G = 0.0
         for i in self.conc:
-            G += self.conc[i]*mu[i]
+            if (self.conc[i] > 0.0):
+                G += self.conc[i]*mu[i]
         return G
 

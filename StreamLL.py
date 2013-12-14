@@ -53,10 +53,10 @@ class StreamLL:
         for A in phaseList:
             moleculeList = self.phase_dict[A].moleNumbers().keys()
             moleculeList.sort()
-            print '--- ', A, ' ---'
+#            print '--- ', A, ' ---'
             N = self.phase_dict[A].moleNumbers()
             for a in moleculeList:
-                print a, index, N[a]
+#                print a, index, N[a]
                 index += 1
 
         G = 0.0
@@ -72,6 +72,7 @@ class StreamLL:
         moleculeList.sort()
         for a in moleculeList:
             f = - self.moleNumbers[a]
+            print a, f
             for A in self.phase_dict:
                 f += self.phase_dict[A].getMoleNumber(a)
             res.append( f )
@@ -99,9 +100,9 @@ class StreamLL:
         print x_init
         
         res = self.moleBalance(x_init)
-        print res
+        print 'res=', res
 
-        print self.gibbsFreeEnergy(x_init)
+        print 'G=', self.gibbsFreeEnergy(x_init)
 #        x_equil = fmin_slsqp(self.gibbsFreeEnergy,
 #                             initialStateVariables,
 #                             f_eqcons=self.moleBalance,
