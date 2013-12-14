@@ -153,7 +153,7 @@ phase_dict['vapor'] = vapor
 phase_dict['solid'] = solid
 
 
-T = 350.0
+T = 345.0
 p = 1.0e5
 stream = StreamLL()
 stream.setTemperature(T)
