@@ -7,7 +7,6 @@ from Phase import Phase
 from IdealGas import IdealGas
 from UNIFAC import UNIFAC
 from Solid import *
-from freeenergy import FreeEnergy
 
 from UNIFACGroup import UNIFACGroup
 from Molecule import Molecule
@@ -72,13 +71,15 @@ for line in lines:
 ################################################################################
 #liquid = FreeEnergy('liquid', 'test 2')
 liquid = UNIFAC('liquid', group_dict, A_mat, B_mat)
-liquid.set_T(308.15)
+liquid.setTemperature(308.15)
 print liquid.get_tau('CH3', 'CH3')
 
 
 ################################################################################
 ################################################################################
 # create molecules
+
+moleculeDict = {}
 
 print '---'
 name = 'diethylamine'
@@ -89,7 +90,9 @@ mol.add_group( group_dict['CH2'], 1 )
 mol.add_group( group_dict['CH2NH'], 1 )
 mol.set_parameters()
 mol.print_group_list()
+moleculeDict[name] = mol
 liquid.add_molecule(mol)
+
 
 print '---'
 name = 'n-heptane'
@@ -99,10 +102,24 @@ mol.add_group( group_dict['CH3'], 2 )
 mol.add_group( group_dict['CH2'], 5 )
 mol.set_parameters()
 mol.print_group_list()
+moleculeDict[name] = mol
 liquid.add_molecule(mol)
 
 liquid.print_molecule_list()
 liquid.print_group_list()
+
+
+from pylab import *
+T_data = arange(200.0, 400.0, 10.0)
+
+for name in moleculeDict:
+    p_data = []
+    for T in T_data:
+        p_data.append( moleculeDict[name].vaporPressure(T)*1.0e-5 )
+    plot(T_data, p_data)
+
+ylabel(r'pressure / bar')
+show()
 
 
 ################################################################################
@@ -136,11 +153,15 @@ phase_dict['vapor'] = vapor
 phase_dict['solid'] = solid
 
 
+T = 298.15
+p = 1.0e5
 stream = StreamLL()
+stream.setTemperature(T)
+stream.setPressure(p)
+
 stream.addPhase(liquid)
 stream.addPhase(vapor)
 stream.addPhase(solid)
-
 
 stream.setMoleNumber('diethylamine', 1.0)
 stream.setMoleNumber('n-heptane', 1.0)

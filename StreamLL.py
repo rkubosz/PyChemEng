@@ -30,7 +30,12 @@ class StreamLL:
         
     def getMoleNumbers(self):
         return self.moleNumbers
-        
+
+    def setTemperature(self, Tinput):
+        self.T = Tinput
+
+    def setPressure(self, pinput):
+        self.p = pinput
 #    def addMolecule(self, mol, Ninput=0.0):
 #        name = mol.get_name()
 #        self.molecule_dict[name] = mol
@@ -74,10 +79,14 @@ class StreamLL:
                 
 
     def equilibrate(self):
-        x_init = []
-        index = 0
         phaseList = self.phase_dict.keys()
         phaseList.sort()
+        for A in phaseList:
+            self.phase_dict[A].setTemperature(self.T)
+            self.phase_dict[A].setPressure(self.p)
+        
+        x_init = []
+        index = 0
         for A in phaseList:
             moleculeList = self.phase_dict[A].moleNumbers().keys()
             moleculeList.sort()

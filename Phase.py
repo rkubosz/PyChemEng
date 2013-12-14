@@ -2,15 +2,17 @@
 
 
 class Phase:
+
+    moleculeDict = {}
+    
     def __init__(self, name):
         self.name = name
-        self.conc = {}
         
     def get_name(self):
         return self.name
 
     def molecules(self):
-        return self.molecule_dict
+        return self.moleculeDict
     
     def moleculeList(self):
         return self.conc.keys()
@@ -27,7 +29,7 @@ class Phase:
     def get_T(self):
         return self.T
 
-    def set_T(self, T):
+    def setTemperature(self, T):
         self.T = T
 
     def setPressure(self, p):
@@ -49,15 +51,15 @@ class Phase:
 
     def add_molecule(self, mol):
         name = mol.get_name()
-        self.molecule_dict[name] = mol
+        self.moleculeDict[name] = mol
         self.conc[name] = 0.0
 
     def print_molecule_list(self):
-        for name in self.molecule_dict.keys():
+        for name in self.moleculeDict.keys():
             print name, self.conc[name]
 
     def print_conc(self):
-        for name in self.molecule_dict.keys():
+        for name in self.moleculeDict.keys():
             print name, self.conc[name]
 
     def methodName(self):
@@ -69,7 +71,7 @@ class Phase:
     def gibbsFreeEnergy(self):
         mu = self.chemicalPotential()
         G = 0.0
-        for i in self.molecule_dict:
+        for i in self.conc:
             G += self.conc[i]*mu[i]
         return G
 

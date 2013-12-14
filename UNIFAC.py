@@ -18,7 +18,7 @@ class UNIFAC(Phase):
         self.group_list = group_list
         self.A = A
         self.B = B
-        self.molecule_dict = {}
+#        self.molecule_dict = {}
         self.conc = {}
         self.J = {}
         self.L = {}
@@ -38,7 +38,8 @@ class UNIFAC(Phase):
             print name
 
     def get_s(self, k, i):
-        mol = self.molecule_dict[i]
+#        mol = self.molecule_dict[i]
+        mol = Phase.moleculeDict[i]
         G = mol.get_G()
         s = 0.0
         for m in G:
@@ -55,8 +56,8 @@ class UNIFAC(Phase):
         self.theta = {}
         for k in self.group_list.keys():
             self.theta[k] = 0.0
-            for i in self.molecule_dict:
-                mol = self.molecule_dict[i]
+            for i in self.conc:
+                mol = Phase.moleculeDict[i]
                 G = mol.get_G()
                 if (k in G):
                     self.theta[k] += G[k]*self.x[i]
@@ -66,7 +67,7 @@ class UNIFAC(Phase):
         self.eta = {}
         for k in self.group_list:
             self.eta[k] = 0.0
-            for i in self.molecule_dict:
+            for i in self.conc:
                 self.eta[k] += self.get_s(k,i)*self.x[i]
 
     def print_eta(self):
@@ -86,8 +87,8 @@ class UNIFAC(Phase):
         J = {}
         L = {}
         term = {}
-        for i in self.molecule_dict:
-            mol = self.molecule_dict[i]
+        for i in self.conc:
+            mol = Phase.moleculeDict[i]
             r = mol.get_r()
             q = mol.get_q()
             sum_J += r*self.x[i]
@@ -104,7 +105,7 @@ class UNIFAC(Phase):
 #                    print i, k, G[k]
             term[i] = tmp
 
-        for i in self.molecule_dict:
+        for i in self.conc:
             J[i] /= sum_J
             L[i] /= sum_L
 #            print i, J[i], L[i]
@@ -112,8 +113,8 @@ class UNIFAC(Phase):
         ln_gamma_C = {}
         ln_gamma_R = {}
         ln_gamma = {}
-        for i in self.molecule_dict:
-            mol = self.molecule_dict[i]
+        for i in self.conc:
+            mol = Phase.moleculeDict[i]
             qi = mol.get_q() 
             ln_gamma_C[i] = 1.0 - J[i] + log(J[i]) \
                             - 5.0*qi*(1.0-J[i]/L[i]+log(J[i]/L[i]))
@@ -126,8 +127,8 @@ class UNIFAC(Phase):
     def chemicalPotential(self):
         mu = {}
         mu_ref = {}
-        for i in self.molecule_dict:
-            pvap = self.molecule_dict[i].vaporPressure(self.T)
+        for i in self.conc:
+            pvap = Phase.moleculeDict[i].vaporPressure(self.T)
             mu_ref[i] = R*self.T*log(pvap/self.p)
             mu[i] = mu_ref[i] + R*self.T*log(self.x[i])
         return mu
