@@ -137,8 +137,8 @@ print ln_gamma
 ################################################################################
 ################################################################################
 vapor = IdealGas('vapor')
-vapor.set_conc('diethylamine', 0.4)
-vapor.set_conc('n-heptane', 0.6)
+vapor.set_conc('diethylamine', 0.6)
+vapor.set_conc('n-heptane', 0.4)
 
 
 ################################################################################
@@ -153,7 +153,7 @@ phase_dict['vapor'] = vapor
 phase_dict['solid'] = solid
 
 
-T = 298.15
+T = 350.0
 p = 1.0e5
 stream = StreamLL()
 stream.setTemperature(T)
@@ -161,12 +161,12 @@ stream.setPressure(p)
 
 stream.addPhase(liquid)
 stream.addPhase(vapor)
-stream.addPhase(solid)
+#stream.addPhase(solid)
 
 stream.setMoleNumber('diethylamine', 1.0)
 stream.setMoleNumber('n-heptane', 1.0)
 print 'stream mole numbers = ', stream.getMoleNumbers()
 
-x = 0.0
-stream.gibbsFreeEnergy(x)
-stream.equilibrate()
+#x = 0.0
+#stream.gibbsFreeEnergy(x)
+stream.equilibrate(2)

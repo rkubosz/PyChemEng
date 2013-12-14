@@ -46,6 +46,8 @@ class StreamLL:
 ################################################################################
     def gibbsFreeEnergy(self, x):
 
+#        print '=== in gibbsFreeEnergy ==='
+#        print 'x =', x
 #   translate x to component mole numbers
         index = 0
         phaseList = self.phase_dict.keys()
@@ -56,12 +58,14 @@ class StreamLL:
 #            print '--- ', A, ' ---'
             N = self.phase_dict[A].moleNumbers()
             for a in moleculeList:
-#                print a, index, N[a]
+                self.phase_dict[A].set_conc(a, x[index])
+#                print a, index, N[a], x[index]
                 index += 1
 
         G = 0.0
         for A in self.phase_dict:
             G += self.phase_dict[A].gibbsFreeEnergy()
+#        print 'G =', G
             
         return G
 
@@ -72,14 +76,13 @@ class StreamLL:
         moleculeList.sort()
         for a in moleculeList:
             f = - self.moleNumbers[a]
-            print a, f
             for A in self.phase_dict:
                 f += self.phase_dict[A].getMoleNumber(a)
             res.append( f )
         return res
                 
 
-    def equilibrate(self):
+    def equilibrate(self, outputlevel=0):
         phaseList = self.phase_dict.keys()
         phaseList.sort()
         for A in phaseList:
@@ -87,6 +90,7 @@ class StreamLL:
             self.phase_dict[A].setPressure(self.p)
         
         x_init = []
+        variableBounds = []
         index = 0
         for A in phaseList:
             moleculeList = self.phase_dict[A].moleNumbers().keys()
@@ -96,19 +100,22 @@ class StreamLL:
             for a in moleculeList:
                 print a, index, N[a]
                 x_init.append( N[a] )
+                variableBounds.append( [0.0, self.moleNumbers[a]] )
                 index += 1
         print x_init
+        print variableBounds
         
         res = self.moleBalance(x_init)
         print 'res=', res
 
         print 'G=', self.gibbsFreeEnergy(x_init)
-#        x_equil = fmin_slsqp(self.gibbsFreeEnergy,
-#                             initialStateVariables,
-#                             f_eqcons=self.moleBalance,
-#                             bounds=variableBounds,
-#                             iprint=outputlevel,
-#                             )
+
+        x_equil = fmin_slsqp(self.gibbsFreeEnergy,
+                             x_init,
+                             f_eqcons=self.moleBalance,
+                             bounds=variableBounds,
+                             iprint=outputlevel,
+                             )
 
 
 ################################################################################

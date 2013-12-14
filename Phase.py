@@ -74,5 +74,6 @@ class Phase:
         for i in self.conc:
             if (self.conc[i] > 0.0):
                 G += self.conc[i]*mu[i]
+#        print self.conc
         return G
 
