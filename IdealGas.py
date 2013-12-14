@@ -21,16 +21,13 @@ class IdealGas(Phase):
         print "Ideal Gas"
 
     def chemicalPotential(self):
-        Ntot = 0.0
-        for i in self.conc:
-            Ntot += self.conc[i]
-        for i in self.conc:
-            self.x[i] = self.conc[i]/Ntot
-
+        self.set_x()
         self.setReferenceState()
         mu = {}
         for i in self.conc:
-            mu[i] = self.mu_ref[i] + R*self.T*log(self.x[i])
+            mu[i] = -1.0e30
+            if (self.x[i] > 0.0):
+                mu[i] = self.mu_ref[i] + R*self.T*log(self.x[i])
         return mu
 
     def setReferenceState(self):
