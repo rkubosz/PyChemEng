@@ -15,14 +15,15 @@ def validate(output, expected, error=0.025):
     if relativeError(output, expected) > error:
         raise Exception("Failed test with error of "+str(relativeError(output, expected)))
 
+#Test that elemental data can be accessed
 from Elements import elements
-
 elements[2]
 elements[(1,2)]
 elements["C"]
 elements["e-"]
 elements["n"]
 
+#Test streams
 from Stream import IdealGasStream
 
 Input=IdealGasStream(300, {"C2H5OH":1})

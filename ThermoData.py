@@ -8,11 +8,10 @@ from Data import speciesData, R, T0, P0
 # Fit function registration
 ####################################################################
 #fitFunctions is a dictionary of functions used for data fitting. Each
-#function must take two arguments, T and Coeffs. For each fit
-#function, you will need to provide two integrated variants.
+#function must take two arguments, X and Coeffs. 
 fitFunctions={}
 
-def registerFitFunction(name, function, integratedfunction, integratedfunctionOverT):
+def registerCpFitFunction(name, function, integratedfunction, integratedfunctionOverT):
     if name in fitFunctions:
         raise Exception("This function name is already in use!")
     fitFunctions[name] = function
@@ -20,13 +19,13 @@ def registerFitFunction(name, function, integratedfunction, integratedfunctionOv
     fitFunctions[name+"IntegratedOverT"] = integratedfunctionOverT
 
 #When registering a new fit function, you need to add the function, its integral, and the integral of (function/T)
-registerFitFunction("Poly",
-                    #The function (f)
-                    lambda T, C : sum([constant * (T ** order) for constant, order in C]),
-                    #The integrated function (f) (without the integration constant)
-                    lambda T, C : sum([constant * math.log(T) if order == -1 else constant * (T ** (order+1)) / (order+1) for constant, order in C]),
-                    #The integrated function over temperature (f/T)
-                    lambda T, C : sum([constant * math.log(T) if order == 0 else constant * (T ** (order)) / (order) for constant, order in C]))
+registerCpFitFunction("Poly",
+                      #The function (f)
+                      lambda T, C : sum([constant * (T ** order) for constant, order in C]),
+                      #The integrated function (f) (without the integration constant)
+                      lambda T, C : sum([constant * math.log(T) if order == -1 else constant * (T ** (order+1)) / (order+1) for constant, order in C]),
+                      #The integrated function over temperature (f/T)
+                      lambda T, C : sum([constant * math.log(T) if order == 0 else constant * (T ** (order)) / (order) for constant, order in C]))
 
 ####################################################################
 # Thermodynamic Data Structures
