@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 from Components import Components
-from ThermoData import Cp, Hf, S
-from Data import R, T0, P0
+from Data import R, T0, P0, speciesData
+#Ensure that the thermodata is loaded
+import ThermoData
 import math
 	  
 ####################################################################
@@ -11,9 +12,9 @@ class IdealGasStream():
     """A class which represents an ideal gas stream of Components and
     their temperature"""
     components = Components()
-    T = 0
-    P = 0
-    def __init__(self, T, components, P=1.01325e5):
+    T = T0
+    P = P0
+    def __init__(self, T, components, P=P0):
         """The constructor for a stream"""
         self.T = T
         self.components = Components(components)
@@ -23,7 +24,7 @@ class IdealGasStream():
         """A calculation of the heat capacity (Cp) of the Stream at a temperature T. If T is not given, then it uses the stream temperature"""
         if T == None:
             T = self.T
-        return sum([flow * Cp(x, T) for x, flow in self.components.iteritems()])
+        return sum([flow * speciesData[x].Cp0(T, phase=0) for x, flow in self.components.iteritems()])
 
     def internalEnergy(self, T=None):# J
         if T == None:
@@ -40,7 +41,7 @@ class IdealGasStream():
         """A calculation of the enthalpy (H) of the Stream at a temperature T. If T is not given, then it uses the stream temperature"""
         if T == None:
             T = self.T
-        return sum([flow * Hf(x, T) for x, flow in self.components.iteritems()])
+        return sum([flow * speciesData[x].Hf0(T, phase=0) for x, flow in self.components.iteritems()])
 
     def setEnthalpy(self, enthalpy): # J
         import scipy
@@ -53,7 +54,7 @@ class IdealGasStream():
             T = self.T
         total = self.components.total()
         #Individual component entropy
-        componentEntropy = sum(flow * S(x, T) for x, flow in self.components.iteritems())
+        componentEntropy = sum(flow * speciesData[x].S0(T, phase=0) for x, flow in self.components.iteritems())
         #Assuming ideal mixing entropy!
         mixingEntropy = - R * sum([flow * math.log((flow + 0.0) / total) for x, flow in self.components.iteritems() if flow != 0])
         pressureEntropy =  - R * total * math.log(self.P / P0)

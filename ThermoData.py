@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import math
 from Components import Components
-from Data import speciesData, SpeciesDataType, registerSpecies, registerCpFitFunction, relativeError
+from Data import T0, speciesData, SpeciesDataType, registerSpecies, registerCpFitFunction, relativeError
 
 ##Add the NASA polynomial
 registerCpFitFunction("Poly",
@@ -67,8 +67,7 @@ def parseNASADataFile(filename, quiet=True):
         startline=linecount
 
         ######NEED A SMART COMPONENT PARSER#####
-        component=line.split()[0]
-        comments=line.split()[1:]
+        firstline = line.strip()
         ########################################
         linecount += 1
         line = lineit.next()
@@ -127,32 +126,54 @@ def parseNASADataFile(filename, quiet=True):
 
                 fitFunction = "Poly"
                 constants = [[C[i], orders[i]] for i in range(Ncoeffs)]
-                coeffs.append(SpeciesDataType.ThermoDataType(Tmin, Tmax, fitFunction, constants, HConst, Sconst))            
-            #Skip non-gas phases for now
-            
-            registerSpecies(component, Components(MolecularFormula), MW)
-            for C in coeffs:
-                speciesData[component].registerPhaseCoeffs(C, phase)
-                    
-            if speciesData[component].inDataRange(298.15, phase):
-                error = relativeError(speciesData[component].Hf0(298.15, phase), HfRef)
-                if error > HfMaxError:
-                    raise Exception("Component \""+component+"\" has a relative error of "+str(error)+" for Hf at 298.15")
+                coeffs.append([Tmin, Tmax, fitFunction, constants, HConst, Sconst])
 
-            print "\rLoaded",len(speciesData),"thermodynamic components",
+            species, comments = firstline.split(" ", 1)
+            comments = comments.strip()
+            phasetype = "Gas"
+            if species[-1] == ")":
+                #This has a phase qualifier at the end in parentheses, grab it
+                import re
+                m = re.match('(.*?)\(([^()]*?)\)$', species)
+                species = m.group(1)
+                phasetype = m.group(2)
+                if phasetype == "L":
+                    phasetype = "Liquid"
+
+            #print firstline
+            #print "species =",species," phase =",phasetype
+            registerSpecies(species, Components(MolecularFormula), MW)
+            speciesData[species].registerPhase(phase, phasetype, comments=comments)
+            for C in coeffs:
+                speciesData[species].registerPhaseCoeffs(C, phase)
+                    
+            if quiet:
+                continue
+            
+            if speciesData[species].inDataRange(T0, phase):
+                HfCalc = speciesData[species].Hf0(T0, phase)
+                error = relativeError(HfCalc, HfRef)
+                if error > HfMaxError:
+                    print "Warning: Species \""+species+"\" and phase "+phasetype+" in file:"+filename+" at line "+str(linecount)+" has a Hf of "+str(HfRef)+" but a calculated value of "+str(HfCalc)+" a relative error of "+str(error)+" for Hf at "+str(T0)
 
         except Exception as e:
             if not quiet:
                 import traceback
                 print traceback.print_exc()
-                print "Error parsing record for",component,"in file:",filename,"at line",linecount
+                print "Error parsing record for",species,"in file:",filename,"at line",linecount
                 print "   ",e.message
             while linecount < startline + 1 + intervals * 3:
                 linecount += 1
                 lineit.next()
+    print ""
 
 import os
-###thermo.inp database takes priority over the Burcat database
+print "Loading thermodynamic data"
 parseNASADataFile(os.path.join(os.path.dirname(__file__), 'datafiles/thermo.inp'), quiet=False)
-parseNASADataFile(os.path.join(os.path.dirname(__file__), 'datafiles/NEWNASA.inp'), quiet=True)
+print "Loaded",len(speciesData),"thermodynamic species"
+
+#The Burcat database is very inconsistent which makes it hard to parse in Hf just due to its
+#non-standard formatting
+#parseNASADataFile(os.path.join(os.path.dirname(__file__),
+#'datafiles/NEWNASA.inp'), quiet=False)
 print ""
