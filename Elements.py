@@ -4,9 +4,6 @@ import os
 ####################################################################
 # Element data structures
 ####################################################################
-#elements is a dictionary of elements and their masses and proton counts (including electrons)
-from collections import namedtuple
-
 class ElementDatabaseType(dict):
     """
     This class is a dictionary of information on the elements. It can
@@ -73,6 +70,19 @@ class ElementDatabaseType(dict):
             return self.ElementData(name=isotopedata.name, Z=isotopedata.Z, mass=isotopedata.mass)
         else:
             return super(ElementDatabaseType, self).__getitem__(key)
+
+    def __contains__(self, key):
+        if type(key) is str:
+            return key in self.nameIndex
+        if type(key) is tuple:
+            element, N = key
+            if element not in self:
+                return False
+            elementdata = self[element]
+            return N in elementdata.isotopes
+        else:
+            return super(ElementDatabaseType, self).__contains__(key)
+        
         
     def ParseTableData(self, filename):
         """This function initialises the data on all isotopes (the
@@ -170,7 +180,7 @@ class ElementDatabaseType(dict):
 ####################################################################
 # Periodic Table of elements data
 ####################################################################
-
+#elements is a dictionary of elements and their masses and proton counts (including electrons)
 elements = ElementDatabaseType()
 elements.ParseTableData(os.path.join(os.path.dirname(__file__), 'datafiles/mass.mas03round.txt'))
 elements.ParseIsotopicCompositionsFile(os.path.join(os.path.dirname(__file__), 'datafiles/isotopicCompositions.inp'))

@@ -1,24 +1,9 @@
 #!/usr/bin/env python
 import math
-from Elements import elements
 from Components import Components
-from Data import speciesData, R, T0, P0
+from Data import speciesData, SpeciesDataType, registerSpecies, registerCpFitFunction, relativeError
 
-####################################################################
-# Fit function registration
-####################################################################
-#fitFunctions is a dictionary of functions used for data fitting. Each
-#function must take two arguments, X and Coeffs. 
-fitFunctions={}
-
-def registerCpFitFunction(name, function, integratedfunction, integratedfunctionOverT):
-    if name in fitFunctions:
-        raise Exception("This function name is already in use!")
-    fitFunctions[name] = function
-    fitFunctions[name+"Integrated"] = integratedfunction
-    fitFunctions[name+"IntegratedOverT"] = integratedfunctionOverT
-
-#When registering a new fit function, you need to add the function, its integral, and the integral of (function/T)
+##Add the NASA polynomial
 registerCpFitFunction("Poly",
                       #The function (f)
                       lambda T, C : sum([constant * (T ** order) for constant, order in C]),
@@ -28,77 +13,14 @@ registerCpFitFunction("Poly",
                       lambda T, C : sum([constant * math.log(T) if order == 0 else constant * (T ** (order)) / (order) for constant, order in C]))
 
 ####################################################################
-# Thermodynamic Data Structures
-####################################################################
-#SpeciesData is a dictionary of a list of named tuples of of Cp/H/S
-#coefficient data.  Tmin and Tmax are the valid temperature limits for
-#each data entry. fitFunction is the name of the function used to
-#correlate the data (see next section). constants are the coefficients
-#for the fit function. HConst is the integration constant in Hf for
-#enthalpy calculations and SConst is the integration constant for the
-#entropy.
-from collections import namedtuple
-ThermoDataType = namedtuple('ThermoData', ['Tmin', 'Tmax', 'fitFunction', 'constants', 'HConst', 'SConst'])
-SpeciesDataType = namedtuple('SpeciesData', ['elementalComposition','dataset', 'mass'])
-
-def inDataRange(component, T):
-    for Tmin, Tmax, func, C, Hconst, Sconst in speciesData[component].dataset:
-        if T >= Tmin and T <= Tmax:
-            return True
-    return False
-
-def Cp(component, T):#J / mol K
-    for Tmin, Tmax, func, C, Hconst, Sconst in speciesData[component].dataset:
-        if T >= Tmin and T <= Tmax:
-            return R * fitFunctions[func](T, C)
-    raise Exception("Cannot find valid Cp expression for "+str(T)+"K")
-
-def Hf(component, T):#J / mol
-    for Tmin, Tmax, func, C, Hconst, Sconst in speciesData[component].dataset:
-        if T >= Tmin and T <= Tmax:
-            return R * (fitFunctions[func+"Integrated"](T, C) + Hconst)
-    raise Exception("Cannot find valid Hf expression for "+str(T)+"K")
-
-def S(component, T):#J / K
-    for Tmin, Tmax, func, C, Hconst, Sconst in speciesData[component].dataset:
-        if T >= Tmin and T <= Tmax:
-            return R * (fitFunctions[func+"IntegratedOverT"](T, C) + Sconst)
-    raise Exception("Cannot find valid expression for the temperature T"+str(T))
-
-class PrexistingComponentError(Exception):
-    pass
-
-def registerComponent(component, dataset, elementalComposition, molMass=None):
-    if component in speciesData:
-        raise PrexistingComponentError("Species \""+component+"\" already exists in the database")
-    #Check the elemental composition has no unknown elements and calculate the molecular mass
-    calcMolMass = 0
-    for element, amount in elementalComposition.iteritems():
-        if element not in elements:
-            raise Exception("Component "+component+" with composition "+str(elementalComposition)+" has an unknown element, "+element)
-        else:
-            calcMolMass += elements[element].mass * amount
-    if molMass is None:
-        molMass = calcMolMass
-    else:
-        if relativeError(calcMolMass, molMass) > 0.0001:
-            raise Exception("Calculated component mass is significantly different when compared to passed value. Is the elemental composition or molMass correct?\n" + component + ", " + str(elementalComposition) + ", " + str(molMass) + ", " + str(calcMolMass))
-    speciesData[component] = SpeciesDataType(elementalComposition, dataset, molMass)
-
-    
-####################################################################
 # Test functions
 ####################################################################
 HfMaxError=0.01 #1% error
 MWMaxError=0.0003 #0.03% error
 
-def relativeError(val, ref):
-    return math.fabs((val - ref) / (ref + (ref==0)))
-
 ####################################################################
 # NASA Glenn Thermodynamic Database
 ####################################################################
-
 def parseFortanFloat(string):
     #First, try to parse the exponentiated formats
     data = string.split('D')
@@ -205,20 +127,15 @@ def parseNASADataFile(filename, quiet=True):
 
                 fitFunction = "Poly"
                 constants = [[C[i], orders[i]] for i in range(Ncoeffs)]
-                coeffs.append(ThermoDataType(Tmin, Tmax, fitFunction, constants, HConst, Sconst))
-            
+                coeffs.append(SpeciesDataType.ThermoDataType(Tmin, Tmax, fitFunction, constants, HConst, Sconst))            
             #Skip non-gas phases for now
-            if phase != 0:
-                continue
             
-            try:
-                registerComponent(component, coeffs, Components(MolecularFormula), MW)
-            except PrexistingComponentError:
-                if not quiet:
-                    print "Failed to add component",component," to database as component already exists:File:",filename,"at line",linecount
+            registerSpecies(component, Components(MolecularFormula), MW)
+            for C in coeffs:
+                speciesData[component].registerPhaseCoeffs(C, phase)
                     
-            if inDataRange(component, 298.15):
-                error = relativeError(Hf(component, 298.15), HfRef)
+            if speciesData[component].inDataRange(298.15, phase):
+                error = relativeError(speciesData[component].Hf0(298.15, phase), HfRef)
                 if error > HfMaxError:
                     raise Exception("Component \""+component+"\" has a relative error of "+str(error)+" for Hf at 298.15")
 
@@ -236,6 +153,6 @@ def parseNASADataFile(filename, quiet=True):
 
 import os
 ###thermo.inp database takes priority over the Burcat database
-parseNASADataFile(os.path.join(os.path.dirname(__file__), 'thermo.inp'), quiet=False)
-parseNASADataFile(os.path.join(os.path.dirname(__file__), 'NEWNASA.inp'), quiet=True)
+parseNASADataFile(os.path.join(os.path.dirname(__file__), 'datafiles/thermo.inp'), quiet=False)
+parseNASADataFile(os.path.join(os.path.dirname(__file__), 'datafiles/NEWNASA.inp'), quiet=True)
 print ""
