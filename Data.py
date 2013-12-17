@@ -18,6 +18,11 @@ from Elements import elements
 #function must take two arguments, T and Coeffs.
 fitFunctions={}
 
+def registerFitFunction(name, function):
+    if name in fitFunctions:
+        raise Exception("This function name is already in use!")
+    fitFunctions[name] = function
+
 def registerCpFitFunction(name, function, integratedfunction, integratedfunctionOverT):
     if name in fitFunctions:
         raise Exception("This function name is already in use!")
@@ -42,7 +47,8 @@ def relativeError(val, ref):
 speciesData={}
 
 from collections import namedtuple
-ConstantsType = namedtuple('ConstantsType', ['Tmin', 'Tmax', 'fitFunction', 'constants', 'HConst', 'SConst'])
+ThermoConstantsType = namedtuple('ThermoConstantsType', ['Tmin', 'Tmax', 'fitFunction', 'constants', 'HConst', 'SConst'])
+AntoineConstantsType = namedtuple('AntoineConstantsType', ['Tmin', 'Tmax', 'fitFunction', 'constants'])
 
 class SpeciesDataType:
     """
@@ -65,6 +71,7 @@ class SpeciesDataType:
         self.mass = mass
         self.elementalComposition = elementalComposition
         self.phases = {}
+        self.antoineData = []
 
     def __str__(self):
         output = "Species{"+self.name+", ["
@@ -88,9 +95,13 @@ class SpeciesDataType:
         #the phase existed before)
         if phasename != self.phases[phasenumber].name:
             raise Exception("Trying to register phase "+phasename+":"+str(phasenumber)+" but we have "+str(self.phaseNames))
+
+    def registerAntoineData(self, Tmin, Tmax, fitFunction, constants):
+        self.antoineData.append(AntoineConstantsType(Tmin, Tmax, fitFunction, constants))
+        self.antoineData.sort(key = lambda x : (x.Tmin, x.Tmax))
         
     def registerPhaseCoeffs(self, Coeffs, phase):
-        self.phases[phase].constants.append(ConstantsType(*Coeffs))
+        self.phases[phase].constants.append(ThermoConstantsType(*Coeffs))
         #Ensure that the data is sorted from lowest to highest temperature range
         self.phases[phase].constants.sort(key = lambda x : (x.Tmin, x.Tmax))
         
@@ -111,6 +122,12 @@ class SpeciesDataType:
             if T >= Tmin and T <= Tmax:
                 return R * (fitFunctions[func+"IntegratedOverT"](T, C) + Sconst)
         raise Exception("Cannot find valid S0 expression for "+self.name+" at "+str(T)+"K")
+
+    def Psat(self, T):
+        for Tmin, Tmax, func, C in self.antoineData:
+            if T >= Tmin and T <= Tmax:
+                return fitFunctions[func](T, C)
+        raise Exception("Cannot find valid Psat expression for "+self.name+" at "+str(T)+"K")
 
     def Gibbs0(self, T, phase):
         return Hf0(T, phase) - T * S0(T, phase)

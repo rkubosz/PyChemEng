@@ -15,6 +15,9 @@ def validate(output, expected, error=0.025):
     if relativeError(output, expected) > error:
         raise Exception("Failed test with error of "+str(relativeError(output, expected)))
 
+##################################################################
+# Elements
+##################################################################
 #Test that elemental data can be accessed
 from Elements import elements
 elements[2]
@@ -23,6 +26,16 @@ elements["C"]
 elements["e-"]
 elements["n"]
 
+##################################################################
+# Antione coefficients
+##################################################################
+import AntoineData
+from Data import speciesData
+validate(speciesData['CO2'].Psat(400), 4.89027e5)
+
+##################################################################
+# Stream
+##################################################################
 #Test streams
 from Stream import IdealGasStream
 
@@ -72,7 +85,9 @@ validate(Output.components["N2"], 1.5)
 validate(Output.components["O2"], 3)
 validate(Output.enthalpy(), Input1.enthalpy() + Input2.enthalpy())
 
-### Test reaction calculations
+##################################################################
+# Reaction
+##################################################################
 #When checking the calculations below in GasEq, ensure that the
 #reactants are present in the products, otherwise GasEq does not
 #converge!
