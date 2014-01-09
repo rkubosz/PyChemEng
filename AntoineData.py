@@ -2,6 +2,7 @@
 import math
 from Components import Components
 import ThermoData 
+import os
 from Data import T0, speciesData, registerFitFunction
 
 ####################################################################
@@ -23,8 +24,8 @@ for line in datafile:
         continue
     speciesData[datafields[0]].registerAntoineData(Tmin = float(datafields[1]),
                                                    Tmax = float(datafields[2]),
-                                                   fitFunction = datafields[2], 
-                                                   constants = map(float, datafields[3:]))
+                                                   fitFunction = datafields[3], 
+                                                   constants = map(float, datafields[4:]))
 
 #Examples of manual loading
 #Taken from the NIST webbook

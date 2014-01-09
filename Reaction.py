@@ -65,10 +65,10 @@ def IsothermalReact(InputStream, constP=False, outputlevel=0):
     def variablesToStream(variables):
         """Turns the optimised variables into a Stream class for
         calculations."""
-        output = IdealGasStream(InputStream.T, {component: max(variables[index], 0.0) for index, component in enumerate(indexToComponent)})
-        if constP:
-            output.P = InputStream.P
-        else:
+        from copy import copy 
+        output = copy(InputStream)
+        output.components = Components({component: max(variables[index], 0.0) for index, component in enumerate(indexToComponent)})
+        if not constP:
             output.P = InputStream.P * output.components.total() * output.T / (InputStream.components.total() * InputStream.T)
         return output
 

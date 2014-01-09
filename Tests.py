@@ -39,7 +39,7 @@ validate(speciesData['CO2'].Psat(400), 4.89027e5)
 #Test streams
 from Stream import IdealGasStream
 
-Input=IdealGasStream(300, {"C2H5OH":1})
+Input=IdealGasStream(300, {"C2H5OH":1}, P=1e5)
 validate(len(Input.components.elementalComposition()), 3)
 validate(Input.components.elementalComposition()["C"], 2)
 validate(Input.components.elementalComposition()["H"], 6)
@@ -47,25 +47,25 @@ validate(Input.components.elementalComposition()["O"], 1)
 
 #Reference test from GasEq program
 #print "N2 test"
-Input=IdealGasStream(300, {"N2":0.79})
+Input=IdealGasStream(300, {"N2":0.79}, P=1e5)
 validate(Input.Cp() / Input.components.total(), 29.075)
 validate(Input.enthalpy() / Input.components.total() / Input.components.avgMolarMass(), 1.97)
 validate(Input.entropy() * 1000.0 / Input.components.total() / Input.components.avgMolarMass(), 6842.1)
 validate(Input.gibbsFreeEnergy() / Input.components.total() / Input.components.avgMolarMass(), -2050.66)
 #print "N2 O2 test"
-Input=IdealGasStream(300, {"N2":0.79, "O2":0.21})
+Input=IdealGasStream(300, {"N2":0.79, "O2":0.21}, P=1e5)
 validate(Input.Cp() / Input.components.total(), 29.129)
 validate(Input.enthalpy() / Input.components.total() / Input.components.avgMolarMass(), 1.90)
 validate(Input.entropy() * 1000.0 / Input.components.total() / Input.components.avgMolarMass(), 6890.37)
 validate(Input.gibbsFreeEnergy() / Input.components.total() / Input.components.avgMolarMass(), -2065.21)
 #print "Pre-Burn test 1: low temp"
-Input=IdealGasStream(300, {"CH4":0.105, "N2":0.79, "O2":0.21})
+Input=IdealGasStream(300, {"CH4":0.105, "N2":0.79, "O2":0.21}, P=1e5)
 validate(Input.Cp() / Input.components.total(), 29.711)
 validate(Input.enthalpy() / Input.components.total() / Input.components.avgMolarMass(), -255.50)
 validate(Input.entropy() * 1000.0 / Input.components.total() / Input.components.avgMolarMass(), 7245.25)
 validate(Input.gibbsFreeEnergy() / Input.components.total() / Input.components.avgMolarMass(), -2429.07)
 #print "Pre-Burn test 1: high temp"
-Input=IdealGasStream(1000, {"CH4":0.105, "N2":0.79, "O2":0.21})
+Input=IdealGasStream(1000, {"CH4":0.105, "N2":0.79, "O2":0.21}, P=1e5)
 validate(Input.Cp() / Input.components.total(), 36.918)
 validate(Input.enthalpy() / Input.components.total() / Input.components.avgMolarMass(), 585.60)
 validate(Input.entropy() * 1000.0 / Input.components.total() / Input.components.avgMolarMass(), 8660.58)
@@ -78,8 +78,8 @@ validate(Input.entropy() * 1000.0 / Input.components.total() / Input.components.
 validate(Input.gibbsFreeEnergy() / Input.components.total() / Input.components.avgMolarMass(), -24856.19)
 
 #Test mixing of streams
-Input1 = IdealGasStream(300, {"N2":1, "O2":1})
-Input2 = IdealGasStream(600, {"N2":0.5, "O2":2})
+Input1 = IdealGasStream(300, {"N2":1, "O2":1}, P=1e5)
+Input2 = IdealGasStream(600, {"N2":0.5, "O2":2}, P=1e5)
 Output = Input1 + Input2
 validate(Output.components["N2"], 1.5)
 validate(Output.components["O2"], 3)
@@ -150,7 +150,7 @@ validate(OutGas.components["O2"], 0.00634)
 #validate(OutGas.components["O"], 3.934e-4)
 
 #Adiabatic flame test, calculated values from http://direns.mines-paristech.fr/Sites/Thopt/en/co/applet-calc-comb.html
-InputS = IdealGasStream(300, {"CH4":1, "H2O":0, "O2":2.0, "N2":2.0 / 0.21 * 0.781, "Ar":2.0 / 0.21 * 0.009, "CO2":0})
+InputS = IdealGasStream(300, {"CH4":1, "H2O":0, "O2":2.0, "N2":2.0 / 0.21 * 0.781, "Ar":2.0 / 0.21 * 0.009, "CO2":0}, P=1e5)
 OutGas = Reaction.react(InputS, {}, outputlevel=0, constP=True, constT=False)
 validate(OutGas.T, 2332.8)
 normComp = OutGas.components.normalised()
