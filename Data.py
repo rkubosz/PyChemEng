@@ -65,6 +65,9 @@ class SpeciesDataType:
             for data in self.constants:
                 output += "["+str(data.Tmin)+", "+str(data.Tmax)+"] "
             return output + "}"
+        
+        def __repr__(self):
+            return self.__str__()
 
     def __init__(self, name, mass, elementalComposition):
         self.name = name
@@ -78,6 +81,9 @@ class SpeciesDataType:
         for num, phase in self.phases.iteritems():
             output += str(num)+":"+phase.name+", "
         return output[:-2] +"]}"
+
+    def __repr__(self):
+        return self.__str__()
 
     def inDataRange(self, T, phase):
         for Tmin, Tmax, func, C, Hconst, Sconst in self.phases[phase].constants:

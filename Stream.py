@@ -114,3 +114,39 @@ class IdealGasStream(Phase):
 
     def volume(self):
         return self.components.total() * R * self.T / self.P
+
+####################################################################
+# Incompressible Solid
+####################################################################
+class IncompressibleSolid(Phase):
+    def __init__(self, T, components, P, molardensity, phaseID):
+        super(IncompressibleSolid, self).__init__(T, components, P, phaseID)
+        self.molardensity = molardensity
+
+    #As the enthalpy of an ideal gas is constant with pressure, we do
+    #not need to override the base class definition
+    #def enthalpy(self):
+
+    def internalEnergy(self):# Units are J
+        return self.enthalpy() - P * self.volume()
+
+    def entropy(self): # J / K
+        """A calculation of the entropy (S) of the phase"""
+        return super(IdealGasStream, self).entropy()
+
+    def helmholtzFreeEnergy(self): #J
+        """A calculation of the Gibbs free energy (G) of the Stream at a temperature T. If T is not given, then it uses the stream temperature"""
+        return self.gibbsFreeEnergy() - P * self.volume()
+
+    def volume(self):
+        return self.components.total() / self.molardensity
+
+    def __add__(self, other):
+        """An operator to allow mixing of phases (with calculation of exit temperature)"""
+        if type(self) != type(other):
+            raise Exception("Cannot mix two phases of different types, "+str(self)+"+"+str(other))
+        #Make an output stream with the correct concentration
+        output = self.__class__((self.T + other.T) / 2.0, self.components + other.components, P=min(self.P, other.P))
+        output.molardensity = output.components.total() / (self.volume() + other.volume())
+        output.setEnthalpy(self.enthalpy() + other.enthalpy())
+        return output
