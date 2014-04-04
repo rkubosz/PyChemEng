@@ -44,6 +44,8 @@ class ElementDatabaseType(dict):
 
             def __str__(self):
                 return "Isotope{"+self.name+", Z="+str(self.Z)+", N="+str(self.N)+", M="+str(self.mass)+"("+str(self.mass_uncertainty)+"), P="+str(self.abundance)+"}"
+            def __repr__(self):
+                return self.__str__(self)
         
         def __init__(self, name, Z, mass=0):
             self.name = name
