@@ -9,12 +9,19 @@ from Data import T0, speciesData, registerFitFunction
 # Antoine polynomials
 ####################################################################
 #Functions should take T as Kelvin and return P as Pascals
-registerFitFunction("Antoine", lambda T, C : 1e5 * 10.0 ** (C[0] - C[1] / (T + C[2])))
+registerFitFunction("Antoine", lambda T, C : 1e5 * (10.0 ** (C[0] - C[1] / (T + C[2]))))
 
+import math
+registerFitFunction("AntoineCnR", lambda T, C : 133.2895 * math.exp(C[0] - C[1] / (T + C[2])))
 
 ####################################################################
 # Datafile loading
 ####################################################################
+def parseTemperature(string):
+    if string[-1] == 'C':
+        return float(string[:-1])+273.15
+    return float(string)
+
 datafile = open(os.path.join(os.path.dirname(__file__), 'datafiles/antoine.inp'), 'r')
 for line in datafile:
     datafields = line.split()
@@ -22,8 +29,9 @@ for line in datafile:
     #Skip comments or other problems
     if line[0] == "#" or len(datafields) == 0:
         continue
-    speciesData[datafields[0]].registerAntoineData(Tmin = float(datafields[1]),
-                                                   Tmax = float(datafields[2]),
+
+    speciesData[datafields[0]].registerAntoineData(Tmin = parseTemperature(datafields[1]),
+                                                   Tmax = parseTemperature(datafields[2]),
                                                    fitFunction = datafields[3], 
                                                    constants = map(float, datafields[4:]))
 

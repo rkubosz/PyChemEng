@@ -8,7 +8,15 @@
 
 #Available FitFunctions are defined in AntoineData.py
 
-#Taken from NIST webbook (http://webbook.nist.gov/cgi/cbook.cgi?ID=C64175&Units=SI&Mask=4&Type=ANTOINE)
-CO2 292.77 366.63 Antoine 5.24677 1598.673 -46.424
+#The order is from high-priority to low. The highest function with a
+#matching temperature range is always used. The ranges must overlap
+#form a continuous valid range.
+
+#http://webbook.nist.gov/cgi/cbook.cgi?ID=C64175&Units=SI&Mask=4&Type=ANTOINE)
 CO2 273.0  351.7  Antoine 5.37229 1670.409 -40.191
+CO2 292.77 366.63 Antoine 5.24677 1598.673 -46.424
 CO2 364.8  513.91 Antoine 4.92531 1432.526 -61.819
+
+#C&R vol 6
+C6H6 7.0C 104.0C AntoineCnR 15.9008 2788.51 -52.36
+C7H8 7.0C 137.0C AntoineCnR 16.0137 3096.52 -53.67

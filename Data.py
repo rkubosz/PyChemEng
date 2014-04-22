@@ -104,7 +104,6 @@ class SpeciesDataType:
 
     def registerAntoineData(self, Tmin, Tmax, fitFunction, constants):
         self.antoineData.append(AntoineConstantsType(Tmin, Tmax, fitFunction, constants))
-        self.antoineData.sort(key = lambda x : (x.Tmin, x.Tmax))
         
     def registerPhaseCoeffs(self, Coeffs, phase):
         self.phases[phase].constants.append(ThermoConstantsType(*Coeffs))
@@ -134,6 +133,14 @@ class SpeciesDataType:
             if T >= Tmin and T <= Tmax:
                 return fitFunctions[func](T, C)
         raise Exception("Cannot find valid Psat expression for "+self.name+" at "+str(T)+"K")
+
+    def PsatTRange(self):
+        minval = 1e300
+        maxval = -1e300
+        for Tmin, Tmax, func, C in self.antoineData:
+            minval = min(Tmin, minval)
+            maxval = max(Tmax, maxval)
+        return [minval, maxval]
 
     def Gibbs0(self, T, phase):
         return Hf0(T, phase) - T * S0(T, phase)
