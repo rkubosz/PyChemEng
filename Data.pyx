@@ -143,7 +143,7 @@ class SpeciesDataType:
         return [minval, maxval]
 
     def Gibbs0(self, T, phase):
-        return Hf0(T, phase) - T * S0(T, phase)
+        return self.Hf0(T, phase) - T * self.S0(T, phase)
 
 def registerSpecies(name, elementalComposition, mass=None):
     calcMass = 0

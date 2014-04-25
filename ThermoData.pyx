@@ -167,13 +167,12 @@ def parseNASADataFile(filename, quiet=True):
                 lineit.next()
     print ""
 
-import os
-print "Loading thermodynamic data"
-parseNASADataFile(os.path.join(os.path.dirname(__file__), 'datafiles/thermo.inp'), quiet=False)
-print "Loaded",len(speciesData),"thermodynamic species"
+def initDataDir(directory):
+    import os
+    print "Loading thermodynamic data"
+    parseNASADataFile(os.path.join(directory, 'thermo.inp'), quiet=False)
+    print "Loaded",len(speciesData),"thermodynamic species"
 
-#The Burcat database is very inconsistent which makes it hard to parse in Hf just due to its
-#non-standard formatting
-#parseNASADataFile(os.path.join(os.path.dirname(__file__),
-#'datafiles/NEWNASA.inp'), quiet=False)
-print ""
+    #The Burcat database is very inconsistent which makes it hard to
+    #parse in Hf just due to its non-standard formatting
+    #parseNASADataFile(os.path.join(directory, '/NEWNASA.inp'), quiet=False)

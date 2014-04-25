@@ -128,7 +128,7 @@ class IncompressibleSolid(Phase):
     #def enthalpy(self):
 
     def internalEnergy(self):# Units are J
-        return self.enthalpy() - P * self.volume()
+        return self.enthalpy() - self.P * self.volume()
 
     def entropy(self): # J / K
         """A calculation of the entropy (S) of the phase"""
@@ -136,7 +136,7 @@ class IncompressibleSolid(Phase):
 
     def helmholtzFreeEnergy(self): #J
         """A calculation of the Gibbs free energy (G) of the Stream at a temperature T. If T is not given, then it uses the stream temperature"""
-        return self.gibbsFreeEnergy() - P * self.volume()
+        return self.gibbsFreeEnergy() - self.P * self.volume()
 
     def volume(self):
         return self.components.total() / self.molardensity

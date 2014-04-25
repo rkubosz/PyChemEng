@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import os
 
 ####################################################################
 # Element data structures
@@ -183,16 +182,20 @@ class ElementDatabaseType(dict):
 # Periodic Table of elements data
 ####################################################################
 #elements is a dictionary of elements and their masses and proton counts (including electrons)
-elements = ElementDatabaseType()
-elements.ParseTableData(os.path.join(os.path.dirname(__file__), 'datafiles/mass.mas03round.txt'))
-elements.ParseIsotopicCompositionsFile(os.path.join(os.path.dirname(__file__), 'datafiles/isotopicCompositions.inp'))
 
-####Add some special cases
-elements['H'].isotopes[1].name = "D"
-elements['H'].isotopes[2].name = "T"
-elements.nameIndex["D"] = (1,1)
-elements.nameIndex["T"] = (1,2)
-####Also add a special entry for electrons (using Z=-1 as Z=0 is taken
-####by neutrons). This is needed for reactions involving ions.
-elements.nameIndex["e-"] = -1
-elements[-1] = ElementDatabaseType.ElementData(name="e-", Z=-1, mass=5.4857990943e-4)
+elements = ElementDatabaseType()
+
+def initDataDir(directory):
+    import os
+    elements.ParseTableData(os.path.join(directory, 'mass.mas03round.txt'))
+    elements.ParseIsotopicCompositionsFile(os.path.join(directory, 'isotopicCompositions.inp'))
+
+    ####Add some special cases
+    elements['H'].isotopes[1].name = "D"
+    elements['H'].isotopes[2].name = "T"
+    elements.nameIndex["D"] = (1,1)
+    elements.nameIndex["T"] = (1,2)
+    ####Also add a special entry for electrons (using Z=-1 as Z=0 is taken
+    ####by neutrons). This is needed for reactions involving ions.
+    elements.nameIndex["e-"] = -1
+    elements[-1] = ElementDatabaseType.ElementData(name="e-", Z=-1, mass=5.4857990943e-4)
