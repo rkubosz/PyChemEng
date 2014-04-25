@@ -1,9 +1,63 @@
 #!/usr/bin/env python
 
+
+cdef class IsotopeData:
+    """
+    This structure holds information on an isotope, including
+    its mass, and abundance when available.
+    """
+    cdef public int Z
+    cdef public int N
+    cdef public double mass
+    cdef public double mass_uncertainty
+    cdef public double abundance
+    cdef public str name
+    def __init__(self, name, Z, N, mass, mass_uncertainty, abundance = 0):
+        self.name = name
+        self.Z = Z
+        self.N = N
+        self.mass = mass #Mass of the isotope in U
+        self.mass_uncertainty = mass_uncertainty
+        self.abundance = abundance #Natural occurance of the isotope (fraction) if available
+
+    def __str__(self):
+        return "Isotope{"+self.name+", Z="+str(self.Z)+", N="+str(self.N)+", M="+str(self.mass)+"("+str(self.mass_uncertainty)+"), P="+str(self.abundance)+"}"
+    
+    def __repr__(self):
+        return self.__str__(self)
+
+cdef class ElementData:
+    """
+    This class holds information on an element, including its
+    average atomic mass, and its known isotopes.
+    """
+
+    cdef public int Z
+    cdef public int N
+    cdef public double mass
+    cdef public str name
+    cdef public dict isotopes
+
+    
+    def __init__(self, name, Z, mass=0):
+        self.name = name
+        self.Z = Z
+        self.mass = mass
+        self.isotopes = {}
+
+    def __str__(self):
+        output="Element{"+self.name+", Z="+str(self.Z)+", AW="+str(self.mass)
+        if len(self.isotopes) != 0:
+            output+=", "+str(len(self.isotopes))+" isotopes"
+        return output+"}"
+    
+    def __repr__(self):
+        return self.name
+
 ####################################################################
 # Element data structures
 ####################################################################
-class ElementDatabaseType(dict):
+cdef class ElementDatabaseType:
     """
     This class is a dictionary of information on the elements. It can
     be accessed using four types of array access, e.g.
@@ -21,56 +75,25 @@ class ElementDatabaseType(dict):
 
     The data returned is of sub type ElementData.
     """
-    nameIndex = {} #A way to look up the proton number (Z) from an element name
     
-    class ElementData:
-        """
-        This class holds information on an element, including its
-        average atomic mass, and its known isotopes.
-        """
-        class IsotopeData:
-            """
-            This structure holds information on an isotope, including
-            its mass, and abundance when available.
-            """
-            def __init__(self, name, Z, N, mass, mass_uncertainty, abundance = 0):
-                self.name = name
-                self.Z = Z
-                self.N = N
-                self.mass = mass #Mass of the isotope in U
-                self.mass_uncertainty = mass_uncertainty
-                self.abundance = abundance #Natural occurance of the isotope (fraction) if available
+    cdef public dict nameIndex #A way to look up the proton number (Z) from an element name
+    cdef public dict data
 
-            def __str__(self):
-                return "Isotope{"+self.name+", Z="+str(self.Z)+", N="+str(self.N)+", M="+str(self.mass)+"("+str(self.mass_uncertainty)+"), P="+str(self.abundance)+"}"
-            def __repr__(self):
-                return self.__str__(self)
-        
-        def __init__(self, name, Z, mass=0):
-            self.name = name
-            self.Z = Z
-            self.mass = mass
-            self.isotopes = {}
-
-        def __str__(self):
-            output="Element{"+self.name+", Z="+str(self.Z)+", AW="+str(self.mass)
-            if len(self.isotopes) != 0:
-                output+=", "+str(len(self.isotopes))+" isotopes"
-            return output+"}"
-        
-        def __repr__(self):
-            return self.name
-            
     def __getitem__(self, key):
-        if type(key) is str:
-            return self[self.nameIndex[key]]
         if type(key) is tuple:
             element, N = key
-            elementdata = self[element]
+            elementdata = self.data[element]
             isotopedata = elementdata.isotopes[N]
-            return self.ElementData(name=isotopedata.name, Z=isotopedata.Z, mass=isotopedata.mass)
+            return ElementData(name=isotopedata.name, Z=isotopedata.Z, mass=isotopedata.mass)
+        if type(key) is str:
+            return self[self.nameIndex[key]]
+        return self.data[key]
+
+    def __setitem__(self, key, value):
+        if type(key) is str:
+            self.data[self.nameIndex[key]] = value
         else:
-            return super(ElementDatabaseType, self).__getitem__(key)
+            self.data[key] = value
 
     def __contains__(self, key):
         if type(key) is str:
@@ -79,17 +102,18 @@ class ElementDatabaseType(dict):
             element, N = key
             if element not in self:
                 return False
-            elementdata = self[element]
+            elementdata = self.data[element]
             return N in elementdata.isotopes
         else:
-            return super(ElementDatabaseType, self).__contains__(key)
-        
+            return key in self.data
         
     def ParseTableData(self, filename):
         """This function initialises the data on all isotopes (the
         data and isotopes member variables). This file contains no
         information on abundances which must be obtained from another
         file."""
+        self.data = {}
+        self.nameIndex = {}
         file = open(filename, "r")
         lineit = iter(file)
         try:
@@ -130,15 +154,11 @@ class ElementDatabaseType(dict):
                 mass_frac = float(line[100:112].strip().split('#')[0])
                 mass_unc = float(line[112:123].strip().split('#')[0])
                 #discard = line[123:124].strip()
-                if Z not in self:
-                    self[Z] = self.ElementData(name=element, Z=Z)
+                if Z not in self.data:
+                    self.data[Z] = ElementData(name=element, Z=Z)
                     self.nameIndex[element] = Z
 
-                self[Z].isotopes[N] = self.ElementData.IsotopeData(name=element,
-                                                                   N=N,
-                                                                   Z=Z,
-                                                                   mass=mass_int + mass_frac * 1e-6,
-                                                                   mass_uncertainty=mass_unc * 1e-6)
+                self[Z].isotopes[N] = IsotopeData(name=element, N=N, Z=Z, mass=mass_int + mass_frac * 1e-6, mass_uncertainty=mass_unc * 1e-6)
         except StopIteration:
             pass
 
@@ -184,7 +204,6 @@ class ElementDatabaseType(dict):
 #elements is a dictionary of elements and their masses and proton counts (including electrons)
 
 elements = ElementDatabaseType()
-
 def initDataDir(directory):
     import os
     elements.ParseTableData(os.path.join(directory, 'mass.mas03round.txt'))
@@ -198,4 +217,4 @@ def initDataDir(directory):
     ####Also add a special entry for electrons (using Z=-1 as Z=0 is taken
     ####by neutrons). This is needed for reactions involving ions.
     elements.nameIndex["e-"] = -1
-    elements[-1] = ElementDatabaseType.ElementData(name="e-", Z=-1, mass=5.4857990943e-4)
+    elements[-1] = ElementData(name="e-", Z=-1, mass=5.4857990943e-4)

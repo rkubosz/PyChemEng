@@ -1,60 +1,92 @@
 #!/usr/bin/env python
-import math
+#distutils: language = c++
+
 from Elements import elements
 from Data import speciesData
 
-####################################################################
-# Components class
-####################################################################
-class Components(dict):
-    """A class which represents a set of molar flows OR mole fractions OR elemental composition"""
-    def __add__(self, other):
-        """A + operator to allow mixing of components"""
-        output=Components(self)
-        for component in other:
-            if component in output:
-                output[component] += other[component]
-            else:
-                output[component] = other[component]
-        return output
+cdef class Components:
+   def __init__(self, dict entries):
+       for key, entry in entries.iteritems():
+           self._list[key] = entry
 
-    def __mul__(self, scale):
-        """A * operator to allow scaling of components (e.g. Components * 2)"""
-        scale=scale+0.0 #make sure the scale is a float!
-        output=Components()
-        for component, flow in self.iteritems():
-            output[component] = scale * flow
-        return output
+   cpdef Components copy(self):
+       cdef Components retval = Components.__new__(Components)
+       retval._list = self._list.copy()
+       return retval
 
-    __rmul__ = __mul__ #to allow right multiplications (e.g. 2 * Components)
+   cpdef Components mix(self, Components other):
+       for entry in other._list:
+           it = self._list.find(entry.first)
+           if it == self._list.end():
+               self._list.insert(entry)
+           else:
+               self._list[entry.first] += entry.second
 
-    def __div__(self, scale):
-        """A / operator to allow scaling of components (e.g. Components / 2)"""
-        return self * (1.0 / scale)
+   def __add__(self, Components other):
+       cdef Components copy = self.copy()
+       copy.mix(other)
+       return copy
 
-    def total(self):#mol
-        """Returns the total molar flow of all the components"""
-        return sum(flow for component, flow in self.iteritems())
+   def __mul__(self, double factor):
+       cdef Components copy = self.copy()
+       copy.scale(factor)
+       return copy
 
-    def normalised(self):
-        """Creates a copy of the component stream which is normalised (total molar flow of 1)"""
-        return self / self.total()
+   cpdef totalMass(self):
+       cdef double sum = 0.0
+       for entry in self._list:
+           entry.second * elements[entry.first].mass 
+       return sum
 
-    def totalMass(self):#g
-        """Returns the total mass flow"""
-        return sum(flow * elements[element].mass for element, flow in self.elementalComposition().iteritems())
+   cpdef avgMolarMass(self): #g / mol
+       return self.totalMass() / self.total()
 
-    def avgMolarMass(self): #g / mol
-        return  self.totalMass() / self.total()
+   cpdef elementalComposition(self): #mol
+       cdef Components retval = Components.__new__(Components)
+       for entry in self._list:
+           retval.mix(speciesData[entry.first].elementalComposition * entry.second)
+       return retval
 
-    def elementalComposition(self): #mol
-        output = Components()
-        for component, flow in self.iteritems():
-            output += flow * speciesData[component].elementalComposition
-        return output
+   cpdef scale(self, double factor):
+       """A * operator to allow scaling of components (e.g. Components * 2)"""
+       for key, value in self._list:
+           value *= factor
+       return self
 
-    def __str__(self):
-        output="C{"
-        for component, flow in self.iteritems():
-            output += "\'%s\':%g, " % (component, flow)
-        return output[:-2]+"}"
+   cpdef double total(self):#mol
+       """Returns the total molar flow of all the components"""
+       cdef double total = 0
+       for entry in self._list:
+           total += entry.second
+       return total
+
+   cpdef Components normalised(self):
+       """Creates a copy of the component stream which is normalised (total molar flow of 1)"""
+       cdef Components copy = self.copy()
+       copy.scale(1.0 / self.total())
+       return copy
+
+   def __str__(self):
+       output="C{"
+       for entry in self._list:
+           output += "\'%s\':%g, " % (entry.first, entry.second)
+       return output[:-2]+"}"
+   
+   def __len__(self):
+       return self._list.size()
+
+   def __getitem__(self, string key):
+       cdef map[string, double].iterator it
+       it = self._list.find(key)
+       if it == self._list.end():
+           return 0.0
+       cimport cython.operator.dereference
+       return cython.operator.dereference(it).second
+
+   def __setitem__(self, string key, double value):
+       self._list[key] = value
+
+   def __contains__(self, string key):
+       cdef map[string, double].iterator it
+       it = self._list.find(key)
+       return it != self._list.end()

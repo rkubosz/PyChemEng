@@ -10,6 +10,8 @@ T0 = 273.15 + 25
 P0 = 1.0e5
 
 from Elements import elements
+from Components cimport Components
+
 
 ####################################################################
 # Fit functions
@@ -50,29 +52,39 @@ from collections import namedtuple
 ThermoConstantsType = namedtuple('ThermoConstantsType', ['Tmin', 'Tmax', 'fitFunction', 'constants', 'HConst', 'SConst'])
 AntoineConstantsType = namedtuple('AntoineConstantsType', ['Tmin', 'Tmax', 'fitFunction', 'constants'])
 
-class SpeciesDataType:
+cdef class PhaseData:
+    cdef public str name
+    cdef public str comments
+    cdef public list constants
+    def __init__(self, name, comments):
+        self.name = name
+        self.comments = comments
+        self.constants = []
+        
+    def __str__(self):
+        output = "Phase{"+self.name+", \""+str(self.comments)+"\", "+str(len(self.constants))+" constants, "
+        for data in self.constants:
+            output += "["+str(data.Tmin)+", "+str(data.Tmax)+"] "
+        return output + "}"
+    
+    def __repr__(self):
+        return self.__str__()
+
+cdef class SpeciesDataType:
     """
     This class represents the isobaric (P=P0) data for a species, and may include multiple phases
     """
-    class PhaseData:        
-        def __init__(self, name, comments):
-            self.name = name
-            self.comments = comments
-            self.constants = []
-            
-        def __str__(self):
-            output = "Phase{"+self.name+", \""+str(self.comments)+"\", "+str(len(self.constants))+" constants, "
-            for data in self.constants:
-                output += "["+str(data.Tmin)+", "+str(data.Tmax)+"] "
-            return output + "}"
-        
-        def __repr__(self):
-            return self.__str__()
+
+    cdef public str name
+    cdef public double mass
+    cdef public Components elementalComposition
+    cdef public dict phases
+    cdef public list antoineData
 
     def __init__(self, name, mass, elementalComposition):
         self.name = name
         self.mass = mass
-        self.elementalComposition = elementalComposition
+        self.elementalComposition = Components(elementalComposition)
         self.phases = {}
         self.antoineData = []
 
@@ -95,7 +107,7 @@ class SpeciesDataType:
         #Check if this phase has been registered before, if not,
         #create it
         if phasenumber not in self.phases:
-            self.phases[phasenumber] = self.PhaseData(phasename, comments)
+            self.phases[phasenumber] = PhaseData(phasename, comments)
 
         #Check that the data is consistent (tests for consistency if
         #the phase existed before)

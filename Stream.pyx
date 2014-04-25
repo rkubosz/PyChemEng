@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from Components import Components
+from Components cimport Components
 from Data import R, T0, P0, speciesData
 #Ensure that the thermodata is loaded
 import ThermoData
@@ -10,8 +10,13 @@ import math
 ####################################################################
 #This class implements all of the helper functions and data types
 #common to a single phase.
-class Phase(object):
+cdef class Phase:
     """A base class which holds fundamental methods and members of a single phase which may contain multiple components"""
+    cdef public double T
+    cdef public double P
+    cdef public int phase
+    cdef public Components components
+
     def __init__(self, T, components, P, phase):
         """The constructor for a stream"""
         #The temperature of the phase
@@ -40,22 +45,33 @@ class Phase(object):
 #assumes that the phase is an ideal mixture. Classes which derive from
 #Phase can override these methods to add corrections to these
 #assumptions.
-    def Cp(self): # Units are J
+    cpdef Cp(self): # Units are J
         """A calculation of the isobaric heat capacity (Cp) of the phase"""
-        return sum([flow * speciesData[x].Cp0(self.T, phase=self.phase) for x, flow in self.components.iteritems()])
+        cdef double sum = 0.0
+        for entry in self.components._list:
+            sum += entry.second * speciesData[entry.first].Cp0(self.T, phase=self.phase)
+        return sum
 
-    def enthalpy(self): # J
+    cpdef enthalpy(self): # J
         """A calculation of the enthalpy (H) of the Phase"""
-        return sum([flow * speciesData[x].Hf0(self.T, phase=self.phase) for x, flow in self.components.iteritems()])
+        cdef double sum = 0.0
+        for entry in self.components._list:
+            sum += entry.second * speciesData[entry.first].Hf0(self.T, phase=self.phase)
+        return sum
 
-    def entropy(self): # J / K
+    cpdef entropy(self): # J / K
         """A calculation of the entropy S of the phase."""
-        total = self.components.total()
+        cdef double total = self.components.total()
         #Individual component entropy
-        componentEntropy = sum(flow * speciesData[x].S0(self.T, phase=0) for x, flow in self.components.iteritems())
-        #Assuming ideal mixing entropy!
-        mixingEntropy = - R * sum([flow * math.log((flow + 0.0) / total) for x, flow in self.components.iteritems() if flow != 0])
-        return componentEntropy + mixingEntropy
+        cdef double sumEntropy = 0.0
+        for entry in self.components._list:
+            sumEntropy += entry.second * speciesData[entry.first].S0(self.T, phase=self.phase)
+
+        #Mixing entropy
+        for entry in self.components._list:
+            if entry.second != 0.0:
+                sumEntropy -= R * entry.second * math.log(entry.second / total)
+        return sumEntropy
 
     def gibbsFreeEnergy(self): #J
         """A calculation of the Gibbs free energy (G) of the phase"""

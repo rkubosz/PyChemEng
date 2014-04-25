@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-import pyximport; pyximport.install()
-
 import Elements
 Elements.initDataDir('./datafiles')
 import ThermoData

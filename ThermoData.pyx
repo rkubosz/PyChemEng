@@ -142,7 +142,7 @@ def parseNASADataFile(filename, quiet=True):
 
             #print firstline
             #print "species =",species," phase =",phasetype
-            registerSpecies(species, Components(MolecularFormula), MW)
+            registerSpecies(species, MolecularFormula, MW)
             speciesData[species].registerPhase(phase, phasetype, comments=comments)
             for C in coeffs:
                 speciesData[species].registerPhaseCoeffs(C, phase)
