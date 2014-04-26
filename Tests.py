@@ -87,6 +87,7 @@ validate(Input.gibbsFreeEnergy() / Input.components.total() / Input.components.a
 Input1 = IdealGasStream(300, {"N2":1, "O2":1}, P=1e5)
 Input2 = IdealGasStream(600, {"N2":0.5, "O2":2}, P=1e5)
 Output = Input1 + Input2
+
 validate(Output.components["N2"], 1.5)
 validate(Output.components["O2"], 3)
 validate(Output.enthalpy(), Input1.enthalpy() + Input2.enthalpy())
@@ -111,6 +112,7 @@ validate(OutGas.components["CO2"], 0.07057)
 validate(OutGas.components["O2"], 0.01722)
 validate(OutGas.components["CH4"], 0.0)
 validate(OutGas.components["CO"], 0.03443)
+
 
 #Adiabatic T at constant P
 InGas = IdealGasStream(300, {"N2":0.79, "O2":0.21, "CH4":0.105}, P=1.01325e5)
@@ -157,7 +159,7 @@ validate(OutGas.components["O2"], 0.00634)
 
 #Adiabatic flame test, calculated values from http://direns.mines-paristech.fr/Sites/Thopt/en/co/applet-calc-comb.html
 InputS = IdealGasStream(300, {"CH4":1, "H2O":0, "O2":2.0, "N2":2.0 / 0.21 * 0.781, "Ar":2.0 / 0.21 * 0.009, "CO2":0}, P=1e5)
-OutGas = Reaction.react(InputS, {}, outputlevel=0, constP=True, constT=False)
+OutGas = Reaction.react(InputS, set(), outputlevel=0, constP=True, constT=False)
 validate(OutGas.T, 2332.8)
 normComp = OutGas.components.normalised()
 validate(normComp["CO2"], 0.0950226)

@@ -3,12 +3,12 @@
 
 from Elements import elements
 from Data import speciesData
-
+   
 cdef class Components:
-   def __init__(self, dict entries):
-       for key, entry in entries.iteritems():
+   def __init__(self, dict data):
+       for key, entry in data.iteritems():
            self._list[key] = entry
-
+       
    cpdef Components copy(self):
        cdef Components retval = Components.__new__(Components)
        retval._list = self._list.copy()
@@ -35,7 +35,7 @@ cdef class Components:
    cpdef totalMass(self):
        cdef double sum = 0.0
        for entry in self._list:
-           entry.second * elements[entry.first].mass 
+           sum += entry.second * speciesData[entry.first].mass
        return sum
 
    cpdef avgMolarMass(self): #g / mol
@@ -49,8 +49,8 @@ cdef class Components:
 
    cpdef scale(self, double factor):
        """A * operator to allow scaling of components (e.g. Components * 2)"""
-       for key, value in self._list:
-           value *= factor
+       for entry in self._list:
+           self._list[entry.first] *= factor
        return self
 
    cpdef double total(self):#mol
