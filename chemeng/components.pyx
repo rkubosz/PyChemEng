@@ -5,7 +5,7 @@ from libcpp.string cimport string
 from libcpp.map cimport map
 
 from chemeng.elementdata import elements
-from chemeng.thermodata import speciesData
+from chemeng.speciesdata import speciesData
    
 cdef class Components:
    def __init__(self, dict data):

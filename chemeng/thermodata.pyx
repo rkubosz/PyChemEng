@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import math
+#Ensure that the elemental database has been loaded first
+import chemeng.elementdata
 from chemeng.components import Components
 from chemeng.speciesdata import T0, speciesData, SpeciesDataType, registerSpecies, registerCpFitFunction, relativeError
 

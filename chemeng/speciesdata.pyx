@@ -141,25 +141,44 @@ cdef class SpeciesDataType:
         for datum in self.phases[phase].constants:
             if T >= datum.Tmin and T <= datum.Tmax:
                 return R * fitFunctions[datum.fitfunction](T, datum.constants)
-        raise Exception("Cannot find valid Cp0 expression for "+self.name+" at "+str(T)+"K")
+
+        msg="Valid ranges:\n"
+        for datum in self.phases[phase].constants:
+            msg = msg+"["+str(datum.Tmin)+", "+str(datum.Tmax)+"]\n"
+        raise Exception("Cannot find valid S0 expression for "+self.name+" at "+str(T)+"K\n"+msg)
 
     cpdef Hf0(self, double T, int phase):
         for datum in self.phases[phase].constants:
             if T >= datum.Tmin and T <= datum.Tmax:
                 return R * (fitFunctions[datum.fitfunction+"Integrated"](T, datum.constants) + datum.HConst)
-        raise Exception("Cannot find valid Hf0 expression for "+self.name+" at "+str(T)+"K")
+
+        msg="Valid ranges:\n"
+        for datum in self.phases[phase].constants:
+            msg = msg+"["+str(datum.Tmin)+", "+str(datum.Tmax)+"]\n"
+        raise Exception("Cannot find valid S0 expression for "+self.name+" at "+str(T)+"K\n"+msg)
 
     cpdef double S0(self, double T, int phase):
         for datum in self.phases[phase].constants:
             if T >= datum.Tmin and T <= datum.Tmax:
                 return R * (fitFunctions[datum.fitfunction+"IntegratedOverT"](T, datum.constants) + datum.SConst)
-        raise Exception("Cannot find valid S0 expression for "+self.name+" at "+str(T)+"K")
+
+        msg="Valid ranges:\n"
+        for datum in self.phases[phase].constants:
+            msg = msg+"["+str(datum.Tmin)+", "+str(datum.Tmax)+"]\n"
+        raise Exception("Cannot find valid S0 expression for "+self.name+" at "+str(T)+"K\n"+msg)
 
     def Psat(self, T):
+        if len(self.antoineData)==0:
+            raise Exception("No Antoine data loaded for "+self.name)
+
         for Tmin, Tmax, func, C in self.antoineData:
             if T >= Tmin and T <= Tmax:
                 return fitFunctions[func](T, C)
-        raise Exception("Cannot find valid Psat expression for "+self.name+" at "+str(T)+"K")
+
+        msg="Valid ranges:\n"
+        for Tmin, Tmax, func, C in self.antoineData:
+            msg = msg+"["+str(Tmin)+", "+str(Tmax)+"]\n"
+        raise Exception("Cannot find valid Psat expression for "+self.name+" at "+str(T)+"K\n"+msg)
 
     def PsatTRange(self):
         minval = 1e300

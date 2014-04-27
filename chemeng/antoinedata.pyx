@@ -3,13 +3,22 @@ import math
 import os
 from chemeng.components import Components
 from chemeng.speciesdata import T0, speciesData, registerFitFunction
+#Ensure that the thermodynamic database has been loaded first
+import chemeng.thermodata
 
 ####################################################################
 # Antoine polynomials
+# Functions should all take T as Kelvin and return P as Pascals, but
+# vary due to coefficients.
 ####################################################################
-#Functions should take T as Kelvin and return P as Pascals
+#Original expression takes kelvin and produces bar, using the form 10^(A-B / (T+C))
 registerFitFunction("Antoine", lambda T, C : 1e5 * (10.0 ** (C[0] - C[1] / (T + C[2]))))
-registerFitFunction("AntoineCnR", lambda T, C : 133.2895 * math.exp(C[0] - C[1] / (T + C[2])))
+
+#Not sure about this one
+registerFitFunction("AntoineCnR", lambda T, C : (1.01325e5 / 760.0) * math.exp(C[0] - C[1] / (T + C[2])))
+
+#Takes celcius and produces mmHg, using the form 10^(A-B / (T+C))
+registerFitFunction("Antoine10CmmHg", lambda T, C : (1.01325e5 / 760.0) * (10 ** (C[0] - C[1] / (T - 273.15 + C[2]))))
 
 ####################################################################
 # Datafile loading
