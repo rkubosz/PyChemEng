@@ -19,9 +19,11 @@ setup(
     version="0.1dev",
     author="M. Campbell Bannerman",
     author_email="m.bannerman@gmail.com",
-    data_files=[('PyChemEng', ['tests/chemeng.py']),
+    packages=['chemeng'],
+    data_files=[#('PyChemEng', ['tests/chemeng.py']),
                 ('PyChemEng/data', ['chemeng/data/antoine.inp',
                                     'chemeng/data/mass.mas03round.txt',
+                                    'chemeng/data/isotopicCompositions.inp',
                                     'chemeng/data/thermo.inp'])],
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules

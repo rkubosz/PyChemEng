@@ -4,8 +4,8 @@
 from libcpp.string cimport string
 from libcpp.map cimport map
 
-from Elements import elements
-from Data import speciesData
+from chemeng.elementdata import elements
+from chemeng.thermodata import speciesData
    
 cdef class Components:
    def __init__(self, dict data):

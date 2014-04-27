@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 from chemeng.components cimport Components
 from chemeng.speciesdata import R, T0, P0, speciesData
-#Ensure that the thermodata is loaded
-import ThermoData
+#Ensure that the thermodata is loaded, so the data is available
+import chemeng.thermodata
 import math
 
 ####################################################################

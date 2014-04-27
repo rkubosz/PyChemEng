@@ -19,7 +19,7 @@ def validate(output, expected, error=0.025):
 # Elements
 ##################################################################
 #Test that elemental data can be accessed
-from chemeng import Elements
+from chemeng.elementdata import elements
 elements[2]
 elements[(1,2)]
 elements["C"]
@@ -29,15 +29,15 @@ elements["n"]
 ##################################################################
 # Antione coefficients
 ##################################################################
-import AntoineData
-from Data import speciesData
+import chemeng.antoinedata
+from chemeng.speciesdata import speciesData
 validate(speciesData['CO2'].Psat(400), 4.89027e5)
 
 ##################################################################
 # Stream
 ##################################################################
 #Test streams
-from Stream import IdealGasStream
+from chemeng.phase import IdealGasStream
 
 Input=IdealGasStream(300, {"C2H5OH":1}, P=1e5)
 validate(len(Input.components.elementalComposition()), 3)
@@ -92,7 +92,7 @@ validate(Output.enthalpy(), Input1.enthalpy() + Input2.enthalpy())
 #When checking the calculations below in GasEq, ensure that the
 #reactants are present in the products, otherwise GasEq does not
 #converge!
-import Reaction
+import chemeng.reaction as Reaction
 
 #Equilibrium at defined T and P
 InGas = IdealGasStream(2600, {"N2":0.79, "O2":0.21, "CH4":0.105}, P=1.01325e5)

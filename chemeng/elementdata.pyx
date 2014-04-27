@@ -221,4 +221,4 @@ def initDataDir(directory):
 
 import sys
 import os.path
-initDataDir(os.path.join(sys.exec_prefix, 'PyChemEng/data/datafiles'))
+initDataDir('/usr/local/PyChemEng/data')
