@@ -1,9 +1,12 @@
 #!/usr/bin/env python
-#distutils: language = c++
+# distutils: language = c++
+# cython: profile=True
 
 from chemeng.phase cimport Phase
-from chemeng.phase import R, IdealGasStream
+from chemeng.phase import IdealGasStream
 from chemeng.components cimport Components
+
+cdef public double R = 8.31451
 
 cpdef tuple mapToIndex(Components components):
     cdef dict keyToIndex = {}

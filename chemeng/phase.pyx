@@ -1,9 +1,15 @@
 #!/usr/bin/env python
+# distutils: language = c++
+# cython: profile=True
+
 from chemeng.components cimport Components
-from chemeng.speciesdata import R, T0, P0, speciesData
+from chemeng.speciesdata import speciesData
+from chemeng.speciesdata cimport SpeciesDataType
 #Ensure that the thermodata is loaded, so the data is available
-import chemeng.thermodata
+from chemeng.thermodata import T0, P0
 import math
+
+cdef public double R = 8.31451
 
 ####################################################################
 # Phase base class
@@ -35,15 +41,19 @@ cdef class Phase:
     cpdef double Cp(self) except + : # Units are J
         """A calculation of the isobaric heat capacity (Cp) of the phase"""
         cdef double sum = 0.0
+        cdef SpeciesDataType sp
         for entry in self.components._list:
-            sum += entry.second * speciesData[entry.first].Cp0(self.T, phase=self.phase)
+            sp = speciesData[entry.first]
+            sum += entry.second * sp.Cp0(self.T, phase=self.phase)
         return sum
 
     cpdef double enthalpy(self) except + : # J
         """A calculation of the enthalpy (H) of the Phase"""
         cdef double sum = 0.0
+        cdef SpeciesDataType sp
         for entry in self.components._list:
-            sum += entry.second * speciesData[entry.first].Hf0(self.T, phase=self.phase)
+            sp = speciesData[entry.first]
+            sum += entry.second * sp.Hf0(self.T, phase=self.phase)
         return sum
 
     cpdef double entropy(self) except + : # J / K
@@ -51,8 +61,10 @@ cdef class Phase:
         cdef double total = self.components.total()
         #Individual component entropy
         cdef double sumEntropy = 0.0
+        cdef SpeciesDataType sp
         for entry in self.components._list:
-            sumEntropy += entry.second * speciesData[entry.first].S0(self.T, phase=self.phase)
+            sp = speciesData[entry.first]
+            sumEntropy += entry.second * sp.S0(self.T, phase=self.phase)
 
         #Mixing entropy
         for entry in self.components._list:

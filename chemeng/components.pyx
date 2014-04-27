@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-#distutils: language = c++
+# distutils: language = c++
+# cython: profile=True
 
 from libcpp.string cimport string
 from libcpp.map cimport map

@@ -2,7 +2,7 @@
 import math
 import os
 from chemeng.components import Components
-from chemeng.speciesdata import T0, speciesData, registerFitFunction
+from chemeng.speciesdata import speciesData, registerFitFunction
 #Ensure that the thermodynamic database has been loaded first
 import chemeng.thermodata
 

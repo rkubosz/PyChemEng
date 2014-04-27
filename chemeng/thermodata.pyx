@@ -3,16 +3,26 @@ import math
 #Ensure that the elemental database has been loaded first
 import chemeng.elementdata
 from chemeng.components import Components
-from chemeng.speciesdata import T0, speciesData, SpeciesDataType, registerSpecies, registerCpFitFunction, relativeError
+from chemeng.speciesdata import speciesData, registerSpecies, registerCpFitFunction, relativeError
+from chemeng.speciesdata cimport SpeciesDataType
+
+####################################################################
+# Physical constants
+####################################################################
+#Constants used in the NASA data set! (If changed, will need to
+#rescale the data)
+cdef public double R = 8.31451
+T0 = 273.15 + 25.0
+P0 = 1.0e5
 
 ##Add the NASA polynomial
 registerCpFitFunction("Poly",
                       #The function (f)
-                      lambda T, C : sum([constant * (T ** order) for constant, order in C]),
+                      lambda T, C : R * sum([constant * (T ** order) for constant, order in C]),
                       #The integrated function (f) (without the integration constant)
-                      lambda T, C : sum([constant * math.log(T) if order == -1 else constant * (T ** (order+1)) / (order+1) for constant, order in C]),
+                      lambda T, C : R * sum([constant * math.log(T) if order == -1 else constant * (T ** (order+1)) / (order+1) for constant, order in C]),
                       #The integrated function over temperature (f/T)
-                      lambda T, C : sum([constant * math.log(T) if order == 0 else constant * (T ** (order)) / (order) for constant, order in C]))
+                      lambda T, C : R * sum([constant * math.log(T) if order == 0 else constant * (T ** (order)) / (order) for constant, order in C]))
 
 ####################################################################
 # Test functions
@@ -23,7 +33,7 @@ MWMaxError=0.0003 #0.03% error
 ####################################################################
 # NASA Glenn Thermodynamic Database
 ####################################################################
-def parseFortanFloat(string):
+cpdef parseFortanFloat(string):
     #First, try to parse the exponentiated formats
     data = string.split('D')
     if len(data) != 2:
@@ -35,10 +45,11 @@ def parseFortanFloat(string):
     #Try to parse it as a standard number
     return float(string.strip())
 
-def parseNASADataFile(filename, quiet=True):
+cpdef parseNASADataFile(filename, quiet=True):
+    cdef SpeciesDataType sp     
+
     file = open(filename, "r")
     lineit = iter(file)
-    
     commentlines=2
     linecount=0
     while True:
@@ -128,7 +139,7 @@ def parseNASADataFile(filename, quiet=True):
 
                 fitFunction = "Poly"
                 constants = [[C[i], orders[i]] for i in range(Ncoeffs)]
-                coeffs.append([Tmin, Tmax, fitFunction, constants, HConst, Sconst])
+                coeffs.append([Tmin, Tmax, fitFunction, constants, R * HConst, R * Sconst])
 
             species, comments = firstline.split(" ", 1)
             comments = comments.strip()
@@ -146,15 +157,18 @@ def parseNASADataFile(filename, quiet=True):
             #print firstline
             #print "species =",species," phase =",phasetype
             registerSpecies(species, MolecularFormula, MW)
-            speciesData[species].registerPhase(phasename, comments=comments)
+
+            sp = speciesData[species]
+
+            sp.registerPhase(phasename, comments=comments)
             for C in coeffs:
-                speciesData[species].registerPhaseCoeffs(C, phasename)
+                sp.registerPhaseCoeffs(C, phasename)
                     
             if quiet:
                 continue
             
-            if speciesData[species].inDataRange(T0, phasename):
-                HfCalc = speciesData[species].Hf0(T0, phasename)
+            if sp.inDataRange(T0, phasename):
+                HfCalc = sp.Hf0(T0, phasename)
                 error = relativeError(HfCalc, HfRef)
                 if error > HfMaxError:
                     print "Warning: Species \""+species+"\" and phase "+phasename+" in file:"+filename+" at line "+str(linecount)+" has a Hf of "+str(HfRef)+" but a calculated value of "+str(HfCalc)+" a relative error of "+str(error)+" for Hf at "+str(T0)
