@@ -12,7 +12,7 @@ cdef class Components:
        for key, entry in data.iteritems():
            self._list[key] = entry
        
-   cpdef Components copy(self):
+   cpdef Components copy(Components self):
        cdef Components retval = Components.__new__(Components)
        retval._list = self._list.copy()
        return retval
@@ -44,13 +44,13 @@ cdef class Components:
    cpdef avgMolarMass(self): #g / mol
        return self.totalMass() / self.total()
 
-   cpdef elementalComposition(self): #mol
+   cpdef Components elementalComposition(Components self): #mol
        cdef Components retval = Components.__new__(Components)
        for entry in self._list:
            retval.mix(speciesData[entry.first].elementalComposition * entry.second)
        return retval
 
-   cpdef scale(self, double factor):
+   cpdef Components scale(Components self, double factor):
        """A * operator to allow scaling of components (e.g. Components * 2)"""
        for entry in self._list:
            self._list[entry.first] *= factor
