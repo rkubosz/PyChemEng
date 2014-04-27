@@ -19,9 +19,9 @@ from chemeng.components cimport Components
 ####################################################################
 #fitFunctions is a dictionary of functions used for data fitting. Each
 #function must take two arguments, T and Coeffs.
-fitFunctions={}
+cdef dict fitFunctions={}
 
-def registerFitFunction(name, function):
+def registerFitFunction(str name, function):
     if name in fitFunctions:
         raise Exception("This function name is already in use!")
     fitFunctions[name] = function
@@ -50,7 +50,23 @@ def relativeError(val, ref):
 speciesData={}
 
 from collections import namedtuple
-ThermoConstantsType = namedtuple('ThermoConstantsType', ['Tmin', 'Tmax', 'fitFunction', 'constants', 'HConst', 'SConst'])
+
+cdef class ThermoConstantsType:
+    cdef public double Tmin
+    cdef public double Tmax
+    cdef public str fitfunction
+    cdef public list constants
+    cdef public double HConst
+    cdef public double SConst
+
+    def __init__(self, Tmin, Tmax, fitfunction, constants, HConst, SConst):
+        self.Tmin = Tmin
+        self.Tmax = Tmax
+        self.fitfunction = fitfunction
+        self.constants = constants
+        self.HConst = HConst
+        self.SConst = SConst
+
 AntoineConstantsType = namedtuple('AntoineConstantsType', ['Tmin', 'Tmax', 'fitFunction', 'constants'])
 
 cdef class PhaseData:
@@ -98,12 +114,6 @@ cdef class SpeciesDataType:
     def __repr__(self):
         return self.__str__()
 
-    def inDataRange(self, T, phase):
-        for Tmin, Tmax, func, C, Hconst, Sconst in self.phases[phase].constants:
-            if T >= Tmin and T <= Tmax:
-                return True
-        return False
-        
     def registerPhase(self, phasenumber, phasename, comments):
         #Check if this phase has been registered before, if not,
         #create it
@@ -115,30 +125,34 @@ cdef class SpeciesDataType:
         if phasename != self.phases[phasenumber].name:
             raise Exception("Trying to register phase "+phasename+":"+str(phasenumber)+" but we have "+str(self.phaseNames))
 
-    def registerAntoineData(self, Tmin, Tmax, fitFunction, constants):
+    cpdef registerAntoineData(self, Tmin, Tmax, fitFunction, constants):
         self.antoineData.append(AntoineConstantsType(Tmin, Tmax, fitFunction, constants))
         
-    def registerPhaseCoeffs(self, Coeffs, phase):
+    cpdef registerPhaseCoeffs(self, Coeffs, phase):
         self.phases[phase].constants.append(ThermoConstantsType(*Coeffs))
-        #Ensure that the data is sorted from lowest to highest temperature range
-        self.phases[phase].constants.sort(key = lambda x : (x.Tmin, x.Tmax))
         
-    def Cp0(self, T, phase):
-        for Tmin, Tmax, func, C, Hconst, Sconst in self.phases[phase].constants:
-            if T >= Tmin and T <= Tmax:
-                return R * fitFunctions[func](T, C)
+    cpdef inDataRange(self, double T, int phase):
+        for datum in self.phases[phase].constants:
+            if T >= datum.Tmin and T <= datum.Tmax:
+                return True
+        return False
+        
+    cpdef Cp0(self, double T, int phase):
+        for datum in self.phases[phase].constants:
+            if T >= datum.Tmin and T <= datum.Tmax:
+                return R * fitFunctions[datum.fitfunction](T, datum.constants)
         raise Exception("Cannot find valid Cp0 expression for "+self.name+" at "+str(T)+"K")
 
-    def Hf0(self, T, phase):
-        for Tmin, Tmax, func, C, Hconst, Sconst in self.phases[phase].constants:
-            if T >= Tmin and T <= Tmax:
-                return R * (fitFunctions[func+"Integrated"](T, C) + Hconst)
+    cpdef Hf0(self, double T, int phase):
+        for datum in self.phases[phase].constants:
+            if T >= datum.Tmin and T <= datum.Tmax:
+                return R * (fitFunctions[datum.fitfunction+"Integrated"](T, datum.constants) + datum.HConst)
         raise Exception("Cannot find valid Hf0 expression for "+self.name+" at "+str(T)+"K")
 
-    def S0(self, T, phase):
-        for Tmin, Tmax, func, C, Hconst, Sconst in self.phases[phase].constants:
-            if T >= Tmin and T <= Tmax:
-                return R * (fitFunctions[func+"IntegratedOverT"](T, C) + Sconst)
+    cpdef double S0(self, double T, int phase):
+        for datum in self.phases[phase].constants:
+            if T >= datum.Tmin and T <= datum.Tmax:
+                return R * (fitFunctions[datum.fitfunction+"IntegratedOverT"](T, datum.constants) + datum.SConst)
         raise Exception("Cannot find valid S0 expression for "+self.name+" at "+str(T)+"K")
 
     def Psat(self, T):
@@ -155,7 +169,7 @@ cdef class SpeciesDataType:
             maxval = max(Tmax, maxval)
         return [minval, maxval]
 
-    def Gibbs0(self, T, phase):
+    cpdef double Gibbs0(self, double T, int phase):
         return self.Hf0(T, phase) - T * self.S0(T, phase)
 
 def registerSpecies(name, elementalComposition, mass=None):
