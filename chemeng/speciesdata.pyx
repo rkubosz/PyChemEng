@@ -114,57 +114,52 @@ cdef class SpeciesDataType:
     def __repr__(self):
         return self.__str__()
 
-    def registerPhase(self, phasenumber, phasename, comments):
-        #Check if this phase has been registered before, if not,
-        #create it
-        if phasenumber not in self.phases:
-            self.phases[phasenumber] = PhaseData(phasename, comments)
-
-        #Check that the data is consistent (tests for consistency if
-        #the phase existed before)
-        if phasename != self.phases[phasenumber].name:
-            raise Exception("Trying to register phase "+phasename+":"+str(phasenumber)+" but we have "+str(self.phaseNames))
+    def registerPhase(self, phasename, comments):
+        if phasename not in self.phases:
+            self.phases[phasename] = PhaseData(phasename, comments)
+        if self.phases[phasename].comments != comments:
+            raise Exception("Comments on phase ("+phasename+") are changing current:an"+self.phases[phasename].comments+"\nNew:\n"+comments)
 
     cpdef registerAntoineData(self, Tmin, Tmax, fitFunction, constants):
         self.antoineData.append(AntoineConstantsType(Tmin, Tmax, fitFunction, constants))
         
-    cpdef registerPhaseCoeffs(self, Coeffs, phase):
-        self.phases[phase].constants.append(ThermoConstantsType(*Coeffs))
+    cpdef registerPhaseCoeffs(self, Coeffs, str phasename):
+        self.phases[phasename].constants.append(ThermoConstantsType(*Coeffs))
         
-    cpdef inDataRange(self, double T, int phase):
+    cpdef inDataRange(self, double T, str phase):
         for datum in self.phases[phase].constants:
             if T >= datum.Tmin and T <= datum.Tmax:
                 return True
         return False
         
-    cpdef Cp0(self, double T, int phase):
+    cpdef Cp0(self, double T, str phase):
         for datum in self.phases[phase].constants:
             if T >= datum.Tmin and T <= datum.Tmax:
                 return R * fitFunctions[datum.fitfunction](T, datum.constants)
 
         msg="Valid ranges:\n"
         for datum in self.phases[phase].constants:
-            msg = msg+"["+str(datum.Tmin)+", "+str(datum.Tmax)+"]\n"
-        raise Exception("Cannot find valid S0 expression for "+self.name+" at "+str(T)+"K\n"+msg)
+            msg+="["+str(datum.Tmin)+", "+str(datum.Tmax)+"]\n"
+        raise Exception("Cannot find valid Cp0 expression for "+self.name+" at "+str(T)+"K\n"+msg)
 
-    cpdef Hf0(self, double T, int phase):
+    cpdef Hf0(self, double T, str phase):
         for datum in self.phases[phase].constants:
             if T >= datum.Tmin and T <= datum.Tmax:
                 return R * (fitFunctions[datum.fitfunction+"Integrated"](T, datum.constants) + datum.HConst)
 
         msg="Valid ranges:\n"
         for datum in self.phases[phase].constants:
-            msg = msg+"["+str(datum.Tmin)+", "+str(datum.Tmax)+"]\n"
-        raise Exception("Cannot find valid S0 expression for "+self.name+" at "+str(T)+"K\n"+msg)
+            msg+="["+str(datum.Tmin)+", "+str(datum.Tmax)+"]\n"
+        raise Exception("Cannot find valid Hf0 expression for "+self.name+" at "+str(T)+"K\n"+msg)
 
-    cpdef double S0(self, double T, int phase):
+    cpdef double S0(self, double T, str phase):
         for datum in self.phases[phase].constants:
             if T >= datum.Tmin and T <= datum.Tmax:
                 return R * (fitFunctions[datum.fitfunction+"IntegratedOverT"](T, datum.constants) + datum.SConst)
 
         msg="Valid ranges:\n"
         for datum in self.phases[phase].constants:
-            msg = msg+"["+str(datum.Tmin)+", "+str(datum.Tmax)+"]\n"
+            msg+=msg+"["+str(datum.Tmin)+", "+str(datum.Tmax)+"]\n"
         raise Exception("Cannot find valid S0 expression for "+self.name+" at "+str(T)+"K\n"+msg)
 
     def Psat(self, T):
@@ -177,7 +172,7 @@ cdef class SpeciesDataType:
 
         msg="Valid ranges:\n"
         for Tmin, Tmax, func, C in self.antoineData:
-            msg = msg+"["+str(Tmin)+", "+str(Tmax)+"]\n"
+            msg+="["+str(Tmin)+", "+str(Tmax)+"]\n"
         raise Exception("Cannot find valid Psat expression for "+self.name+" at "+str(T)+"K\n"+msg)
 
     def PsatTRange(self):
@@ -188,7 +183,7 @@ cdef class SpeciesDataType:
             maxval = max(Tmax, maxval)
         return [minval, maxval]
 
-    cpdef double Gibbs0(self, double T, int phase):
+    cpdef double Gibbs0(self, double T, str phase):
         return self.Hf0(T, phase) - T * self.S0(T, phase)
 
 def registerSpecies(name, elementalComposition, mass=None):

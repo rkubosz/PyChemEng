@@ -7,7 +7,7 @@ cdef class Phase:
     """A base class which holds fundamental methods and members of a single phase which may contain multiple components"""
     cdef public double T
     cdef public double P
-    cdef public int phase
+    cdef public str phase
     cdef public Components components
 
     cpdef double Cp(Phase) except +

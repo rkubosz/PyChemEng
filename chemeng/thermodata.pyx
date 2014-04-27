@@ -132,31 +132,32 @@ def parseNASADataFile(filename, quiet=True):
 
             species, comments = firstline.split(" ", 1)
             comments = comments.strip()
-            phasetype = "Gas"
+            phasename = "Gas"
             if species[-1] == ")":
                 #This has a phase qualifier at the end in parentheses, grab it
                 import re
                 m = re.match('(.*?)\(([^()]*?)\)$', species)
                 species = m.group(1)
-                phasetype = m.group(2)
-                if phasetype == "L":
-                    phasetype = "Liquid"
-
+                phasename = m.group(2)
+                if phasename == "L":
+                    phasename = "Liquid"
+                else:
+                    phasename = str(phase)+phasename
             #print firstline
             #print "species =",species," phase =",phasetype
             registerSpecies(species, MolecularFormula, MW)
-            speciesData[species].registerPhase(phase, phasetype, comments=comments)
+            speciesData[species].registerPhase(phasename, comments=comments)
             for C in coeffs:
-                speciesData[species].registerPhaseCoeffs(C, phase)
+                speciesData[species].registerPhaseCoeffs(C, phasename)
                     
             if quiet:
                 continue
             
-            if speciesData[species].inDataRange(T0, phase):
-                HfCalc = speciesData[species].Hf0(T0, phase)
+            if speciesData[species].inDataRange(T0, phasename):
+                HfCalc = speciesData[species].Hf0(T0, phasename)
                 error = relativeError(HfCalc, HfRef)
                 if error > HfMaxError:
-                    print "Warning: Species \""+species+"\" and phase "+phasetype+" in file:"+filename+" at line "+str(linecount)+" has a Hf of "+str(HfRef)+" but a calculated value of "+str(HfCalc)+" a relative error of "+str(error)+" for Hf at "+str(T0)
+                    print "Warning: Species \""+species+"\" and phase "+phasename+" in file:"+filename+" at line "+str(linecount)+" has a Hf of "+str(HfRef)+" but a calculated value of "+str(HfCalc)+" a relative error of "+str(error)+" for Hf at "+str(T0)
 
         except Exception as e:
             if not quiet:

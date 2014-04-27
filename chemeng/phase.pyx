@@ -93,13 +93,13 @@ cdef class Phase:
 ####################################################################
 cdef class IdealGasStream(Phase):
     def __init__(self, T, components, P):
-        Phase.__init__(self, T, components, P, 0)
+        Phase.__init__(self, T, components, P, "Gas")
 
     cpdef IdealGasStream copy(self):
         cdef IdealGasStream retval = IdealGasStream.__new__(IdealGasStream)
         retval.T = self.T
         retval.P = self.P
-        retval.phase = 0
+        retval.phase = self.phase
         retval.components = self.components.copy()        
         return retval
 
@@ -135,7 +135,7 @@ cdef class IdealGasStream(Phase):
 ####################################################################
 # Incompressible Solid
 ####################################################################
-class IncompressibleSolid(Phase):
+class IncompressiblePhase(Phase):
     def __init__(self, T, components, P, molardensity, phaseID):
         Phase.__init__(self, T, components, P, phaseID)
         self.molardensity = molardensity
