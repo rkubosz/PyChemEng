@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 #distutils: language = c++
 
+from libcpp.string cimport string
+from libcpp.map cimport map
+
 from Elements import elements
 from Data import speciesData
    

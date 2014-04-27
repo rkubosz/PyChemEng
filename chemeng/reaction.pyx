@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #distutils: language = c++
 
-from Stream cimport Phase
-from Stream import R, IdealGasStream
-from Components cimport Components
+from chemeng.phase cimport Phase
+from chemeng.phase import R, IdealGasStream
+from chemeng.components cimport Components
 
 cpdef tuple mapToIndex(Components components):
     cdef dict keyToIndex = {}

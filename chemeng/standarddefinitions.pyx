@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from Components import Components
+from chemeng.components import Components
 
 #Composition of dry air (to 1ppmv)
 DryAir = Components({"N2":78.084, "O2":20.946,  "Ar":0.934, "CO2":0.0397, "Ne":0.001818, "He": 0.000524, "CH4":0.000179, "Kr":0.000114})

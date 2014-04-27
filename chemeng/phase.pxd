@@ -1,4 +1,7 @@
-from Components cimport Components
+#!/usr/bin/env python
+#distutils: language = c++
+
+from chemeng.components cimport Components
 
 cdef class Phase:
     """A base class which holds fundamental methods and members of a single phase which may contain multiple components"""

@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 import math
-from Components import Components
-import ThermoData 
 import os
-from Data import T0, speciesData, registerFitFunction
-import math
+from chemeng.components import Components
+from chemeng.speciesdata import T0, speciesData, registerFitFunction
 
 ####################################################################
 # Antoine polynomials
@@ -40,3 +38,7 @@ def initDataDir(directory):
 #speciesData["CO2"].registerAntoineData(292.77, 366.63, "Antoine", [5.24677, 1598.673, -46.424])
 #speciesData["CO2"].registerAntoineData(273.0, 351.7, "Antoine", [5.37229, 1670.409, -40.191])
 #speciesData["CO2"].registerAntoineData(364.8, 513.91, "Antoine", [4.92531, 1432.526, -61.819])
+
+import sys
+import os.path
+initDataDir(os.path.join(sys.exec_prefix, 'PyChemEng/data/datafiles'))

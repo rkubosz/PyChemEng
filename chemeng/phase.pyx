@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from Components cimport Components
-from Data import R, T0, P0, speciesData
+from chemeng.components cimport Components
+from chemeng.speciesdata import R, T0, P0, speciesData
 #Ensure that the thermodata is loaded
 import ThermoData
 import math

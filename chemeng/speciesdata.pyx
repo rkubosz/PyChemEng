@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+#distutils: language = c++
+
 ####################################################################
 # Physical constants
 ####################################################################
@@ -9,9 +11,8 @@ R = 8.31451
 T0 = 273.15 + 25
 P0 = 1.0e5
 
-from Elements import elements
-from Components cimport Components
-
+from chemeng.elements import elements
+from chemeng.components cimport Components
 
 ####################################################################
 # Fit functions

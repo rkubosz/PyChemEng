@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 cdef class IsotopeData:
     """
     This structure holds information on an isotope, including
@@ -218,3 +217,8 @@ def initDataDir(directory):
     ####by neutrons). This is needed for reactions involving ions.
     elements.nameIndex["e-"] = -1
     elements[-1] = ElementData(name="e-", Z=-1, mass=5.4857990943e-4)
+
+
+import sys
+import os.path
+initDataDir(os.path.join(sys.exec_prefix, 'PyChemEng/data/datafiles'))

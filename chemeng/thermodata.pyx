@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import math
-from Components import Components
-from Data import T0, speciesData, SpeciesDataType, registerSpecies, registerCpFitFunction, relativeError
+from chemeng.components import Components
+from chemeng.speciesdata import T0, speciesData, SpeciesDataType, registerSpecies, registerCpFitFunction, relativeError
 
 ##Add the NASA polynomial
 registerCpFitFunction("Poly",
@@ -172,7 +172,10 @@ def initDataDir(directory):
     print "Loading thermodynamic data"
     parseNASADataFile(os.path.join(directory, 'thermo.inp'), quiet=False)
     print "Loaded",len(speciesData),"thermodynamic species"
-
     #The Burcat database is very inconsistent which makes it hard to
     #parse in Hf just due to its non-standard formatting
     #parseNASADataFile(os.path.join(directory, '/NEWNASA.inp'), quiet=False)
+
+import sys
+import os.path
+initDataDir(os.path.join(sys.exec_prefix, 'PyChemEng/data/datafiles'))
