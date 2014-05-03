@@ -6,9 +6,17 @@
     <title>PyChemEng Documentation</title>
   </head>
   <body>
+    <h1>Loading PyChemEng</h1>
+    <p>
+      Most of PyChemEng is accessed through a single
+      module, <i>chemeng</i>.
+    </p>
+    <pre class="brush:python;">
+from chemeng import *
+    </pre>
     <h1>Elemental database</h1>
     <p>
-      Masses of Components are calculated using the elemental database
+      Masses of components are calculated using the elemental database
       within PyChemEng. This contains accurate isotopic masses and
       abundance data:
     </p>
@@ -40,7 +48,17 @@ print elements[(1,2)] #Tritium
     <p>
       The first task of a chemical engineer is to perform mass/molar
       balances. PyChemEng lets you build molar balances very easily
-      using the Components class. You can add/mix components and scale
+      using the Components class. To create it, we provide it with a
+      dictionary of chemical formulas and their molar abundances. For
+      example:
+    </p>
+    <pre class="brush:python;">
+air = Components({'O2':0.21, 'N2':0.79})
+print air
+#C{'N2':0.79, 'O2':0.21}
+    </pre>
+    <p>
+      You can add/mix components and scale
       them to make new sets of component.
     </p>
     <p>
@@ -48,19 +66,27 @@ print elements[(1,2)] #Tritium
       fuel mix, its mole fractions, and its mass flux
     </p>
     <pre class="brush:python;">
-from chemeng import *
-airstream = Components({'O2':0.21, 'N2':0.79})
-fuelstream = Components({'CH4':1.0})
-stochiometricMix = fuelstream + airstream * (3.0 / 0.21)
+fuel = Components({'CH4':1.0})
+stochiometricMix = fuel + air * (3.0 * fuel['CH4'] / air['O2'])
 print stochiometricMix
 #C{'CH4':1, 'N2':11.2857, 'O2':3}
 print stochiometricMix.normalised()
 #C{'CH4':0.0654206, 'N2':0.738318, 'O2':0.196262}
+print stochiometricMix.total()
+#15.2857142857
 print stochiometricMix.totalMass()
 #428.190088571
     </pre>
+    <p>
+      We can also break the stream down to its elemental composition.
+    </p>
+    <pre class="brush:python;">
+print stochiometricMix.elementalComposition()
+#C{'C':1, 'H':4, 'N':22.5714, 'O':6}
+    </pre>
     
     <h1>Phases</h1>
+    
 
     <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script>
     <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushPython.js" type="text/javascript"></script>
