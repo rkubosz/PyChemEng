@@ -2,6 +2,9 @@
 # distutils: language = c++
 # cython: profile=True
 
+from chemeng.components cimport Components
+from chemeng.elementdata import elements
+
 cdef class ThermoConstantsType:
     cdef public double Tmin
     cdef public double Tmax
@@ -47,9 +50,6 @@ cdef class AntoineConstantsType:
         self.Tmax = Tmax
         self.fitfunction = fitfunction
         self.constants = constants
-
-from chemeng.elementdata import elements
-from chemeng.components cimport Components
 
 cdef class SpeciesDataType:
     """

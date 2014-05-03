@@ -103,12 +103,12 @@ cdef class Phase:
 ####################################################################
 # Ideal gas class
 ####################################################################
-cdef class IdealGasStream(Phase):
+cdef class IdealGasPhase(Phase):
     def __init__(self, T, components, P):
         Phase.__init__(self, T, components, P, "Gas")
 
-    cpdef IdealGasStream copy(self):
-        cdef IdealGasStream retval = IdealGasStream.__new__(IdealGasStream)
+    cpdef IdealGasPhase copy(self):
+        cdef IdealGasPhase retval = IdealGasPhase.__new__(IdealGasPhase)
         retval.T = self.T
         retval.P = self.P
         retval.phase = self.phase
@@ -137,9 +137,9 @@ cdef class IdealGasStream(Phase):
     cpdef double volume(self):
         return self.components.total() * R * self.T / self.P
 
-    def __add__(self, IdealGasStream other):
+    def __add__(self, IdealGasPhase other):
         """An operator to allow mixing of phases (with calculation of exit temperature)"""
-        cdef IdealGasStream output = IdealGasStream((self.T + other.T) / 2.0, {}, P=min(self.P, other.P))
+        cdef IdealGasPhase output = IdealGasPhase((self.T + other.T) / 2.0, {}, P=min(self.P, other.P))
         output.components = self.components + other.components
         output.setEnthalpy(self.enthalpy() + other.enthalpy())
         return output

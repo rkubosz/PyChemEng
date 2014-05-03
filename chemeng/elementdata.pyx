@@ -23,7 +23,7 @@ cdef class IsotopeData:
         return "Isotope{"+self.name+", Z="+str(self.Z)+", N="+str(self.N)+", M="+str(self.mass)+"("+str(self.mass_uncertainty)+"), P="+str(self.abundance)+"}"
     
     def __repr__(self):
-        return self.__str__(self)
+        return self.__str__()
 
 cdef class ElementData:
     """

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta name="author" content="Marcus Bannerman" />
+    <title>PyChemEng Documentation</title>
+  </head>
+  <body>
+    <h1>Elemental database</h1>
+    <p>
+      Masses of Components are calculated using the elemental database
+      within PyChemEng. This contains accurate isotopic masses and
+      abundance data:
+    </p>
+    <pre class="brush:python;">
+print elements['Ca']
+#Element{Ca, Z=20, AW=40.078, 24 isotopes}
+print elements['Li'].mass
+#6.941
+    </pre>
+    <p>
+      The average atomic weight (AW) is calculated from the abundance
+      of each isotope and its mass. We can examine this information by
+      accessing the isotope using its neutron number, e.g.
+    </p>
+    <pre class="brush:python;">
+print elements['C'].isotopes[6]
+#Isotope{C, Z=6, N=6, M=12.0(0.0), P=0.9893}
+    </pre>
+    <p>
+      Or by directly specifying the proton (Z) and neutron (N) number
+      as a tuple
+    </p>
+    <pre class="brush:python;">
+print elements[(1,2)] #Tritium
+#Element{T, Z=1, AW=3.0160492777}
+    </pre>
+    
+    <h1>Molar/Mass balances</h1> 
+    <p>
+      The first task of a chemical engineer is to perform mass/molar
+      balances. PyChemEng lets you build molar balances very easily
+      using the Components class. You can add/mix components and scale
+      them to make new sets of component.
+    </p>
+    <p>
+      For example, here is a calculation of a stochiometic methane
+      fuel mix, its mole fractions, and its mass flux
+    </p>
+    <pre class="brush:python;">
+from chemeng import *
+airstream = Components({'O2':0.21, 'N2':0.79})
+fuelstream = Components({'CH4':1.0})
+stochiometricMix = fuelstream + airstream * (3.0 / 0.21)
+print stochiometricMix
+#C{'CH4':1, 'N2':11.2857, 'O2':3}
+print stochiometricMix.normalised()
+#C{'CH4':0.0654206, 'N2':0.738318, 'O2':0.196262}
+print stochiometricMix.totalMass()
+#428.190088571
+    </pre>
+    
+    <h1>Phases</h1>
+
+    <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script>
+    <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushPython.js" type="text/javascript"></script>
+    <link href="http://alexgorbatchev.com/pub/sh/current/styles/shCore.css" rel="stylesheet" type="text/css" />
+    <link href="http://alexgorbatchev.com/pub/sh/current/styles/shThemeDefault.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript">SyntaxHighlighter.all();</script>
+
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        "HTML-CSS": { linebreaks: { automatic: true} },
+         SVG: { linebreaks: { automatic: true } },
+       tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true },
+       TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js", "cancel.js"]
+        },
+	webFont: "TeX"
+      });
+    </script>
+  </body>
+</html>
