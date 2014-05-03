@@ -31,10 +31,12 @@ cdef class PhaseData:
         self.constants = []
         
     def __str__(self):
-        output = "Phase{"+self.name+", \""+str(self.comments)+"\", "+str(len(self.constants))+" constants, "
-        for data in self.constants:
-            output += "["+str(data.Tmin)+", "+str(data.Tmax)+"] "
-        return output + "}"
+        output = "Phase{'"+self.name+"', T=["
+        if len(self.constants) > 0:
+            for data in self.constants:
+                output += str(data.Tmin)+'->'+str(data.Tmax)+"K, "
+            output = output[:-2]
+        return output+"], comments='"+self.comments+"'}"
     
     def __repr__(self):
         return self.__str__()
@@ -64,7 +66,7 @@ cdef class SpeciesDataType:
         self.antoineData = []
 
     def __str__(self):
-        output = "Species{"+self.name+", phases=["
+        output = "Species{'"+self.name+"', phases=["
         for name in self.phases:
             output += name+", "
         return output[:-2] +"], elementalComposition="+str(self.elementalComposition)+"}"

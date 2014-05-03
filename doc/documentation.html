@@ -114,26 +114,67 @@ print stochiometricMix.elementalComposition()
       within the speciesData dictionary. Species can be looked up using their chemical formula:
     </p>
     <pre class="brush:python;">
-print speciesData["CO2"]
+print speciesData['CO2']
 #Species{CO2, phases=[Gas], elementalComposition=C{'C':1, 'O':2}}
     </pre>
     <p>
-      Here we note that the database
-      has thermodynamic data for the
-      gas phase of CO2 only. The 
-    </p>
-    <p>
-      The chemical formula can be
-      difficult to determine for
-      some compounds. To simplify finding the appropriate formula, there are two search functions.
+      Here we note that the database has thermodynamic data for the
+      gas phase of CO2 only. We can see what temperature ranges this
+      is defined over by querying the phase:
     </p>
     <pre class="brush:python;">
-print findSpeciesData("CO2")
-#Species{CO2, phases=[Gas], elementalComposition=C{'C':1, 'O':2}}
+print speciesData['CO2'].phases['Gas']
+#Phase{Gas, T=[200.0-&gt;1000.0K, 1000.0-&gt;6000.0K, 6000.0-&gt;20000.0K], comments='Gurvich,1991 pt1 p27 pt2 p24.'}
     </pre>
+    <p>
+      Here we can see that thermodynamic data is available for
+      CO${}_2$ gases over the range $200\to20000$~K.
+    </p>
+    <p>
+      The chemical formula can be difficult to determine for some
+      compounds. To simplify finding the appropriate formula, there
+      are some search functions.
+    </p>
+    <pre class="brush:python;">
+print findSpeciesData("C8")
+#[Species{'C8H18,isooctane', phases=[Gas], elementalComposition=C{'C':8, 'H':18}},
+# Species{'C8H18,n-octane', phases=[Gas], elementalComposition=C{'C':8, 'H':18}},
+# Species{'C8H8,styrene', phases=[Gas], elementalComposition=C{'C':8, 'H':8}},
+# Species{'C8H16,1-octene', phases=[Gas], elementalComposition=C{'C':8, 'H':16}},
+# Species{'C8H17,n-octyl', phases=[Gas], elementalComposition=C{'C':8, 'H':17}},
+# Species{'C8H10,ethylbenz', phases=[Gas], elementalComposition=C{'C':8, 'H':10}}]
+    </pre>
+    <p>
+      Please note, the database included with PyChemEng does not have
+      many keywords defined within it. So simple name searches
+      (e.g. benzene) may fail. It is best to search for a partially
+      complete chemical formula (or add your own data).
+    </p>
+    <p>
+      Once we have found the species, we can query for the pure phase
+      properties (at standard pressure).
+    </p>
+    <pre class="brush:python;">
+print speciesData['H2O'].Cp0(298.15, 'Gas')#Heat capacity
+#33.5877103224
+
+print speciesData['H2O'].Hf0(298.15, 'Gas')#Enthalpy of formation
+#-241826.00034
+
+print speciesData['SO'].Hf0(298.15, 'Gas') #Entropy
+#188.829115517
+    </pre>
+    <p>
+      Using these properties in energy balances, or free energy
+      calculations can rapidly get tedious, so there are some Phase
+      classes to help.
+    </p>
     <h1>Energy/enthalpy balances (Phase classes)</h1>
     <p>
-      Working.
+      To simplify enthalpy, free energy, and heat capacity
+      calculations, there are Phase classes. These extend a Components
+      class to also track the thermodynamic state of the system
+      (Temperature, Pressure, Volume etc).
     </p>
 
     <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script>
