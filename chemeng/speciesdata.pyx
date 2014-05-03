@@ -2,6 +2,9 @@
 # distutils: language = c++
 # cython: profile=True
 
+from chemeng.components cimport Components
+from chemeng.elementdata import elements
+
 cdef class ThermoConstantsType:
     cdef public double Tmin
     cdef public double Tmax
@@ -28,10 +31,12 @@ cdef class PhaseData:
         self.constants = []
         
     def __str__(self):
-        output = "Phase{"+self.name+", \""+str(self.comments)+"\", "+str(len(self.constants))+" constants, "
-        for data in self.constants:
-            output += "["+str(data.Tmin)+", "+str(data.Tmax)+"] "
-        return output + "}"
+        output = "Phase{'"+self.name+"', T=["
+        if len(self.constants) > 0:
+            for data in self.constants:
+                output += str(data.Tmin)+'->'+str(data.Tmax)+"K, "
+            output = output[:-2]
+        return output+"], comments='"+self.comments+"'}"
     
     def __repr__(self):
         return self.__str__()
@@ -48,9 +53,6 @@ cdef class AntoineConstantsType:
         self.fitfunction = fitfunction
         self.constants = constants
 
-from chemeng.elementdata import elements
-from chemeng.components cimport Components
-
 cdef class SpeciesDataType:
     """
     This class represents the isobaric (P=P0) data for a species, and may include multiple phases
@@ -64,10 +66,10 @@ cdef class SpeciesDataType:
         self.antoineData = []
 
     def __str__(self):
-        output = "Species{"+self.name+", ["
-        for phasename, phase in self.phases.iteritems():
-            output += phasename+", "
-        return output[:-2] +"]}"
+        output = "Species{'"+self.name+"', phases=["
+        for name in self.phases:
+            output += name+", "
+        return output[:-2] +"], elementalComposition="+str(self.elementalComposition)+"}"
 
     def __repr__(self):
         return self.__str__()
@@ -185,7 +187,23 @@ def relativeError(val, ref):
 #Species data is a dictionary of thermodynamic data on different
 #species/components and their phases. This is addressed using the
 #chemical formula of the species to be studied.  
-speciesData={}
+
+from libcpp.string cimport string
+from libcpp.map cimport map
+
+speciesData = {}
+
+cpdef list findSpeciesData(str search):
+    cdef list retval = []
+    for key,species in speciesData.iteritems():
+        if search in key:
+            retval.append(species)
+            continue
+        for phasekey, phase in species.phases.iteritems():
+            if search in phasekey or search in phase.name or search in phase.comments:
+                retval.append(species)
+                continue
+    return retval
 
 def registerSpecies(name, elementalComposition, mass=None):
     calcMass = 0

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta name="author" content="Marcus Bannerman" />
+    <title>PyChemEng Documentation</title>
+  </head>
+  <body>
+    <h1>Loading PyChemEng</h1>
+    <p>
+      Most of PyChemEng is accessed
+      through a single
+      module, <i>chemeng</i>. If you
+      import this, it will load the
+      default thermodynamic data and
+      import the basic functionality.
+    </p>
+    <pre class="brush:python;">
+from chemeng import *
+    </pre>
+    <p>
+      Lets take a quick look over the functionality.
+    </p>
+    <h1>Elemental database</h1>
+    <p>
+      Masses of components are calculated using the elemental database
+      within PyChemEng. This contains accurate isotopic masses and
+      abundance data:
+    </p>
+    <pre class="brush:python;">
+print elements['Ca']
+#Element{Ca, Z=20, AW=40.078, 24 isotopes}
+print elements['Li'].mass
+#6.941
+    </pre>
+    <p>
+      The average atomic weight (AW) is calculated from the abundance
+      of each isotope and its mass. We can examine this information by
+      accessing the isotope using its neutron number, e.g.
+    </p>
+    <pre class="brush:python;">
+print elements['C'].isotopes[6]
+#Isotope{C, Z=6, N=6, M=12.0(0.0), P=0.9893}
+    </pre>
+    <p>
+      Or by directly specifying the proton (Z) and neutron (N) number
+      as a tuple
+    </p>
+    <pre class="brush:python;">
+print elements[(1,2)] #Tritium
+#Element{T, Z=1, AW=3.0160492777}
+    </pre>
+    
+    <h1>Molar/Mass balances</h1> 
+    <p>
+      The first task of a chemical engineer is to perform mass/molar
+      balances of a set of species. PyChemEng lets you build molar balances very easily
+      using the Components class. To create it, we provide it with a
+      dictionary of chemical formulas/species and their molar amounts. For
+      example:
+    </p>
+    <pre class="brush:python;">
+air = Components({'O2':0.21, 'N2':0.79})
+print air
+#C{'N2':0.79, 'O2':0.21}
+    </pre>
+    <p>
+      You can add/mix and scale Components to make new Components.
+    </p>
+    <p>
+      For example, here is a calculation of a stochiometic
+      methane-air fuel mixture, its mole fractions, and its mass.
+    </p>
+    <pre class="brush:python;">
+#Specify fuel and air streams
+fuel = Components({'CH4':1.0})
+air = Components({'N2':0.79, 'O2':0.21})
+
+#Determine the required O2 for combustion
+elementalfuel = fuel.elementalComposition()
+requiredO2 = elementalfuel['C'] + elementalfuel['H'] / 4
+
+#Create a stochiometric mixture
+stochiometricMix = fuel + air * (requiredO2 / air['O2'])
+
+print stochiometricMix 
+#C{'CH4':1, 'N2':7.52381, 'O2':2}
+
+print stochiometricMix.normalised() 
+#C{'CH4':0.0950226, 'N2':0.714932, 'O2':0.190045}
+
+print stochiometricMix.total() 
+#10.5238095238
+
+print stochiometricMix.totalMass() 
+#290.807545714
+    </pre>
+    <p>
+      Please note the handy ability
+      to break Components down to
+      their elemental composition.
+    </p>
+    <pre class="brush:python;">
+print stochiometricMix.elementalComposition()
+#C{'C':1, 'H':4, 'N':22.5714, 'O':6}
+    </pre>
+    <p>
+      The elemental composition which is returned is also a Components class, so you can add and scale this as required.
+    </p>
+    <h1>Thermodynamic data (species data)</h1>
+    <p>
+      To perform energy balances, we need a significant amount of
+      thermodynamic data. All data within PyChemEng is stored
+      within the speciesData dictionary. Species can be looked up using their chemical formula:
+    </p>
+    <pre class="brush:python;">
+print speciesData['CO2']
+#Species{CO2, phases=[Gas], elementalComposition=C{'C':1, 'O':2}}
+    </pre>
+    <p>
+      Here we note that the database has thermodynamic data for the
+      gas phase of CO2 only. We can see what temperature ranges this
+      is defined over by querying the phase:
+    </p>
+    <pre class="brush:python;">
+print speciesData['CO2'].phases['Gas']
+#Phase{Gas, T=[200.0-&gt;1000.0K, 1000.0-&gt;6000.0K, 6000.0-&gt;20000.0K], comments='Gurvich,1991 pt1 p27 pt2 p24.'}
+    </pre>
+    <p>
+      Here we can see that thermodynamic data is available for
+      CO${}_2$ gases over the range $200\to20000$~K.
+    </p>
+    <p>
+      The chemical formula can be difficult to determine for some
+      compounds. To simplify finding the appropriate formula, there
+      are some search functions.
+    </p>
+    <pre class="brush:python;">
+print findSpeciesData("C8")
+#[Species{'C8H18,isooctane', phases=[Gas], elementalComposition=C{'C':8, 'H':18}},
+# Species{'C8H18,n-octane', phases=[Gas], elementalComposition=C{'C':8, 'H':18}},
+# Species{'C8H8,styrene', phases=[Gas], elementalComposition=C{'C':8, 'H':8}},
+# Species{'C8H16,1-octene', phases=[Gas], elementalComposition=C{'C':8, 'H':16}},
+# Species{'C8H17,n-octyl', phases=[Gas], elementalComposition=C{'C':8, 'H':17}},
+# Species{'C8H10,ethylbenz', phases=[Gas], elementalComposition=C{'C':8, 'H':10}}]
+    </pre>
+    <p>
+      Please note, the database included with PyChemEng does not have
+      many keywords defined within it. So simple name searches
+      (e.g. benzene) may fail. It is best to search for a partially
+      complete chemical formula (or add your own data).
+    </p>
+    <p>
+      Once we have found the species, we can query for the pure phase
+      properties (at standard pressure).
+    </p>
+    <pre class="brush:python;">
+print speciesData['H2O'].Cp0(298.15, 'Gas')#Heat capacity
+#33.5877103224
+
+print speciesData['H2O'].Hf0(298.15, 'Gas')#Enthalpy of formation
+#-241826.00034
+
+print speciesData['SO'].Hf0(298.15, 'Gas') #Entropy
+#188.829115517
+    </pre>
+    <p>
+      Using these properties in energy balances, or free energy
+      calculations can rapidly get tedious, so there are some Phase
+      classes to help.
+    </p>
+    <h1>Energy/enthalpy balances (Phase classes)</h1>
+    <p>
+      To simplify enthalpy, free energy, and heat capacity
+      calculations, there are Phase classes. These extend a Components
+      class to also track the thermodynamic state of the system
+      (Temperature, Pressure, Volume etc).
+    </p>
+
+    <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script>
+    <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushPython.js" type="text/javascript"></script>
+    <link href="http://alexgorbatchev.com/pub/sh/current/styles/shCore.css" rel="stylesheet" type="text/css" />
+    <link href="http://alexgorbatchev.com/pub/sh/current/styles/shThemeEclipse.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript">SyntaxHighlighter.all();</script>
+
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        "HTML-CSS": { linebreaks: { automatic: true} },
+         SVG: { linebreaks: { automatic: true } },
+       tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true },
+       TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js", "cancel.js"]
+        },
+	webFont: "TeX"
+      });
+    </script>
+  </body>
+</html>

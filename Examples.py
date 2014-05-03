@@ -30,10 +30,10 @@ print StoichiometricFuel.elementalComposition()
 ##################################################################
 # Streams
 ##################################################################
-from Stream import IdealGasStream
+from Stream import IdealGasPhase
 
 #Streams are components with an associated temperature and pressure
-fuelstream = IdealGasStream(298.15, StoichiometricFuel, P=1.01325e5)
+fuelstream = IdealGasPhase(298.15, StoichiometricFuel, P=1.01325e5)
 
 #Once these are fixed, we can calculate a range of parameters:
 print fuelstream.Cp(), fuelstream.enthalpy(), fuelstream.entropy(), fuelstream.gibbsFreeEnergy(), fuelstream.helmholtzFreeEnergy()
@@ -42,7 +42,7 @@ print fuelstream.Cp(), fuelstream.enthalpy(), fuelstream.entropy(), fuelstream.g
 #If we add together streams, the output has the lowest pressure of the
 #input streams, and enthalpy conservation is used to calculate the
 #exit temperature
-outletstream = fuelstream + IdealGasStream(800, {"CO2":1, "H2O":1}, P=1.01325e5)
+outletstream = fuelstream + IdealGasPhase(800, {"CO2":1, "H2O":1}, P=1.01325e5)
 print outletstream.T
 #668.375700264
 

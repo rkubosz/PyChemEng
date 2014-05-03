@@ -36,6 +36,15 @@ cdef class Components:
        copy.scale(factor)
        return copy
 
+   def __div__(self, double factor):
+       return self * (1.0 / factor)
+
+   def __neg__(self):
+       return self * (-1.0)
+   
+   def __sub__(self, Components other):
+       return self + (-other)
+
    cpdef double totalMass(self):
        cdef double sum = 0.0
        for entry in self._list:

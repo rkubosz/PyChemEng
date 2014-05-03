@@ -8,7 +8,7 @@ cdef class SpeciesDataType:
     cdef public string name
     cdef public double mass
     cdef public Components elementalComposition
-    cdef dict phases
+    cdef public dict phases
     cdef public list antoineData
 
     cpdef bint inDataRange(SpeciesDataType self, double T, string phase)
