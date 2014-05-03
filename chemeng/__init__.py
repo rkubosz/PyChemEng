@@ -5,4 +5,4 @@ from chemeng.speciesdata import speciesData,findSpeciesData
 from chemeng.reaction import reaction
 import chemeng.thermodata
 import chemeng.antoinedata
-from chemeng.phase import IdealGasPhase
+from chemeng.phase import IdealGasPhase, IncompressiblePhase

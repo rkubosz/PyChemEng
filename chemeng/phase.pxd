@@ -16,3 +16,18 @@ cdef class Phase:
     cpdef double gibbsFreeEnergy(Phase)
     cpdef double internalEnergy(Phase)
     cpdef double volume(Phase)
+    cpdef double helmholtzFreeEnergy(Phase)
+
+cdef class IdealGasPhase(Phase):
+    cpdef IdealGasPhase copy(IdealGasPhase)
+    cpdef double entropy(IdealGasPhase)
+    cpdef double volume(IdealGasPhase)
+    cpdef double Cv(IdealGasPhase)
+
+cdef class IncompressiblePhase(Phase):
+    cdef public double molarvolume
+    cpdef IncompressiblePhase copy(IncompressiblePhase)
+    cpdef double enthalpy(IncompressiblePhase)
+    cpdef double volume(IncompressiblePhase)
+    cpdef double Cv(IncompressiblePhase)
+

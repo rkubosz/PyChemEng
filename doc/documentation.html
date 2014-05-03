@@ -174,10 +174,27 @@ print speciesData['SO'].Hf0(298.15, 'Gas') #Entropy
       To simplify enthalpy, free energy, and heat capacity
       calculations, there are Phase classes. These extend a Components
       class to also track the thermodynamic state of the system
-      (Temperature, Pressure, Volume etc).
+      (Temperature, Pressure, Volume etc). There are a few Phase
+      classes, depending on the thermodynamic model used for
+      calculations, but the two most useful ones are IdealGasPhase and
+      IncompressiblePhase.
     </p>
-
-    <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script>
+    <p>
+      If we create an IdealGasPhase, we have to specify its
+      temperature and pressure. For example, here is a water vapour
+      phase at its saturation temperature for a pressure of 10 bar.
+    </p>
+    <pre class="brush:python;">
+vapour=IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)
+print vapour.Cp()
+#34.7503667276
+print vapour.enthalpy()
+#-236543.780767
+    </pre>
+    <p>
+      If we specify the corresponding 
+    <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js"
+    type="text/javascript"></script>
     <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushPython.js" type="text/javascript"></script>
     <link href="http://alexgorbatchev.com/pub/sh/current/styles/shCore.css" rel="stylesheet" type="text/css" />
     <link href="http://alexgorbatchev.com/pub/sh/current/styles/shThemeEclipse.css" rel="stylesheet" type="text/css" />
