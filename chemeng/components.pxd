@@ -8,8 +8,8 @@ cdef class Components:
    cdef map[string, double] _list
    cpdef Components copy(Components)
    cpdef Components mix(Components, Components)
-   cpdef totalMass(Components)
-   cpdef avgMolarMass(Components)
+   cpdef double totalMass(Components)
+   cpdef double avgMolarMass(Components)
    cpdef Components elementalComposition(Components)
    cpdef Components scale(Components, double)
    cpdef double total(Components)

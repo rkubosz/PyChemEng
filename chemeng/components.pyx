@@ -36,13 +36,13 @@ cdef class Components:
        copy.scale(factor)
        return copy
 
-   cpdef totalMass(self):
+   cpdef double totalMass(self):
        cdef double sum = 0.0
        for entry in self._list:
            sum += entry.second * speciesData[entry.first].mass
        return sum
 
-   cpdef avgMolarMass(self): #g / mol
+   cpdef double avgMolarMass(self): #g / mol
        return self.totalMass() / self.total()
 
    cpdef Components elementalComposition(Components self): #mol

@@ -65,8 +65,8 @@ cdef class SpeciesDataType:
 
     def __str__(self):
         output = "Species{"+self.name+", ["
-        for num, phase in self.phases.iteritems():
-            output += str(num)+":"+phase.name+", "
+        for phasename, phase in self.phases.iteritems():
+            output += phasename+", "
         return output[:-2] +"]}"
 
     def __repr__(self):
