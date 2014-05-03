@@ -64,10 +64,10 @@ cdef class SpeciesDataType:
         self.antoineData = []
 
     def __str__(self):
-        output = "Species{"+self.name+", ["
-        for num, phase in self.phases.iteritems():
-            output += str(num)+":"+phase.name+", "
-        return output[:-2] +"]}"
+        output = "Species{"+self.name+", phases=["
+        for name in self.phases:
+            output += name+", "
+        return output[:-2] +"], elementalComposition="+str(self.elementalComposition)+"}"
 
     def __repr__(self):
         return self.__str__()
