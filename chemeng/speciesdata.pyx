@@ -185,7 +185,23 @@ def relativeError(val, ref):
 #Species data is a dictionary of thermodynamic data on different
 #species/components and their phases. This is addressed using the
 #chemical formula of the species to be studied.  
-speciesData={}
+
+from libcpp.string cimport string
+from libcpp.map cimport map
+
+speciesData = {}
+
+cpdef list findSpeciesData(str search):
+    cdef list retval = []
+    for key,species in speciesData.iteritems():
+        if search in key:
+            retval.append(species)
+            continue
+        for phasekey, phase in species.phases.iteritems():
+            if search in phasekey or search in phase.name or search in phase.comments:
+                retval.append(species)
+                continue
+    return retval
 
 def registerSpecies(name, elementalComposition, mass=None):
     calcMass = 0

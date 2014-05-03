@@ -3,7 +3,7 @@
 # cython: profile=True
 
 from chemeng.phase cimport Phase
-from chemeng.phase import IdealGasStream
+from chemeng.phase import IdealGasPhase
 from chemeng.components cimport Components
 
 cdef public double R = 8.31451
@@ -37,7 +37,7 @@ cpdef constraintCalc(variables, InputStream, bint constP, indexToComponent, inde
         constraints.append(elementalcomposition[indexToElement[i]])
     return constraints
 
-cpdef react(Phase InputStream, set extraComponents, bint constT=False, bint constP=False, int outputlevel=0):
+cpdef reaction(Phase InputStream, set extraComponents, bint constT=False, bint constP=False, int outputlevel=0):
     """Performs gas-phase reaction equilibrium calculations. If the
     temperature is constant, this simply calls the IsothermalReact
     function. If non-isothermal, this function iterates an energy
