@@ -144,6 +144,11 @@ print air
 #C{'N2':0.79, 'O2':0.21}
       </pre>
       <p>
+	The names of the species within the Components class (e.g.,
+	"O2") must correspond to species within the thermodynamics
+	dataset (<a href="#Thermo">see the next section</a> on how to
+	search this).
+      </p>
 	You can add/mix and scale Components to make new Components.
 	For example, here is a calculation of a stochiometic methane-air
 	fuel mixture, its mole fractions, and its mass.
@@ -184,11 +189,14 @@ print stochiometricMix.elementalComposition()
       <p>
 	The elemental composition which is returned is also a Components class, so you can add and scale this as required.
       </p>
-      <h1>Looking up thermodynamic data for individual species</h1>
+      <h1 id="Thermo">Looking up thermodynamic data for individual species</h1>
       <p>
 	To perform energy balances, we need a significant amount of
-	thermodynamic data. All data within PyChemEng is stored
-	within the speciesData dictionary. Species can be looked up using their chemical formula:
+	thermodynamic data. All data within PyChemEng is stored within
+	the speciesData dictionary. This data is for a fixed pressure
+	of 1 bar, any pressure corrections will need to be applied
+	using the Phase classes (<a href="#Phases">see the next section</a>) Species can be
+	looked up using their chemical formula:
       </p>
       <pre class="brush:python;">
 print speciesData['CO2']
@@ -246,7 +254,7 @@ print speciesData['SO'].Hf0(298.15, 'Gas') #Entropy
 	calculations can rapidly get tedious, so there are some Phase
 	classes to help.
       </p>
-      <h1>Calculating thermodynamic properties of mixtures (Phase classes)</h1>
+      <h1 id="Phases">Calculating thermodynamic properties of mixtures (Phase classes)</h1>
       <p>
 	To simplify enthalpy, free energy, and heat capacity
 	calculations, there are Phase classes. These extend a Components
@@ -357,16 +365,19 @@ print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
 var ToC = "<nav role='navigation' class='table-of-contents'>" +
     "<h1>Contents:</h1>" +
     "<ul>";
-var newLine, el, title, link;
+var newLine, el, title, linkid;
 $("h1").each(function() {
     el = $(this);
     title = el.text();
-    linkid = title.replace(/ /g,'');
-    linkid = linkid.replace(/\//g,'');
+    if (el.is('[id]')) {
+	linkid = el.attr('id');
+    } else {
+	//id tags must start with a letter, so strip any invalid characters
+	linkid = title.replace(/[^a-z0-9]+/gi,'');
+    }
     el.attr("id", linkid);
     ToC += "<li><a href='#" + linkid + "'>" + title +"</a></li>";
 });
-
 ToC +="</ul>" +"</nav>";
 $(".contentwrapper").prepend(ToC);
     </script>
