@@ -19,7 +19,7 @@ cdef public double R = 8.31451
 cdef class Phase:
     """A base class which holds fundamental methods and members of a single phase which may contain multiple components"""
 
-    def __init__(self, T, components, P, phase):
+    def __init__(self, components, T, P, phase):
         """The constructor for a stream"""
         #The temperature of the phase
         self.T = T
@@ -108,8 +108,8 @@ cdef class Phase:
 # Ideal gas class
 ####################################################################
 cdef class IdealGasPhase(Phase):
-    def __init__(self, T, components, P):
-        Phase.__init__(self, T, components, P, "Gas")
+    def __init__(self, components, T, P):
+        Phase.__init__(self, components, T=T, P=P, phase="Gas")
 
     cpdef IdealGasPhase copy(IdealGasPhase self):
         cdef IdealGasPhase retval = IdealGasPhase.__new__(IdealGasPhase)
@@ -142,8 +142,8 @@ cdef class IdealGasPhase(Phase):
 # Incompressible Phase
 ####################################################################
 cdef class IncompressiblePhase(Phase):
-    def __init__(self, T, components, P, phaseID, molarvolume=0.0):
-        Phase.__init__(self, T, components, P, phaseID)
+    def __init__(self, components, phaseID, T, P, molarvolume=0.0):
+        Phase.__init__(self, components, T=T, P=P, phase=phaseID)
         self.molarvolume = molarvolume
 
     cpdef IncompressiblePhase copy(IncompressiblePhase self):

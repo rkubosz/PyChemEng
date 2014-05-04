@@ -4,74 +4,135 @@
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <meta name="author" content="Marcus Bannerman" />
     <title>PyChemEng Documentation</title>
+    <style type="text/css">
+    body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	background-color:#b7c7d7;
+    }
+    
+    .contentwrapper,.title {
+	padding:15px;
+	margin:15px;
+	border:1px #000000;
+	background-color:#ffffff;      
+    }
+
+    h1 {
+    font-size:1.5em;
+    margin-before:25px;
+    margin-after:5px;
+    }
+
+    .table-of-contents {
+	float: right;
+	width: 300px;
+	background: #eee;
+	font-size: 0.8em;
+	padding: 1em 2em;
+	margin: 0 0 0.5em 0.5em;
+    }
+    .table-of-contents ul {
+	padding: 0;
+    }
+    .table-of-contents li {
+	margin: 0 0 0.25em 0;
+    }
+    .table-of-contents a {
+	text-decoration: none;
+    }
+    .table-of-contents a:hover,
+    .table-of-contents a:active {
+	text-decoration: underline;
+    }
+
+    h1:target {
+	animation: highlight 1s;
+    }
+
+    @keyframes highlight {
+	from { background-color: yellow; }
+	to { background-color: white; }
+    }
+    </style>
+    <script src="prefixfree.min.js"></script>    
   </head>
   <body>
-    <h1>Loading PyChemEng</h1>
-    <p>
-      Most of PyChemEng is accessed
-      through a single
-      module, <i>chemeng</i>. If you
-      import this, it will load the
-      default thermodynamic data and
-      import the basic functionality.
-    </p>
-    <pre class="brush:python;">
+    <div class="title">
+      <p style="text-align:center;font-size:3em;font-weight:bold;margin:15px;">
+	PyChemEng Documentation
+      </p>
+    </div>
+    <div class="contentwrapper">
+      <p>
+	This is a really quick "by-example" introduction to
+	PyChemEng.
+      </p>
+      <h1>Loading PyChemEng</h1>
+      <p>
+	Most of PyChemEng is accessed through a single python module,
+	called <i>chemeng</i>. If you import this, it will load the
+	default thermodynamic data and import the standard
+	functionality.
+      </p>
+      <pre class="brush:python;">
 from chemeng import *
-    </pre>
-    <p>
-      Lets take a quick look over the functionality.
-    </p>
-    <h1>Elemental database</h1>
-    <p>
-      Masses of components are calculated using the elemental database
-      within PyChemEng. This contains accurate isotopic masses and
-      abundance data:
-    </p>
-    <pre class="brush:python;">
+      </pre>
+      <p>
+	We'll take a tour of the features and how we can apply them.
+      </p>
+      <h1>Elemental database</h1>
+      <p>
+	Masses of components are calculated using the elemental database
+	within PyChemEng. This contains accurate isotopic masses and
+	abundance data:
+      </p>
+      <pre class="brush:python;">
 print elements['Ca']
 #Element{Ca, Z=20, AW=40.078, 24 isotopes}
 print elements['Li'].mass
-#6.941
-    </pre>
-    <p>
-      The average atomic weight (AW) is calculated from the abundance
-      of each isotope and its mass. We can examine this information by
-      accessing the isotope using its neutron number, e.g.
-    </p>
-    <pre class="brush:python;">
+#6.941 (g/mol)
+      </pre>
+      <p>
+	The average atomic weight (AW) is calculated from the abundance
+	of each isotope and its mass. We can examine this information by
+	accessing the isotope using its neutron number, e.g.
+      </p>
+      <pre class="brush:python;">
 print elements['C'].isotopes[6]
 #Isotope{C, Z=6, N=6, M=12.0(0.0), P=0.9893}
-    </pre>
-    <p>
-      Or by directly specifying the proton (Z) and neutron (N) number
-      as a tuple
-    </p>
-    <pre class="brush:python;">
+      </pre>
+      <p>
+	Or by directly specifying the proton (Z) and neutron (N) number
+	as a tuple
+      </p>
+      <pre class="brush:python;">
 print elements[(1,2)] #Tritium
 #Element{T, Z=1, AW=3.0160492777}
-    </pre>
-    
-    <h1>Molar/Mass balances</h1> 
-    <p>
-      The first task of a chemical engineer is to perform mass/molar
-      balances of a set of species. PyChemEng lets you build molar balances very easily
-      using the Components class. To create it, we provide it with a
-      dictionary of chemical formulas/species and their molar amounts. For
-      example:
-    </p>
-    <pre class="brush:python;">
+      </pre>
+      <p>
+	Even though this is an Isotope, PyChemEng always returns an
+	Element for anything accessed via the elements array operator.
+      </p>
+      <h1>Molar/Mass balances</h1> 
+      <p>
+	PyChemEng lets you build molar balances very easily using the
+	Components class. To create it, we provide it with a
+	dictionary of chemical formulas/species and their molar
+	amounts. For example:
+      </p>
+      <pre class="brush:python;">
 air = Components({'O2':0.21, 'N2':0.79})
 print air
 #C{'N2':0.79, 'O2':0.21}
-    </pre>
-    <p>
-      You can add/mix and scale Components to make new Components.
-    </p>
-    <p>
-      For example, here is a calculation of a stochiometic
-      methane-air fuel mixture, its mole fractions, and its mass.
-    </p>
-    <pre class="brush:python;">
+      </pre>
+      <p>
+	You can add/mix and scale Components to make new Components.
+	For example, here is a calculation of a stochiometic methane-air
+	fuel mixture, its mole fractions, and its mass.
+      </p>
+      <pre class="brush:python;">
 #Specify fuel and air streams
 fuel = Components({'CH4':1.0})
 air = Components({'N2':0.79, 'O2':0.21})
@@ -90,52 +151,52 @@ print stochiometricMix.normalised()
 #C{'CH4':0.0950226, 'N2':0.714932, 'O2':0.190045}
 
 print stochiometricMix.total() 
-#10.5238095238
+#10.5238095238 (mol)
 
 print stochiometricMix.totalMass() 
-#290.807545714
-    </pre>
-    <p>
-      Please note the handy ability
-      to break Components down to
-      their elemental composition.
-    </p>
-    <pre class="brush:python;">
+#290.807545714 (g)
+      </pre>
+      <p>
+	Please note the handy ability
+	to break Components down to
+	their elemental composition.
+      </p>
+      <pre class="brush:python;">
 print stochiometricMix.elementalComposition()
-#C{'C':1, 'H':4, 'N':22.5714, 'O':6}
-    </pre>
-    <p>
-      The elemental composition which is returned is also a Components class, so you can add and scale this as required.
-    </p>
-    <h1>Thermodynamic data (species data)</h1>
-    <p>
-      To perform energy balances, we need a significant amount of
-      thermodynamic data. All data within PyChemEng is stored
-      within the speciesData dictionary. Species can be looked up using their chemical formula:
-    </p>
-    <pre class="brush:python;">
+#C{'C':1, 'H':4, 'N':15.0476, 'O':4}
+      </pre>
+      <p>
+	The elemental composition which is returned is also a Components class, so you can add and scale this as required.
+      </p>
+      <h1>Thermodynamic data (species data)</h1>
+      <p>
+	To perform energy balances, we need a significant amount of
+	thermodynamic data. All data within PyChemEng is stored
+	within the speciesData dictionary. Species can be looked up using their chemical formula:
+      </p>
+      <pre class="brush:python;">
 print speciesData['CO2']
 #Species{CO2, phases=[Gas], elementalComposition=C{'C':1, 'O':2}}
-    </pre>
-    <p>
-      Here we note that the database has thermodynamic data for the
-      gas phase of CO2 only. We can see what temperature ranges this
-      is defined over by querying the phase:
-    </p>
-    <pre class="brush:python;">
+      </pre>
+      <p>
+	Here we note that the database has thermodynamic data for the
+	gas phase of CO2 only. We can see what temperature ranges this
+	is defined over by querying the phase:
+      </p>
+      <pre class="brush:python;">
 print speciesData['CO2'].phases['Gas']
 #Phase{Gas, T=[200.0-&gt;1000.0K, 1000.0-&gt;6000.0K, 6000.0-&gt;20000.0K], comments='Gurvich,1991 pt1 p27 pt2 p24.'}
-    </pre>
-    <p>
-      Here we can see that thermodynamic data is available for
-      CO${}_2$ gases over the range $200\to20000$~K.
-    </p>
-    <p>
-      The chemical formula can be difficult to determine for some
-      compounds. To simplify finding the appropriate formula, there
-      are some search functions.
-    </p>
-    <pre class="brush:python;">
+      </pre>
+      <p>
+	Here we can see that thermodynamic data is available for
+	CO${}_2$ gases over the range $200\to20000$~K.
+      </p>
+      <p>
+	The chemical formula can be difficult to determine for some
+	compounds. To simplify finding the appropriate formula, there
+	are some search functions.
+      </p>
+      <pre class="brush:python;">
 print findSpeciesData("C8")
 #[Species{'C8H18,isooctane', phases=[Gas], elementalComposition=C{'C':8, 'H':18}},
 # Species{'C8H18,n-octane', phases=[Gas], elementalComposition=C{'C':8, 'H':18}},
@@ -143,58 +204,119 @@ print findSpeciesData("C8")
 # Species{'C8H16,1-octene', phases=[Gas], elementalComposition=C{'C':8, 'H':16}},
 # Species{'C8H17,n-octyl', phases=[Gas], elementalComposition=C{'C':8, 'H':17}},
 # Species{'C8H10,ethylbenz', phases=[Gas], elementalComposition=C{'C':8, 'H':10}}]
-    </pre>
-    <p>
-      Please note, the database included with PyChemEng does not have
-      many keywords defined within it. So simple name searches
-      (e.g. benzene) may fail. It is best to search for a partially
-      complete chemical formula (or add your own data).
-    </p>
-    <p>
-      Once we have found the species, we can query for the pure phase
-      properties (at standard pressure).
-    </p>
-    <pre class="brush:python;">
+      </pre>
+      <p>
+	Please note, the database included with PyChemEng does not have
+	many keywords defined within it. So simple name searches
+	(e.g. benzene) may fail. It is best to search for a partially
+	complete chemical formula (or add your own data).
+      </p>
+      <p>
+	Once we have found the species, we can query for the pure phase
+	properties (at standard pressure).
+      </p>
+      <pre class="brush:python;">
 print speciesData['H2O'].Cp0(298.15, 'Gas')#Heat capacity
-#33.5877103224
+#33.5877103224 (J/(mol K))
 
 print speciesData['H2O'].Hf0(298.15, 'Gas')#Enthalpy of formation
-#-241826.00034
+#-241826.00034 (J/mol)
 
 print speciesData['SO'].Hf0(298.15, 'Gas') #Entropy
-#188.829115517
-    </pre>
-    <p>
-      Using these properties in energy balances, or free energy
-      calculations can rapidly get tedious, so there are some Phase
-      classes to help.
-    </p>
-    <h1>Energy/enthalpy balances (Phase classes)</h1>
-    <p>
-      To simplify enthalpy, free energy, and heat capacity
-      calculations, there are Phase classes. These extend a Components
-      class to also track the thermodynamic state of the system
-      (Temperature, Pressure, Volume etc). There are a few Phase
-      classes, depending on the thermodynamic model used for
-      calculations, but the two most useful ones are IdealGasPhase and
-      IncompressiblePhase.
-    </p>
-    <p>
-      If we create an IdealGasPhase, we have to specify its
-      temperature and pressure. For example, here is a water vapour
-      phase at its saturation temperature for a pressure of 10 bar.
-    </p>
-    <pre class="brush:python;">
+#188.829115517 (J/(mol K))
+      </pre>
+      <p>
+	Using these properties in energy balances, or free energy
+	calculations can rapidly get tedious, so there are some Phase
+	classes to help.
+      </p>
+      <h1>Energy/enthalpy balances (Phase classes)</h1>
+      <p>
+	To simplify enthalpy, free energy, and heat capacity
+	calculations, there are Phase classes. These extend a Components
+	class to also track the thermodynamic state of the system
+	(Temperature, Pressure, Volume etc). There are a few Phase
+	classes, depending on the thermodynamic model used for
+	calculations, but the two most useful ones are IdealGasPhase and
+	IncompressiblePhase.
+      </p>
+      <p>
+	When we create an IdealGasPhase, we specify a component list
+	and the state variables.For example, water at $10$ bar boils
+	at $179.9^\circ$C. Creating an ideal gas phase at this
+	temperature we have:
+      </p>
+      <pre class="brush:python;">
 vapour=IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)
-print vapour.Cp()
-#34.7503667276
-print vapour.enthalpy()
-#-236543.780767
-    </pre>
-    <p>
-      If we specify the corresponding 
+      </pre>
+      <p>
+	We can then directly query this phase for the heat capacity
+	and enthalpy (and other properties).
+      </p>
+      <pre class="brush:python;">
+	print vapour.Cp() 
+	#34.7503667276 (J/ K) 
+	print vapour.enthalpy() 
+	#-236543.780767 (J)
+      </pre>
+      <p>
+	The enthalpy might appear very high, but this includes the
+	enthalpy of formation of water, as well as its sensible heat
+	and latent heat of vapourisation.
+      </p>
+      <p>
+	If we want to calculate the latent heat of vapourisation we
+	will need the enthalpy of the saturated liquid. If we try to
+	approximate it as an IncompressiblePhase, we will need to
+	provide a density/volume to approximate the pressure
+	dependence of the enthalpy, and a phaseID to select the
+	appropriate thermodynamic data.
+      </p>
+      <pre class="brush:python;">
+#Check that we have thermodynamic data for a "Liquid" phase
+print speciesData['H2O']
+#Species{'H2O', phases=[1cr, Gas, Liquid], elementalComposition=C{'H':2, 'O':1}}
+
+liquid=IncompressiblePhase({'H2O':1.0}, T=179.9+273.15, P=10.e5, phaseID="Liquid", molarvolume=0.018 / 998.0)
+      </pre>
+      <p>
+	Then we can calculate enthalpy differences.
+      </p>
+      <pre class="brush:python;">
+print vapour.enthalpy() - liquid.enthalpy()
+#37427.074787 (J/mol)
+print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
+#2079.28193261 (J/g)
+      </pre>
+      <p>
+	Examining steam tables, we see values of $\approx 2016$
+	kJ/kg. The discrepancy here will be caused by non-ideal
+	interactions and differences in thermodynamic data. It could
+	also be caused by the molarvolume used; however, we can turn
+	off this contriubtion by setting the molarvolume to zero (or
+	not specifying it).
+      </p>
+      <pre class="brush:python;">
+liquid=IncompressiblePhase({'H2O':1.0}, T=179.9+273.15, P=10.e5, phaseID="Liquid")
+print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
+#2080.18373622 (J/g)
+      </pre>
+      <p>
+	We can see that the volume contribution is very small.
+      </p>
+      <p>
+	In the above example, we didn't actually calculate the phase
+	equilibria of the system. The saturation temperature was
+	obtained from steam tables and used as input to the
+	calculations. The real power of PyChemEng comes from its
+	ability to perform Gibbs free energy minimisations.
+      </p>
+      <h2>Gibb's free energy minimisation</h2>
+
+      <h2>Adding your own thermodynamic data</h2>
+    </div>
     <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js"
-    type="text/javascript"></script>
+	    type="text/javascript"></script>
     <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushPython.js" type="text/javascript"></script>
     <link href="http://alexgorbatchev.com/pub/sh/current/styles/shCore.css" rel="stylesheet" type="text/css" />
     <link href="http://alexgorbatchev.com/pub/sh/current/styles/shThemeEclipse.css" rel="stylesheet" type="text/css" />
@@ -203,17 +325,34 @@ print vapour.enthalpy()
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">
       MathJax.Hub.Config({
-        "HTML-CSS": { linebreaks: { automatic: true} },
-         SVG: { linebreaks: { automatic: true } },
-       tex2jax: {
-        inlineMath: [['$','$'], ['\\(','\\)']],
-        processEscapes: true },
-       TeX: {
-        equationNumbers: { autoNumber: "AMS" },
-        extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js", "cancel.js"]
-        },
-	webFont: "TeX"
+      "HTML-CSS": { linebreaks: { automatic: true} },
+      SVG: { linebreaks: { automatic: true } },
+      tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      processEscapes: true },
+      TeX: {
+      equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js", "cancel.js"]
+      }
       });
+    </script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script>
+var ToC = "<nav role='navigation' class='table-of-contents'>" +
+    "<h3>Contents:</h3>" +
+    "<ul>";
+var newLine, el, title, link;
+$("h1").each(function() {
+    el = $(this);
+    title = el.text();
+    linkid = title.replace(/ /g,'');
+    linkid = linkid.replace(/\//g,'');
+    el.attr("id", linkid);
+    ToC += "<li><a href='#" + linkid + "'>" + title +"</a></li>";
+});
+
+ToC +="</ul>" +"</nav>";
+$(".contentwrapper").prepend(ToC);
     </script>
   </body>
 </html>
