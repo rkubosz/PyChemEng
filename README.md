@@ -8,13 +8,13 @@ equilibrium calculations.
 Examples/Documentation
 ========
 
-Please take a look at the Examples.py file.
+[Please see the online documentation!](http://toastedcrumpets.github.io/PyChemEng/)
 
 Testing
 =======
 
 You can validate the entire set of calculations by running the
-Tests.py script.
+Test.py script.
 
 Acknowledgements
 ================
