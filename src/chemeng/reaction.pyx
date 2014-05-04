@@ -117,7 +117,7 @@ def IsothermalReact(InputStream, bint constP=False, int outputlevel=0):
         initialval = InputStream.gibbsFreeEnergy()
         optfunc = lambda variables: (variablesToStream(variables, InputStream, constP, indexToComponent).gibbsFreeEnergy() - initialval) / totalInputMoles
     else:
-        initialval = InputStream.gibbsFreeEnergy()
+        initialval = InputStream.helmholtzFreeEnergy()
         optfunc = lambda variables: (variablesToStream(variables, InputStream, constP, indexToComponent).helmholtzFreeEnergy() - initialval) / totalInputMoles
 
     ### Constraints

@@ -14,3 +14,5 @@ cdef class Components:
    cpdef Components scale(Components, double)
    cpdef double total(Components)
    cpdef Components normalised(Components)
+   cpdef values(Components)
+   cpdef keys(Components)

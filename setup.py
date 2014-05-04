@@ -12,6 +12,7 @@ ext_modules = [Extension('chemeng.elementdata', ['src/chemeng/elementdata.pyx'],
                Extension('chemeng.phase', ['src/chemeng/phase.pyx'], language='c++', include_dirs=['.']),
                Extension('chemeng.reaction', ['src/chemeng/reaction.pyx'], language='c++', include_dirs=['.']),
                Extension('chemeng.standarddefinitions', ['src/chemeng/standarddefinitions.pyx'], language='c++', include_dirs=['.']),
+               Extension('chemeng.gibbminimizer', ['src/chemeng/gibbsminimizer.pyx'], language='c++', include_dirs=['.']),
                ]
 
 setup(

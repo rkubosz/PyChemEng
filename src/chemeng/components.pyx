@@ -26,6 +26,12 @@ cdef class Components:
            else:
                self._list[entry.first] += entry.second
 
+   cpdef values(Components self):
+      return self._list.values()
+
+   cpdef keys(Components self):
+      return self._list.keys()
+
    def __add__(self, Components other):
        cdef Components copy = self.copy()
        copy.mix(other)

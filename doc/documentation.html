@@ -70,7 +70,7 @@
 	This is a really quick "by-example" introduction to
 	PyChemEng. There is no other documentation other than the code
 	itself, <a href="https://github.com/toastedcrumpets/PyChemEng/tree/master/src/chemeng">which
-	you can browse here</a>.
+	  you can browse here</a>.
       </p>
       <h1>Installing PyChemEng</h1>
       <p>
@@ -149,6 +149,7 @@ print air
 	dataset (<a href="#Thermo">see the next section</a> on how to
 	search this).
       </p>
+      <p>
 	You can add/mix and scale Components to make new Components.
 	For example, here is a calculation of a stochiometic methane-air
 	fuel mixture, its mole fractions, and its mass.
@@ -189,7 +190,7 @@ print stochiometricMix.elementalComposition()
       <p>
 	The elemental composition which is returned is also a Components class, so you can add and scale this as required.
       </p>
-      <h1 id="Thermo">Looking up thermodynamic data for individual species</h1>
+      <h1 id="Thermo">Looking up isobaric thermodynamic data for individual species</h1>
       <p>
 	To perform energy balances, we need a significant amount of
 	thermodynamic data. All data within PyChemEng is stored within
@@ -254,7 +255,7 @@ print speciesData['SO'].Hf0(298.15, 'Gas') #Entropy
 	calculations can rapidly get tedious, so there are some Phase
 	classes to help.
       </p>
-      <h1 id="Phases">Calculating thermodynamic properties of mixtures (Phase classes)</h1>
+      <h1 id="Phases">Calculating thermodynamic properties of phases (Phase classes)</h1>
       <p>
 	To simplify enthalpy, free energy, and heat capacity
 	calculations, there are Phase classes. These extend a Components
@@ -278,10 +279,10 @@ vapour=IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)
 	and enthalpy (and other properties).
       </p>
       <pre class="brush:python;">
-	print vapour.Cp() 
-	#34.7503667276 (J/ K) 
-	print vapour.enthalpy() 
-	#-236543.780767 (J)
+print vapour.Cp() 
+#34.7503667276 (J/ K) 
+print vapour.enthalpy() 
+#-236543.780767 (J)
       </pre>
       <p>
 	The enthalpy might appear very high, but this includes the
@@ -326,7 +327,8 @@ print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
 #2080.18373622 (J/g)
       </pre>
       <p>
-	We can see that the volume contribution is very small.
+	We can see that the volume contribution is very small, hence
+	why it is often ignored.
       </p>
       <p>
 	In the above example, we didn't actually calculate the phase
@@ -336,7 +338,15 @@ print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
 	ability to perform Gibbs free energy minimisations.
       </p>
       <h1>Gibb's free energy minimisation</h1>
-
+      <p>
+	At equilibrium, the temperature and pressure are equal between
+	all phases, and the Gibb's free energy is at a minimum. This
+	statement allows us to calculate everything from phase
+	equilbria to reaction equilibria. PyChemEng makes these kinds
+	of calculations extremely simple.
+      </p>
+      
+      
       <h1>Adding your own thermodynamic data</h1>
     </div>
     <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js"
