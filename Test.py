@@ -36,7 +36,7 @@ validate(speciesData['CO2'].Psat(400), 4.89027e5)
 # Stream
 ##################################################################
 #Test streams
-Input=IdealGasPhase(300, {"C2H5OH":1}, P=1e5)
+Input=IdealGasPhase({"C2H5OH":1}, T=300, P=1e5)
 validate(len(Input.components.elementalComposition()), 3)
 validate(Input.components.elementalComposition()["C"], 2)
 validate(Input.components.elementalComposition()["H"], 6)
@@ -44,39 +44,39 @@ validate(Input.components.elementalComposition()["O"], 1)
 
 #Reference test from GasEq program
 #print "N2 test"
-Input=IdealGasPhase(300, {"N2":0.79}, P=1e5)
+Input=IdealGasPhase({"N2":0.79}, T=300, P=1e5)
 validate(Input.Cp() / Input.components.total(), 29.075)
 validate(Input.enthalpy() / Input.components.total() / Input.components.avgMolarMass(), 1.97)
 validate(Input.entropy() * 1000.0 / Input.components.total() / Input.components.avgMolarMass(), 6842.1)
 validate(Input.gibbsFreeEnergy() / Input.components.total() / Input.components.avgMolarMass(), -2050.66)
 #print "N2 O2 test"
-Input=IdealGasPhase(300, {"N2":0.79, "O2":0.21}, P=1e5)
+Input=IdealGasPhase({"N2":0.79, "O2":0.21}, T=300, P=1e5)
 validate(Input.Cp() / Input.components.total(), 29.129)
 validate(Input.enthalpy() / Input.components.total() / Input.components.avgMolarMass(), 1.90)
 validate(Input.entropy() * 1000.0 / Input.components.total() / Input.components.avgMolarMass(), 6890.37)
 validate(Input.gibbsFreeEnergy() / Input.components.total() / Input.components.avgMolarMass(), -2065.21)
 #print "Pre-Burn test 1: low temp"
-Input=IdealGasPhase(300, {"CH4":0.105, "N2":0.79, "O2":0.21}, P=1e5)
+Input=IdealGasPhase({"CH4":0.105, "N2":0.79, "O2":0.21}, T=300, P=1e5)
 validate(Input.Cp() / Input.components.total(), 29.711)
 validate(Input.enthalpy() / Input.components.total() / Input.components.avgMolarMass(), -255.50)
 validate(Input.entropy() * 1000.0 / Input.components.total() / Input.components.avgMolarMass(), 7245.25)
 validate(Input.gibbsFreeEnergy() / Input.components.total() / Input.components.avgMolarMass(), -2429.07)
 #print "Pre-Burn test 1: high temp"
-Input=IdealGasPhase(1000, {"CH4":0.105, "N2":0.79, "O2":0.21}, P=1e5)
+Input=IdealGasPhase({"CH4":0.105, "N2":0.79, "O2":0.21}, T=1000, P=1e5)
 validate(Input.Cp() / Input.components.total(), 36.918)
 validate(Input.enthalpy() / Input.components.total() / Input.components.avgMolarMass(), 585.60)
 validate(Input.entropy() * 1000.0 / Input.components.total() / Input.components.avgMolarMass(), 8660.58)
 validate(Input.gibbsFreeEnergy() / Input.components.total() / Input.components.avgMolarMass(), -8074.98)
 #print "Post-Burn test:"
-Input=IdealGasPhase(2665.8, {"N2":0.79, "H2O":0.21, "CO2":0.0824, "O2":0.0113, "CH4":7.675e-15, "CO":0.0226}, P=8.977 * 1.01325e5)
+Input=IdealGasPhase({"N2":0.79, "H2O":0.21, "CO2":0.0824, "O2":0.0113, "CH4":7.675e-15, "CO":0.0226}, T=2665.8, P=8.977 * 1.01325e5)
 validate(Input.Cp() / Input.components.total(), 42.018)
 validate(Input.enthalpy() / Input.components.total() / Input.components.avgMolarMass(), 464.47)
 validate(Input.entropy() * 1000.0 / Input.components.total() / Input.components.avgMolarMass(), 9498.39)
 validate(Input.gibbsFreeEnergy() / Input.components.total() / Input.components.avgMolarMass(), -24856.19)
 
 #Test mixing of streams
-Input1 = IdealGasPhase(300, {"N2":1, "O2":1}, P=1e5)
-Input2 = IdealGasPhase(600, {"N2":0.5, "O2":2}, P=1e5)
+Input1 = IdealGasPhase({"N2":1, "O2":1}, T=300, P=1e5)
+Input2 = IdealGasPhase({"N2":0.5, "O2":2}, T=600, P=1e5)
 Output = Input1 + Input2
 
 validate(Output.components["N2"], 1.5)
@@ -90,7 +90,7 @@ validate(Output.enthalpy(), Input1.enthalpy() + Input2.enthalpy())
 #reactants are present in the products, otherwise GasEq does not
 #converge!
 #Equilibrium at defined T and P
-InGas = IdealGasPhase(2600, {"N2":0.79, "O2":0.21, "CH4":0.105}, P=1.01325e5)
+InGas = IdealGasPhase({"N2":0.79, "O2":0.21, "CH4":0.105}, T=2600, P=1.01325e5)
 OutGas = reaction(InGas, {"N2", "H2O", "CO2", "CO", "O2"}, constP=True, constT=True)
 validate(OutGas.T, 2600)
 validate(OutGas.P, 1.01325e5)
@@ -104,7 +104,7 @@ validate(OutGas.components["CO"], 0.03443)
 
 
 #Adiabatic T at constant P
-InGas = IdealGasPhase(300, {"N2":0.79, "O2":0.21, "CH4":0.105}, P=1.01325e5)
+InGas = IdealGasPhase({"N2":0.79, "O2":0.21, "CH4":0.105}, T=300, P=1.01325e5)
 OutGas = reaction(InGas, {"N2", "H2O", "CO2", "CO", "O2"}, constP=True, constT=False)
 validate(InGas.enthalpy(), OutGas.enthalpy())
 validate(InGas.components.totalMass(), OutGas.components.totalMass())
@@ -118,7 +118,7 @@ validate(OutGas.components["CH4"], 0)
 validate(OutGas.components["CO"], 0.01149)
 
 #Adiabatic T at constant V
-InGas = IdealGasPhase(300, {"N2":0.79, "O2":0.21, "CH4":0.105}, P=1.01325e5)
+InGas = IdealGasPhase( {"N2":0.79, "O2":0.21, "CH4":0.105}, T=300, P=1.01325e5)
 OutGas = reaction(InGas, {"N2", "H2O", "CO2", "CO", "O2"}, constP=False, constT=False)
 validate(InGas.internalEnergy(), OutGas.internalEnergy())
 validate(InGas.components.totalMass(), OutGas.components.totalMass())
@@ -131,7 +131,7 @@ validate(OutGas.components["CH4"], 0)
 validate(OutGas.components["CO"], 0.02260)
 
 #Harder test
-InputS = IdealGasPhase(700, {"CH4":0.105, "O2":0.21, "N2":0.79}, P = 8 * 1.01325e5)
+InputS = IdealGasPhase({"CH4":0.105, "O2":0.21, "N2":0.79}, T=700, P = 8 * 1.01325e5)
 OutGas = reaction(InputS, {"H2O", "CO2", "CO", "OH", "H", "O", "H2", "NO"}, outputlevel=0, constP=True, constT=False)
 validate(InGas.components.totalMass(), OutGas.components.totalMass())
 validate(OutGas.T, 2483.4)
@@ -147,7 +147,7 @@ validate(OutGas.components["O2"], 0.00634)
 #validate(OutGas.components["O"], 3.934e-4)
 
 #Adiabatic flame test, calculated values from http://direns.mines-paristech.fr/Sites/Thopt/en/co/applet-calc-comb.html
-InputS = IdealGasPhase(300, {"CH4":1, "H2O":0, "O2":2.0, "N2":2.0 / 0.21 * 0.781, "Ar":2.0 / 0.21 * 0.009, "CO2":0}, P=1e5)
+InputS = IdealGasPhase({"CH4":1, "H2O":0, "O2":2.0, "N2":2.0 / 0.21 * 0.781, "Ar":2.0 / 0.21 * 0.009, "CO2":0}, T=300, P=1e5)
 OutGas = reaction(InputS, set(), outputlevel=0, constP=True, constT=False)
 validate(OutGas.T, 2332.8)
 normComp = OutGas.components.normalised()
