@@ -85,7 +85,7 @@ cd PyChemEng
 ./setup.py build
 sudo ./setup.py install
       </pre>
-      <h1>Loading PyChemEng</h1>
+      <h1>Loading PyChemEng in python</h1>
       <p>
 	Most of PyChemEng is accessed through a single python module,
 	called <i>chemeng</i>. If you import this, it will load the
@@ -98,7 +98,7 @@ from chemeng import *
       <p>
 	We'll take a tour of the features and how we can apply them.
       </p>
-      <h1>Elemental database</h1>
+      <h1>Browsing the element database</h1>
       <p>
 	Masses of components are calculated using the elemental database
 	within PyChemEng. This contains accurate isotopic masses and
@@ -131,7 +131,7 @@ print elements[(1,2)] #Tritium
 	Even though this is an Isotope, PyChemEng always returns an
 	Element for anything accessed via the elements array operator.
       </p>
-      <h1>Molar/Mass balances</h1> 
+      <h1>Molar/Mass balances using Components classes</h1> 
       <p>
 	PyChemEng lets you build molar balances very easily using the
 	Components class. To create it, we provide it with a
@@ -184,7 +184,7 @@ print stochiometricMix.elementalComposition()
       <p>
 	The elemental composition which is returned is also a Components class, so you can add and scale this as required.
       </p>
-      <h1>Thermodynamic data (species data)</h1>
+      <h1>Looking up thermodynamic data for individual species</h1>
       <p>
 	To perform energy balances, we need a significant amount of
 	thermodynamic data. All data within PyChemEng is stored
@@ -246,7 +246,7 @@ print speciesData['SO'].Hf0(298.15, 'Gas') #Entropy
 	calculations can rapidly get tedious, so there are some Phase
 	classes to help.
       </p>
-      <h1>Energy/enthalpy balances (Phase classes)</h1>
+      <h1>Calculating thermodynamic properties of mixtures (Phase classes)</h1>
       <p>
 	To simplify enthalpy, free energy, and heat capacity
 	calculations, there are Phase classes. These extend a Components
