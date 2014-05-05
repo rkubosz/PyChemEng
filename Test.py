@@ -91,7 +91,12 @@ validate(Output.enthalpy(), Input1.enthalpy() + Input2.enthalpy())
 #converge!
 #Equilibrium at defined T and P
 InGas = IdealGasPhase({"N2":0.79, "O2":0.21, "CH4":0.105}, T=2600, P=1.01325e5)
-OutGas = reaction(InGas, {"N2", "H2O", "CO2", "CO", "O2"}, constP=True, constT=True)
+InGas.components += Components({"H2O":0, "CO2":0, "CO":0})
+OutGasOld = reaction(InGas, {"N2", "H2O", "CO2", "CO", "O2"}, constP=True, constT=True)
+OutGas = findEquilibrium([InGas], constP=True, constT=True, elemental=True)[0]
+print InGas
+print OutGasOld
+print OutGas
 validate(OutGas.T, 2600)
 validate(OutGas.P, 1.01325e5)
 validate(InGas.components.totalMass(), OutGas.components.totalMass())
@@ -148,10 +153,20 @@ validate(OutGas.components["O2"], 0.00634)
 
 #Adiabatic flame test, calculated values from http://direns.mines-paristech.fr/Sites/Thopt/en/co/applet-calc-comb.html
 InputS = IdealGasPhase({"CH4":1, "H2O":0, "O2":2.0, "N2":2.0 / 0.21 * 0.781, "Ar":2.0 / 0.21 * 0.009, "CO2":0}, T=300, P=1e5)
-OutGas = reaction(InputS, set(), outputlevel=0, constP=True, constT=False)
+OutGas = findEquilibrium([InputS], constP=True, constH=True, elemental=True)[0]
+#OutGas = reaction(InputS, set(), outputlevel=0, constP=True, constT=False)
 validate(OutGas.T, 2332.8)
 normComp = OutGas.components.normalised()
 validate(normComp["CO2"], 0.0950226)
 validate(normComp["H2O"], 0.190045)
 validate(normComp["N2"], 0.706787)
 validate(normComp["Ar"], 0.0081448)
+
+
+#print "INPUT STREAM"
+#print InputS
+#print "TARGET OUTPUT STREAM"
+#print OutGas
+#print "ACTUAL OUTPUT STREAM"
+#for phase in OutGas2:
+#    print phase

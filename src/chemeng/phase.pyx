@@ -100,15 +100,6 @@ cdef class Phase:
             return self.enthalpy() - enthalpy
         self.T = scipy.optimize.fsolve(worker, self.T)[0]
 
-    cpdef list createStateVector(Phase self):
-        return [moles for moles in self.components.values()] + [self.T, self.P]
-
-    cpdef restoreStateVector(Phase self, list vec):
-        for key, val in zip(self.components.keys(), vec[:-2]):
-            self.components[key] = val
-        self.T = vec[-2]
-        self.P = vec[-1]
-
 #Functions which must be overridden by derived classes
     cpdef double volume(self):
         raise Exception("Function missing from "+self.__class__.__name__+"!")
