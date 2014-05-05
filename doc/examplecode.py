@@ -64,8 +64,8 @@ print speciesData['H2O'].Cp0(298.15, 'Gas')#Heat capacity
 print speciesData['H2O'].Hf0(298.15, 'Gas')#Enthalpy of formation
 #-241826.00034 (J/mol)
 
-print speciesData['SO'].Hf0(298.15, 'Gas') #Entropy
-#188.829115517 (J/(mol K))
+print speciesData['SO'].S0(298.15, 'Gas') #Entropy
+#221.941409816 (J/(mol K))
 
 
 vapour=IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)

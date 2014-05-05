@@ -7,6 +7,8 @@ from chemeng.phase import IdealGasPhase
 from chemeng.components cimport Components
 from itertools import izip
 
+cpdef double R = 8.3144621
+
 cpdef Components getTotalSpecies(list phaselist):
     cdef Components retval = Components({})
     for phase in phaselist:
@@ -18,9 +20,12 @@ cdef class EquilibriumFinder:
     cdef public list outputPhases
     cdef public bint constT
     cdef public bint constP
+    cdef public bint constV
     cdef public bint constH
+    cdef public bint constU
+    cdef public bint constS
     cdef public bint elemental
-    cdef public double initialS
+    cdef public double initialObjVal
     cdef public double inputMoles
     cdef public Components inputSpecies
     cdef public Components inputElements
@@ -53,8 +58,7 @@ cdef class EquilibriumFinder:
                 var_count +=1            
 
     #Create the constraints
-    cpdef list constraintCalc(EquilibriumFinder self, variables):
-        self.restoreStateVector(variables)
+    cpdef list constraintCalc(EquilibriumFinder self):
         cdef Components currentSpecies = getTotalSpecies(self.outputPhases)
         cdef Components currentElements = currentSpecies.elementalComposition()
         constraintvals=[]
@@ -65,38 +69,81 @@ cdef class EquilibriumFinder:
             for key in self.inputSpecies.keys():
                 constraintvals.append(currentSpecies[key])
 
-        cdef double sumH = 0.0
+        cdef double sumX
         cdef Phase phase
         if self.constH:
+            sumX = 0
             for phase in self.outputPhases:
-                sumH += phase.enthalpy()
-            constraintvals.append(sumH)
+                sumX += phase.enthalpy()
+            constraintvals.append(sumX)
+        if self.constU:
+            sumX = 0
+            for phase in self.outputPhases:
+                sumX += phase.internalEnergy()
+            constraintvals.append(sumX)
+        if self.constV:
+            sumX = 0
+            for phase in self.outputPhases:
+                sumX += phase.volume()
+            constraintvals.append(sumX)
+        if self.constS:
+            sumX = 0
+            for phase in self.outputPhases:
+                sumX += phase.entropy()
+            constraintvals.append(sumX)
+            
         return constraintvals
 
-    cpdef list constraint_func(EquilibriumFinder self, variables):
+    cpdef list constraint_func(EquilibriumFinder self):
         cdef double current
         cdef double target
-        cdef list retval = []
-        for current, target in izip(self.constraintCalc(variables), self.constraintTargets):
-            retval.append(current - target)
+        cdef list retval = self.constraintCalc()
+        for current, target in izip(retval, self.constraintTargets):
+            current -= target
         return retval
 
-    cpdef double optimisation_func(EquilibriumFinder self, variables):
-        self.restoreStateVector(variables)
-        cdef double Stotal = 0
-        for phase in self.outputPhases:
-            Stotal += phase.entropy()
-        return - Stotal / self.inputMoles - self.initialS
+    cpdef double optimisation_func(EquilibriumFinder self):
+        cdef double total = 0
+        cdef Phase phase
+        if self.constT and self.constP:
+            for phase in self.outputPhases:
+                total += phase.gibbsFreeEnergy()
+        elif self.constT and self.constV:
+            for phase in self.outputPhases:
+                total += phase.helmholtzFreeEnergy()
+        elif (self.constH and self.constP) or (self.constU and self.constV):
+            for phase in self.outputPhases:
+                total -= phase.entropy()
+        elif self.constS and self.constV:
+            for phase in self.outputPhases:
+                total += phase.internalEnergy()
+        elif self.constS and self.constP:
+            for phase in self.outputPhases:
+                total += phase.enthalpy()
+        else:
+            raise Exception("Error, unanticipated combination of constant state variables")
+        return total
 
-    def __init__(EquilibriumFinder self, list inputPhases, bint constT = False, bint constP = False, bint constH = False, bint elemental = False, double Tmax = 20000, double Pmax = 500):
+    cpdef obj_func(EquilibriumFinder self, variables):
+        self.restoreStateVector(variables)
+        cpdef double f = self.optimisation_func()
+        print "!!", f, self.constraint_func(), self.initialObjVal, variables
+        return f - self.initialObjVal, self.constraint_func(), 0
+
+    def __init__(EquilibriumFinder self, list inputPhases, bint constT = False, bint constP = False, bint constH = False, bint constV = False, bint constU = False, bint constS = False, bint elemental = False, double Tmax = 20000, double Pmax = 500):
         self.inputPhases = inputPhases
         self.outputPhases = []
         cdef Phase phase
         for phase in self.inputPhases:
             self.outputPhases.append(phase.copy())
+        if (constT + constP + constH + constV + constU + constS) != 2:
+            raise Exception("EquilibriumFinder requires exactly 2 constant state variables from T, P, H, V, U, and S.")
         self.constT = constT
         self.constP = constP
         self.constH = constH
+        self.constV = constV
+        self.constU = constU
+        self.constS = constS
         self.elemental = elemental
         self.inputSpecies = getTotalSpecies(self.inputPhases)
         self.inputElements = self.inputSpecies.elementalComposition()
@@ -117,8 +164,8 @@ cdef class EquilibriumFinder:
         cdef double stepsize = min(0.1, self.inputMoles * 0.01)
 
         cdef list initialState = self.getStateVector()
-        self.initialS = 0
-        self.initialS = self.optimisation_func(initialState)
+        self.initialObjVal = self.optimisation_func()
+        self.constraintTargets = self.constraintCalc()
 
         cdef list variableBounds = []
         for phase in self.inputPhases:
@@ -129,23 +176,41 @@ cdef class EquilibriumFinder:
             if not self.constP:
                 variableBounds.append([0, Pmax])
         
-        self.constraintTargets = self.constraintCalc(initialState)
-
         ### Optimisation
-        from scipy.optimize import fmin_slsqp
-        optimisedState, fx, its, imode, smode = fmin_slsqp(self.optimisation_func,
-                                                           initialState,
-                                                           f_eqcons=self.constraint_func,
-                                                           bounds=variableBounds,
-                                                           iprint=5,
-                                                           full_output=True)
-        if imode != 0:
-            error_string = "Minimisation error:("+str(imode)+")-'"+smode+"' after "+str(its)+" iterations\n"
-            
-            raise Exception(error_string + {
-                    2:'Try adding more species to the initial phases.'
-                    }.get(imode, "Not sure what to advise here, must exit!"))
-        self.restoreStateVector(optimisedState)
+        
+        #from scipy.optimize import fmin_slsqp
+        #optimisedState, fx, its, imode, smode = fmin_slsqp(self.optimisation_func,
+        #                                                   initialState,
+        #                                                   f_eqcons=self.constraint_func,
+        #                                                   bounds=variableBounds,
+        #                                                   iprint=5,
+        #                                                   full_output=True)
+        #if imode != 0:
+        #    error_string = "Minimisation error:("+str(imode)+")-'"+smode+"' after "+str(its)+" iterations\n"
+        #    
+        #    raise Exception(error_string + {
+        #            2:'Try adding more species to the initial phases.'
+        #            }.get(imode, "Not sure what to advise here, must exit!"))
+
+        import pyOpt
+        opt_prob = pyOpt.Optimization('Entropy maximisation',lambda x : self.obj_func(x))
+        opt_prob.addObj('-S', value=0.0)
+        for i,var in enumerate(initialState):
+            opt_prob.addVar('x'+str(i), type='c', value=var, lower=0)
+        for i,cons in enumerate(self.constraintTargets):
+            opt_prob.addCon('cons'+str(i), type='e')
+
+        print opt_prob
+        opt = pyOpt.pySLSQP.SLSQP()
+        opt.setOption('IPRINT', 0)
+        opt.setOption('ACC', 1e-15)
+        [fstr, xstr, inform] = opt(opt_prob, sens_type='FD', disp_opts=True)
+        print "!!!!!!!!!!!!!!!!!!SOLVED!!!!!!!!!!!!!!!!!!!!"
+        print fstr
+        print xstr
+        print inform
+        print opt_prob._solutions[0]        
+        self.restoreStateVector(xstr)
 
 def findEquilibrium(*args, **kwrdargs):
     solver = EquilibriumFinder(*args, **kwrdargs)
