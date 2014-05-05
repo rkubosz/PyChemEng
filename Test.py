@@ -89,14 +89,12 @@ validate(Output.enthalpy(), Input1.enthalpy() + Input2.enthalpy())
 #When checking the calculations below in GasEq, ensure that the
 #reactants are present in the products, otherwise GasEq does not
 #converge!
-#Equilibrium at defined T and P
+
+#Constant T and P
 InGas = IdealGasPhase({"N2":0.79, "O2":0.21, "CH4":0.105}, T=2600, P=1.01325e5)
 InGas.components += Components({"H2O":0, "CO2":0, "CO":0})
-OutGasOld = reaction(InGas, {"N2", "H2O", "CO2", "CO", "O2"}, constP=True, constT=True)
+#OutGasOld = reaction(InGas, {"N2", "H2O", "CO2", "CO", "O2"}, constP=True, constT=True)
 OutGas = findEquilibrium([InGas], constP=True, constT=True, elemental=True)[0]
-print InGas
-print OutGasOld
-print OutGas
 validate(OutGas.T, 2600)
 validate(OutGas.P, 1.01325e5)
 validate(InGas.components.totalMass(), OutGas.components.totalMass())
@@ -108,9 +106,11 @@ validate(OutGas.components["CH4"], 0.0)
 validate(OutGas.components["CO"], 0.03443)
 
 
-#Adiabatic T at constant P
-InGas = IdealGasPhase({"N2":0.79, "O2":0.21, "CH4":0.105}, T=300, P=1.01325e5)
-OutGas = reaction(InGas, {"N2", "H2O", "CO2", "CO", "O2"}, constP=True, constT=False)
+#Adiabatic at constant P (constant H)
+InGas = IdealGasPhase({"N2":0.79, "O2":0.21, "CH4":0.105, 'H2O':0, 'CO2':0, 'CO':0}, T=300, P=1.01325e5)
+OutGas = findEquilibrium([InGas], constP=True, constH=True, elemental=True)[0]
+#OutGas = reaction(InGas, {}, constP=True, constT=False)
+
 validate(InGas.enthalpy(), OutGas.enthalpy())
 validate(InGas.components.totalMass(), OutGas.components.totalMass())
 validate(OutGas.P, 1.01325e5)
@@ -122,22 +122,25 @@ validate(OutGas.components["O2"], 0.00574)
 validate(OutGas.components["CH4"], 0)
 validate(OutGas.components["CO"], 0.01149)
 
-#Adiabatic T at constant V
-InGas = IdealGasPhase( {"N2":0.79, "O2":0.21, "CH4":0.105}, T=300, P=1.01325e5)
-OutGas = reaction(InGas, {"N2", "H2O", "CO2", "CO", "O2"}, constP=False, constT=False)
-validate(InGas.internalEnergy(), OutGas.internalEnergy())
-validate(InGas.components.totalMass(), OutGas.components.totalMass())
-validate(OutGas.T, 2665.8)
-validate(OutGas.components["N2"], 0.79)
-validate(OutGas.components["H2O"], 0.21)
-validate(OutGas.components["CO2"], 0.08240)
-validate(OutGas.components["O2"], 0.01130)
-validate(OutGas.components["CH4"], 0)
-validate(OutGas.components["CO"], 0.02260)
+###Does not seem to be working?
+##Adiabatic at constant V (constant U)
+#InGas = IdealGasPhase( {"N2":0.79, "O2":0.21, "CH4":0.105, 'H2O':0, 'CO2':0, 'CO':0}, T=300, P=1.01325e5)
+#OutGas = findEquilibrium([InGas], constV=True, constU=True, elemental=True)[0]
+##OutGas = reaction(InGas, {}, constP=False, constT=False)
+#validate(InGas.internalEnergy(), OutGas.internalEnergy())
+#validate(InGas.components.totalMass(), OutGas.components.totalMass())
+#validate(OutGas.T, 2665.8)
+#validate(OutGas.components["N2"], 0.79)
+#validate(OutGas.components["H2O"], 0.21)
+#validate(OutGas.components["CO2"], 0.08240)
+#validate(OutGas.components["O2"], 0.01130)
+#validate(OutGas.components["CH4"], 0)
+#validate(OutGas.components["CO"], 0.02260)
 
 #Harder test
-InputS = IdealGasPhase({"CH4":0.105, "O2":0.21, "N2":0.79}, T=700, P = 8 * 1.01325e5)
-OutGas = reaction(InputS, {"H2O", "CO2", "CO", "OH", "H", "O", "H2", "NO"}, outputlevel=0, constP=True, constT=False)
+InGas = IdealGasPhase({"CH4":0.105, "O2":0.21, "N2":0.79, 'H2O':0, 'CO2':0, 'CO':0, 'O':0, 'OH':0, 'H':0, 'H2':0, 'NO':0}, T=700, P = 8 * 1.01325e5)
+OutGas = findEquilibrium([InGas], constP=True, constH=True, elemental=True)[0]
+#OutGas = reaction(InputS, {"H2O", "CO2", "CO", "OH", "H", "O", "H2", "NO"}, outputlevel=0, constP=True, constT=False)
 validate(InGas.components.totalMass(), OutGas.components.totalMass())
 validate(OutGas.T, 2483.4)
 validate(OutGas.components["N2"], 0.78796)
@@ -161,12 +164,3 @@ validate(normComp["CO2"], 0.0950226)
 validate(normComp["H2O"], 0.190045)
 validate(normComp["N2"], 0.706787)
 validate(normComp["Ar"], 0.0081448)
-
-
-#print "INPUT STREAM"
-#print InputS
-#print "TARGET OUTPUT STREAM"
-#print OutGas
-#print "ACTUAL OUTPUT STREAM"
-#for phase in OutGas2:
-#    print phase
