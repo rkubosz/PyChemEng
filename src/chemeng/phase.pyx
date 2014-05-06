@@ -137,6 +137,7 @@ cdef class IdealGasPhase(Phase):
 
     def __add__(self, IdealGasPhase other):
         cdef IdealGasPhase output = self.copy()
+        output.P = min(self.P, other.P)
         output.components += other.components
         output.setEnthalpy(self.enthalpy() + other.enthalpy())
         return output

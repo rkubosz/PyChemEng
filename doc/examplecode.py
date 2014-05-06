@@ -86,6 +86,10 @@ liquid=IncompressiblePhase({'H2O':1.0}, T=179.9+273.15, P=10.e5, phaseID="Liquid
 print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
 #2080.18373622 (J/g)
 
+stream1=IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)
+stream2=IdealGasPhase({'O2':0.21, 'N2':0.79}, T=298.15, P=1.e5)
+print stream1 + stream2
+#&lt;IdealGasPhase, 2 mol, 381.879 K, 1 bar, C{'H2O':1, 'N2':0.79, 'O2':0.21}&gt;
 
 #Flash at constant P and H (standard flash)
 #Flash at constant P and S (condensing turbine)
@@ -112,30 +116,31 @@ result = findEquilibrium([fuelmix], constP=True, constH=True, elemental=True)
 print result[0]
 #&lt;IdealGasPhase, 10.5837 mol, 2227.23 K, 1 bar, C{'C':-4.70366e-18, 'CH4':1.45657e-18, 'CO':0.106244, 'CO2':0.893756, 'H2O':1.98653, 'N':-7.04731e-19, 'N2':7.51458, 'NO':0.0184681, 'O2':0.0371525, 'OH':0.0269416}&gt;
 
-from chemeng.standarddefinitions import StandardHydrocarbonCombustionComponents
-print StandardHydrocarbonCombustionComponents
-#C{'CO':0, 'CO2':0, 'H':0, 'H2':0, 'H2O':0, 'N2':0, 'NO':0, 'O':0, 'O2':0, 'OH':0}
 
-print speciesData['S']
-#Species{'S', phases=[1a, Gas, Liquid, 2b], elementalComposition=C{'S':1}}
-
-print speciesData['S'].phases['1a']
-#Phase{'1a', T=[200.0->368.3K], comments='Alpha. Ref-Elm. Gurvich,1989 pt1 p265 pt2 p160.'}
-print speciesData['S'].phases['2b']
-#Phase{'2b', T=[368.3->388.36K], comments='Beta. Ref-Elm. Gurvich,1989 pt1 p265 pt2 p160.'}
+solidS=IncompressiblePhase({'S':1}, T=298.15, P=1e5, phaseID='1a')
+vapourS=IdealGasPhase({'S':solidS.components['S']}, T=298.15, P=1e5)
+hsv = vapourS.enthalpy() - solidS.enthalpy()
 
 from chemeng.standarddefinitions import DryAir
 print DryAir
 #C{'Ar':0.934, 'CH4':0.000179, 'CO2':0.0397, 'He':0.000524, 'Kr':0.000114, 'N2':78.084, 'Ne':0.001818, 'O2':20.946}
 
-solid=IncompressiblePhase({'S':1}, T=298.15, P=1e5, phaseID="1a")
+#Assuming all sulfur burns to SO3, calculate the stochiometric air
+air=IdealGasPhase(DryAir * (1.5 * solidS.components['S'] / DryAir['O2']), T=298.15, P=1e5)
 
-gas = DryAir + Components({'SO':0, 'SO2':0})
-excessAir=0.5 #50% excess air
-airScaling = solid.components['S'] * (excessAir + 1) / gas['O2']
-air=IdealGasPhase(gas * airScaling, T=298.15, P=1e5)
-#result = findEquilibrium([air, solid], constP=True, constH=True, elemental=True)
-print result[0]
-#&lt;&gt;
-print result[1]
-#&lt;&gt;	
+#Mix the vapourS and air, then combust at constant pressure.
+input = air + vapourS
+input.components += Components({'SO':0, 'SO2':0, 'SO3':0})
+product1 = findEquilibrium([input], constP=True, constH=True, elemental=True)[0]
+print product1
+#&lt;IdealGasPhase, 7.17027 mol, 2467.05 K, 1 bar, C{'Ar':0.0668863, 'CH4':1.28187e-05, 'CO2':0.00284302, 'He':3.75251e-05, 'Kr':8.16385e-06, 'N2':5.59181, 'Ne':0.000130192, 'O2':0.508548, 'S':7.49857e-05, 'SO':0.0174563, 'SO2':0.981957, 'SO3':0.000511232}&gt;
+
+
+#Now subtract the enthalpy of vapourisation
+product1.setEnthalpy(product1.enthalpy() - hsv)
+
+#Perform the combustion calculation again
+product2 = findEquilibrium([product1], constP=True, constH=True, elemental=True)[0]
+print product2
+#&lt;IdealGasPhase, 7.15677 mol, 1495 K, 1 bar, C{'Ar':0.0668863, 'CH4':1.28187e-05, 'CO2':0.00284302, 'He':3.75251e-05, 'Kr':8.16385e-06, 'N2':5.59181, 'Ne':0.000130192, 'O2':0.495044, 'S':-4.59879e-17, 'SO':8.3346e-07, 'SO2':0.990086, 'SO3':0.00991313}&gt;
+
