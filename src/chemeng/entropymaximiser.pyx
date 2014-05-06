@@ -37,10 +37,12 @@ cdef class EquilibriumFinder:
         cdef double moles
         for phase in self.outputPhases:
             variables += [moles for moles in phase.components.values()]
-            if not self.constT:
-                variables.append(phase.T)
-            if not self.constP:
-                variables.append(phase.P)
+
+        #Add the temperature and pressure of the first phase
+        if not self.constT:
+            variables.append(self.outputPhases[0].T)
+        if not self.constP:
+            variables.append(self.outputPhases[0].P)
 
         return variables
 
@@ -51,12 +53,16 @@ cdef class EquilibriumFinder:
             for key in phase.components.keys():
                 phase.components[key] = statevec[var_count]
                 var_count +=1
-            if not self.constT:
+                
+        if not self.constT:
+            for phase in self.outputPhases:
                 phase.T = statevec[var_count]
-                var_count +=1
-            if not self.constP:
+            var_count +=1
+
+        if not self.constP:
+            for phase in self.outputPhases:
                 phase.P = statevec[var_count]
-                var_count +=1            
+            var_count +=1            
 
     #Create the constraints
     cpdef list constraint_func(EquilibriumFinder self):
@@ -137,7 +143,12 @@ cdef class EquilibriumFinder:
         self.outputPhases = []
         cdef Phase phase
         for phase in self.inputPhases:
-            self.outputPhases.append(phase.copy())
+            newphase = phase.copy()
+            #Ensure all phases have the same temperature and pressure
+            newphase.T = self.inputPhases[0].T
+            newphase.P = self.inputPhases[0].P
+            self.outputPhases.append(newphase)
+            
         if (constT + constP + constH + constV + constU + constS) != 2:
             raise Exception("EquilibriumFinder requires exactly 2 constant state variables from T, P, H, V, U, and S.")
         self.constT = constT

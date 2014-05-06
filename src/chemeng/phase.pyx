@@ -24,7 +24,10 @@ cdef class Phase:
         #The temperature of the phase
         self.T = T
         #The component species of the phase
-        self.components = Components(components)
+        if type(components) is Components:
+            self.components = components
+        else:
+            self.components = Components(components)
         #The pressure of the phase
         self.P = P
         #An identifier used to fetch thermodynamic properties for the phase

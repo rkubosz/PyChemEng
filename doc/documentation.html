@@ -25,6 +25,11 @@
     margin-after:5px;
     }
 
+    h2 {
+    font-size:1.2em;
+    margin-before:2em;
+    }
+
     .table-of-contents h1 {
     margin:0px;
     }
@@ -74,7 +79,24 @@
       </p>
       <h1>Installing PyChemEng</h1>
       <p>
-	First, download the code. You can check it out from git using
+	You will need several prequisites installed to build both
+	PyChemEng and the pyOpt library it relies on:
+      </p>
+      <pre class="brush:bash;">
+sudo apt-get install swig gfortran cython
+      </pre>
+      <p>
+	Now you can download, unpack, build, and install pyOpt.
+      </p>
+      <pre class="brush:bash;">
+wget http://www.pyopt.org/_downloads/pyOpt-1.1.0.tar.gz
+tar -xf pyOpt-1.1.0.tar.gz
+cd pyOpt-1.1.0
+python setup.py build
+sudo python setup.py install
+      </pre>
+      <p>
+	Now, download the code. You can check it out from git using
 	the following command:
       </p>
       <pre class="brush:bash;">
@@ -337,16 +359,139 @@ print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
 	calculations. The real power of PyChemEng comes from its
 	ability to perform Gibbs free energy minimisations.
       </p>
-      <h1>Gibb's free energy minimisation</h1>
+      <h1>Gibb's free energy minimisation/Entropy maximization</h1>
       <p>
 	At equilibrium, the temperature and pressure are equal between
-	all phases, and the Gibb's free energy is at a minimum. This
-	statement allows us to calculate everything from phase
-	equilbria to reaction equilibria. PyChemEng makes these kinds
-	of calculations extremely simple.
+	all phases, and the entropy is at a maximum. This statement
+	allows us to calculate everything from phase equilbria to
+	reaction equilibria. PyChemEng makes these kinds of
+	calculations extremely simple using its findEquilibrium
+	function.
       </p>
-      
-      
+      <h2>Worked example: Superheated water flash</h2>
+      <p>
+	For example, consider the adiabatic flashing of superheated
+	water at $185^\circ$C and to steam at a constant pressure of 1
+	bar. We first create a superheated water phase and an ideal
+	gas phase with zero water in it (we are specifying that there
+	may be water in it). Once this is done, we can find the
+	equilibrium state at constant pressure and enthalpy using
+	findEquilibrium:
+      </p>
+      <pre class="brush:python;">
+water=IncompressiblePhase({'H2O':1.0}, T=185+273.15, P=1e5, phaseID="Liquid", molarvolume=0.018/998)
+steam=IdealGasPhase({'H2O':0}, T=273.15, P=1e5)
+result = findEquilibrium([water, steam], constP=True, constH=True)
+print result[0]
+#&lt;IncompressiblePhase, 0.838897 mol, 373.173 K, 1 bar, C{'H2O':0.838897}&gt;
+print result[1]
+#&lt;IdealGasPhase, 0.161103 mol, 373.173 K, 1 bar, C{'H2O':0.161103}&gt;
+      </pre>
+      <p>
+	Here we notice that at 1 bar water boils at 373.173 K, and
+	that around 16% of the water boils off under its own
+	superheat.  We can also do more complex phase equilibria, such
+	as multicomponent or multi-phase flashes simply by adding more
+	phases or components.
+      </p>
+      <p>
+	Please note that we passed a list of phases to equilibrate to
+	findEquilibrium. If either the temperature (constT=True) or
+	pressure (constP=True) are held constant, the values are taken
+	from the first phase in the list. 
+      </p>
+      <p>
+	Currently supported modes are:
+      </p>
+      <ul>
+	<li>Constant temperature, $T$, and pressure, $P$ (constT=True, constP=True).</li>
+	<li>Constant temperature, $T$, and volume, $V$ (constT=True, constV=True).</li>
+	<li>Constant enthalpy, $H$, and pressure, $P$ (constH=True, constP=True).</li>
+	<li>Constant internal energy, $U$, and volume, $V$ (constU=True, constV=True).</li>
+	<li>Constant entropy, $S$, and volume, $V$ (constS=True, constV=True).</li>
+	<li>Constant entropy, $S$, and pressure, $P$ (constS=True, constP=True).</li>
+      </ul>
+      <p>
+	These modes correspond to different approximations of a range
+	of thermodynamic processes, but only include phase
+	equilibria. PyChemEng can also calculate
+      </p>
+      <h2>Worked example: Adiabatic flame temperature/combustion of stochiometric methane</h2>
+      <p>
+	In the above example, the total molar balance of each species
+	was conserved; however, if we replace this with an elemental
+	balance (using the option elemental=True), findEquilibrium
+	will rearrange or ``react'' these elements into the available
+	species to maximise the entropy.
+      </p>
+      <p>
+	For example, consider the adiabatic combustion of the
+	stochiometric methane/air mixture we prepared earlier at a
+	constant pressure:
+      </p>
+      <pre class="brush:python;">
+print stochiometricMix 
+#C{'CH4':1, 'N2':7.52381, 'O2':2}
+
+#Add the possible reaction products, we can get exotic if needed as we
+#use the NASA rocket database for the gas phase thermodynamics
+stochiometricMix += Components({'H2O':0, 'CO2':0, 'CO':0, 'NO':0, 'C':0, 'OH':0, 'N':0})
+
+fuelmix=IdealGasPhase(stochiometricMix, T=273.15, P=1e5)
+result = findEquilibrium([fuelmix], constP=True, constH=True, elemental=True)
+print result[0]
+#&lt;IdealGasPhase, 10.5837 mol, 2227.23 K, 1 bar, C{'C':-4.70366e-18, 'CH4':1.45657e-18, 'CO':0.106244, 'CO2':0.893756, 'H2O':1.98653, 'N':-7.04731e-19, 'N2':7.51458, 'NO':0.0184681, 'O2':0.0371525, 'OH':0.0269416}&gt;
+      </pre>
+      <p>
+	Here you can see the production of CO, NO, and OH due to the
+	high flame temperature of 2200 K. 
+      </p>
+      <h2>Worked example: Combustion of solid sulphur in excess air</h2>
+      <p>
+	Here we will create a solid phase containing the sulphur, and
+	add a gas stream with the supplied air (using the built in
+	DryAir standard definition) and any reaction products that
+	might form. There are two solid phases of sulphur within the
+	database, these are identified as 1a and 1b:
+      </p>
+      <pre class="brush:python;">
+print speciesData['S']
+#Species{'S', phases=[1a, Gas, Liquid, 2b], elementalComposition=C{'S':1}}
+      </pre>
+      <p>
+	The phases are numbered in increasing formation temperature
+	and have a name corresponding to the type (so 1a is the low
+	temperature "alpha" phase, and 2b is the higher temperature
+	"beta" phase). We will use the "alpha" solid here.
+      </p>
+      <p>
+	There is a problem in using this phase directly for the
+	combustion, its thermodynamic data only is valid over a
+	limited temperature range $T\in[200.0K,\,368.3K]$:
+      </p>
+      <pre class="brush:python;">
+print speciesData['S'].phases['1a']
+#Phase{'1a', T=[200.0->368.3K], comments='Alpha. Ref-Elm. Gurvich,1989 pt1 p265 pt2 p160.'}
+      </pre>
+      <p>
+	We will have to perform this combustion in two stages, first
+	we will calculate the input enthalpy of the solid sulphur
+      </p>
+      <pre class="brush:python;">
+from chemeng.standarddefinitions import DryAir
+print DryAir
+#
+gas = DryAir + Components({'SO':0, 'SO2':0)}
+
+solid=IncompressiblePhase({'S':1}, T=298.15, P=1e5)
+excessAir=0.2 #50% excess air
+air=IdealGasStream(DryAir * solid['S'] * (excessAir + 1) / DryAir['O2'], T=298.15, P=1e5)
+result = findEquilibrium([air, solid], constP=True, constH=True, elemental=True)
+print result[0]
+#&lt;&gt;
+print result[1]
+#&lt;&gt;	
+      </pre>      
       <h1>Adding your own thermodynamic data</h1>
     </div>
     <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js"
