@@ -102,21 +102,28 @@ print result[1]
 print stochiometricMix 
 #C{'CH4':1, 'N2':7.52381, 'O2':2}
 
-#Add the possible reaction products, we can get exotic if needed as we
-#use the NASA rocket database for the gas phase thermodynamics
-stochiometricMix += Components({'H2O':0, 'CO2':0, 'CO':0, 'NO':0, 'C':0, 'OH':0, 'N':0})
+#Create a list of some reaction products, we can get quite exotic if
+#needed as we use the NASA rocket database for the gas phase
+#thermodynamics
+combustionproducts = Components({'H2O':0, 'CO2':0, 'CO':0, 'NO':0, 'C':0, 'OH':0, 'N':0})
 
-fuelmix=IdealGasPhase(stochiometricMix, T=273.15, P=1e5)
+fuelmix=IdealGasPhase(stochiometricMix + combustionproducts, T=273.15, P=1e5)
 result = findEquilibrium([fuelmix], constP=True, constH=True, elemental=True)
 print result[0]
 #&lt;IdealGasPhase, 10.5837 mol, 2227.23 K, 1 bar, C{'C':-4.70366e-18, 'CH4':1.45657e-18, 'CO':0.106244, 'CO2':0.893756, 'H2O':1.98653, 'N':-7.04731e-19, 'N2':7.51458, 'NO':0.0184681, 'O2':0.0371525, 'OH':0.0269416}&gt;
 
+from chemeng.standarddefinitions import StandardHydrocarbonCombustionComponents
+print StandardHydrocarbonCombustionComponents
+#C{'CO':0, 'CO2':0, 'H':0, 'H2':0, 'H2O':0, 'N2':0, 'NO':0, 'O':0, 'O2':0, 'OH':0}
 
 print speciesData['S']
 #Species{'S', phases=[1a, Gas, Liquid, 2b], elementalComposition=C{'S':1}}
 
 print speciesData['S'].phases['1a']
-#
+#Phase{'1a', T=[200.0->368.3K], comments='Alpha. Ref-Elm. Gurvich,1989 pt1 p265 pt2 p160.'}
+print speciesData['S'].phases['2b']
+#Phase{'2b', T=[368.3->388.36K], comments='Beta. Ref-Elm. Gurvich,1989 pt1 p265 pt2 p160.'}
+
 from chemeng.standarddefinitions import DryAir
 print DryAir
 #C{'Ar':0.934, 'CH4':0.000179, 'CO2':0.0397, 'He':0.000524, 'Kr':0.000114, 'N2':78.084, 'Ne':0.001818, 'O2':20.946}
