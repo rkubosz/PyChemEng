@@ -6,9 +6,10 @@ from chemeng.components cimport Components
 from chemeng.elementdata import elements
 
 cdef class ThermoConstantsType:
-    def __init__(ThermoConstantsType self, double Tmin, double Tmax):
+    def __init__(ThermoConstantsType self, double Tmin, double Tmax, str comments):
         self.Tmin = Tmin
         self.Tmax = Tmax
+        self.comments = comments
 
     cpdef double Cp0(self, double T):
         return 0.0
@@ -21,11 +22,9 @@ cdef class ThermoConstantsType:
     
 cdef class PhaseData:
     cdef public string name
-    cdef public string comments
     cdef public list constants
-    def __init__(self, name, comments):
+    def __init__(self, name):
         self.name = name
-        self.comments = comments
         self.constants = []
         
     def __str__(self):
@@ -34,7 +33,7 @@ cdef class PhaseData:
             for data in self.constants:
                 output += str(data.Tmin)+'->'+str(data.Tmax)+"K, "
             output = output[:-2]
-        return output+"], comments='"+self.comments+"'}"
+        return output+"]}"
     
     def __repr__(self):
         return self.__str__()
@@ -44,10 +43,12 @@ cdef class SpeciesDataType:
     This class represents the isobaric (P=P0) data for a species, and may include multiple phases
     """
 
-    def __init__(self, name, mass, elementalComposition):
+    def __init__(self, name, Components elementalComposition):
         self.name = name
-        self.mass = mass
-        self.elementalComposition = Components(elementalComposition)
+        self.mass = 0
+        for key,amount in elementalComposition.iteritems():
+            self.mass += elements[key].mass * amount
+        self.elementalComposition = elementalComposition
         self.phases = {}
         self.antoineData = []
 
@@ -60,11 +61,9 @@ cdef class SpeciesDataType:
     def __repr__(self):
         return self.__str__()
 
-    def registerPhase(self, phasename, comments):
+    def registerPhase(self, phasename):
         if phasename not in self.phases:
-            self.phases[phasename] = PhaseData(phasename, comments)
-        if self.phases[phasename].comments != comments:
-            raise Exception("Comments on phase ("+phasename+") are changing current:an"+self.phases[phasename].comments+"\nNew:\n"+comments)
+            self.phases[phasename] = PhaseData(phasename)
         
     def registerPhaseCoeffs(self, coeffs, string phasename):
         self.phases[phasename].constants.append(coeffs)
@@ -148,17 +147,10 @@ cpdef list findSpeciesData(str search):
                 continue
     return retval
 
-def registerSpecies(name, elementalComposition, mass=None):
-    calcMass = 0
-    for element, amount in elementalComposition.iteritems():
+cpdef registerSpecies(name, Components elementalComposition):
+    for element in elementalComposition.keys():
         if element not in elements:
             raise Exception("Species "+name+" with elemental composition "+str(elementalComposition)+" has an unknown element, "+element)
-        else:
-            calcMass += elements[element].mass * amount
-    if mass is None:
-        mass = calcMass
-    else:
-        if relativeError(calcMass, mass) > 0.01:
-            raise Exception("Calculated species mass is significantly different when compared to passed value. Is the elemental composition or molMass correct?\n" + name + ", " + str(elementalComposition) + ", " + str(mass) + ", " + str(calcMass))
+
     if name not in speciesData:
-        speciesData[name] = SpeciesDataType(name, mass, elementalComposition)
+        speciesData[name] = SpeciesDataType(name, elementalComposition)

@@ -18,8 +18,8 @@ P0 = 1.0e5
 cdef class NASAPolynomial(ThermoConstantsType):
     cdef double a[7]
     cdef double b[2]
-    def __init__(NASAPolynomial self, double Tmin, double Tmax, a, b):
-        ThermoConstantsType.__init__(self, Tmin, Tmax)
+    def __init__(NASAPolynomial self, double Tmin, double Tmax, a, b, comments):
+        ThermoConstantsType.__init__(self, Tmin, Tmax, comments)
         cdef int i
         for i in range(7):
             self.a[i] = a[i]
@@ -32,8 +32,11 @@ cdef class NASAPolynomial(ThermoConstantsType):
             retval+=str(self.a[i])+", "
         for i in range(2):
             retval+=str(self.b[i])+", "
-        return retval[:-2]+"}"
+        return retval[:-2]+", notes='"+self.comments+"'}"
 
+    def __repr__(self):
+        return self.__str__()
+    
     cpdef double Cp0(self, double T):
         return R * (self.a[0] * T ** (-2) + self.a[1] / T + self.a[2] + self.a[3] * T + self.a[4] * T**2 + self.a[5] * T**3 + self.a[6] * T**4)
 
@@ -69,7 +72,6 @@ cpdef parseNASADataFile(filename, quiet=True):
     cdef SpeciesDataType sp
     file = open(filename, "r")
     lineit = iter(file)
-    commentlines=2
     linecount=0
     while True:
         linecount += 1
@@ -83,12 +85,10 @@ cpdef parseNASADataFile(filename, quiet=True):
         if (line.strip() == "") or (line[0] == "!") or (line.strip() == "END PRODUCTS") or (line.strip() == "END REACTANTS"):
             continue
 
-        #component=line.split(" ",1)[0]
-        startline=linecount
-
         ######NEED A SMART COMPONENT PARSER#####
-        species = line[0:18].split()[0].strip()
-        comments = line[18:-1].strip()
+        species = line.split()[0]
+        comments = line[len(species):-1].strip()
+        species = species.strip()
         if not quiet:
             print ">>>Parsing:'"+species+"' '"+comments+"'"
         ########################################
@@ -106,7 +106,7 @@ cpdef parseNASADataFile(filename, quiet=True):
             MW=parseFortanFloat(line[52:65])#g/mol
             HfRef=parseFortanFloat(line[65:80])# @298.15K , in J/mol
             coeffs = []
-            MolecularFormula = {}
+            MolecularFormula = Components({})
             for offset in range(5):
                 shift = 8 * offset
                 atom = line[10+shift:12+shift].strip()
@@ -158,9 +158,12 @@ cpdef parseNASADataFile(filename, quiet=True):
                 for offset in range(Ncoeffs - 5):
                     C.append(parseFortanFloat(line[16 * offset: 16 * (offset + 1)]))
 
+                for i in range(7 - Ncoeffs):
+                    C.append(0.0)
+
                 HConst = parseFortanFloat(line[48:48 + 16])
                 SConst = parseFortanFloat(line[64:64 + 16])
-                coeffs.append(NASAPolynomial(Tmin, Tmax, C, [HConst, SConst]))
+                coeffs.append(NASAPolynomial(Tmin, Tmax, C, [HConst, SConst], comments))
             
             phasename = "Gas"
             if species[-1] == ")":
@@ -174,9 +177,9 @@ cpdef parseNASADataFile(filename, quiet=True):
                 else:
                     phasename = str(phase)+phasename
 
-            registerSpecies(species, MolecularFormula, MW)
+            registerSpecies(species, MolecularFormula)
             sp = speciesData[species]
-            sp.registerPhase(phasename, comments=comments)
+            sp.registerPhase(phasename)
             
             for C in coeffs:
                 sp.registerPhaseCoeffs(C, phasename)
@@ -196,8 +199,10 @@ cpdef parseNASADataFile(filename, quiet=True):
 
 def initDataDir(directory):
     import os
-    parseNASADataFile(os.path.join(directory, 'NASA_CEA.inp'), quiet=True)
+    parseNASADataFile(os.path.join(directory, 'NASA_CEA.inp'))
     print "Loaded NASA dataset (database at",len(speciesData),"species)"
+    #parseNASADataFile(os.path.join(directory, 'NEWNASA.TXT'), quiet=False)
+    #print "Loaded NEW_NASA dataset (database at",len(speciesData),"species)"
 
 import sys
 import os.path

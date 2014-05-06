@@ -15,8 +15,8 @@ P0 = 1.0e5
 
 cdef class ChemKinPolynomial(ThermoConstantsType):
     cdef double a[7]
-    def __init__(ChemKinPolynomial self, double Tmin, double Tmax, a):
-        ThermoConstantsType.__init__(self, Tmin, Tmax)
+    def __init__(ChemKinPolynomial self, double Tmin, double Tmax, a, comments):
+        ThermoConstantsType.__init__(self, Tmin, Tmax, comments)
         cdef int i
         for i in range(7):
             self.a[i] = a[i]
@@ -25,7 +25,7 @@ cdef class ChemKinPolynomial(ThermoConstantsType):
         retval = "ChemKinPolynomial{Tmin="+str(self.Tmin)+", Tmax="+str(self.Tmax)+", "
         for i in range(7):
             retval+=str(self.a[i])+", "
-        return retval[:-2]+"}"
+        return retval[:-2]+", notes='"+self.comments+"'}"
     
     cpdef double Cp0(self, double T):
         return R * (self.self.a[0] + self.a[1] * T + self.a[2] * T**2 + self.a[3] * T**3 + self.a[4] * T**4)
@@ -35,6 +35,18 @@ cdef class ChemKinPolynomial(ThermoConstantsType):
 
     cpdef double S0(self, double T):
         return R * (self.self.a[0] * math.log(T) + self.a[1] * T + self.a[2] * T**2 / 2 + self.a[3] * T**3 / 3 + self.a[4] * T**4 / 4 + self.a[6])
+
+cpdef parseFortanFloat(string):
+    #First, try to parse the exponentiated formats
+    data = string.split('D')
+    if len(data) != 2:
+        data = string.split('E')
+    if len(data) != 2:
+        data = string.split('d')
+    if len(data) == 2:
+        return float(data[0].strip() + "e" + data[1].strip())
+    #Try to parse it as a standard number
+    return float(string.strip())
 
 cpdef parseCHEMKINDataFile(filename, quiet=True):
     cdef SpeciesDataType sp
@@ -48,7 +60,7 @@ cpdef parseCHEMKINDataFile(filename, quiet=True):
 
     #Next line is temperature range and common temperature T
     line = lineit.next()
-    commonT = float(line[9:19])
+    commonT = float(line[10:20])
     #Begin parsing records
     linecount=0
     while True:
@@ -63,27 +75,31 @@ cpdef parseCHEMKINDataFile(filename, quiet=True):
             if line.strip() == "END":
                 break
             
-            species = line[0:18].split()[0].strip()
+            species = line[0:18].strip()
             comments = line[18:24].strip()
             if not quiet:
                 print ">>>Parsing:'"+species+"' '"+comments+"'"
-            
-            ########################################
-            try:
-                linecount += 1
-                line = lineit.next()
-            except StopIteration:
-                break
-            
+                        
             if not quiet:
-                print "  Chemical Formula:",line    
+                print "  Chemical Formula:",line,
             MolecularFormula = Components({})
+            print line,
             for entry in range(4):
                 shift = 5 * entry
-                atom = line[24+shift:26+shift]
-                natom= int(line[26+shift:28+shift])
+                print line[24+shift:26+shift],line[26+shift:29+shift]
+                atom = line[24+shift:26+shift].strip()
+                if atom == "":
+                    continue
+                if atom == "E":
+                    atom = 'e-'
+                if len(atom) == 2:
+                    atom = atom[0] + atom[1].lower()
+                num=line[26+shift:29+shift]
+                if num[-1] == '.':
+                    num = num[:-1]
+                natom=int(num)
                 MolecularFormula[atom] = natom
-            
+            print MolecularFormula
             phase=line[44]
             if phase=="G":
                 phase = "Gas"
@@ -106,7 +122,7 @@ cpdef parseCHEMKINDataFile(filename, quiet=True):
             
             C=[]
             for i in range(5):
-                C.append(float(line[i*15:(i+1)*15]))
+                C.append(parseFortanFloat(line[i*15:(i+1)*15]))
             
             try:
                 linecount += 1
@@ -115,7 +131,7 @@ cpdef parseCHEMKINDataFile(filename, quiet=True):
                 break
             
             for i in range(5):
-                C.append(float(line[i*15:(i+1)*15]))
+                C.append(parseFortanFloat(line[i*15:(i+1)*15]))
             
             try:
                 linecount += 1
@@ -124,24 +140,23 @@ cpdef parseCHEMKINDataFile(filename, quiet=True):
                 break
             
             for i in range(4):
-                C.append(float(line[i*15:(i+1)*15]))
+                C.append(parseFortanFloat(line[i*15:(i+1)*15]))
             
-            registerSpecies(species, MolecularFormula, MolecularFormula.totalMass())
+            registerSpecies(species, MolecularFormula)
             sp = speciesData[species]
-            sp.registerPhase(phase, comments=comments)
-            sp.registerPhaseCoeffs(ChemKinPolynomial(lowT, midT, C[:7]), phase)
-            sp.registerPhaseCoeffs(ChemKinPolynomial(midT, highT, C[7:14]), phase)
+            sp.registerPhase(phase)
+            sp.registerPhaseCoeffs(ChemKinPolynomial(lowT, midT, C[:7], comments), phase)
+            sp.registerPhaseCoeffs(ChemKinPolynomial(midT, highT, C[7:14], comments), phase)
         except Exception as e:
-            if not quiet:
-                import traceback
-                print traceback.print_exc()
-                print "Error parsing record for",species,"in file:",filename,"at line",linecount
-                print "   ",e.message
-                raise
+            import traceback
+            print traceback.print_exc()
+            print "Error parsing record for",species,"in file:",filename,"at line",linecount
+            print "   ",e.message
+            raise
 
 def initDataDir(directory):
     import os
-    parseCHEMKINDataFile(os.path.join(directory, 'BurcatCHEMKIN.DAT'), quiet=True)
+    parseCHEMKINDataFile(os.path.join(directory, 'BurcatCHEMKIN.DAT'), quiet=False)
     print "Loaded Burcat ChemKin dataset (database at",len(speciesData),"species)"
 
 import sys

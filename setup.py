@@ -27,7 +27,10 @@ setup(
                 ('PyChemEng/data', ['src/chemeng/data/antoine.inp',
                                     'src/chemeng/data/mass.mas03round.txt',
                                     'src/chemeng/data/isotopicCompositions.inp',
-                                    'src/chemeng/data/NASA_CEA.inp'])],
+                                    'src/chemeng/data/NASA_CEA.inp',
+                                    'src/chemeng/data/NEWNASA.TXT',
+                                    'src/chemeng/data/BurcatCHEMKIN.DAT'
+                                    ])],
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules
 )

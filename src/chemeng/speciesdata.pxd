@@ -7,6 +7,7 @@ from chemeng.components cimport Components
 cdef class ThermoConstantsType:
     cdef public double Tmin
     cdef public double Tmax    
+    cdef public string comments
     cpdef double Cp0(ThermoConstantsType, double T)
     cpdef double S0(ThermoConstantsType, double T)
     cpdef double Hf0(ThermoConstantsType, double T)

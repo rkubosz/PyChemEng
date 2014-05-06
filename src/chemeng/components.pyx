@@ -32,6 +32,9 @@ cdef class Components:
    cpdef keys(Components self):
       return self._list.keys()
 
+   cpdef iteritems(Components self):
+      return self._list.iteritems()
+
    def __add__(self, Components other):
        cdef Components copy = self.copy()
        copy.mix(other)

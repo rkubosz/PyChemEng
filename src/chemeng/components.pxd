@@ -16,3 +16,4 @@ cdef class Components:
    cpdef Components normalised(Components)
    cpdef values(Components)
    cpdef keys(Components)
+   cpdef iteritems(Components)
