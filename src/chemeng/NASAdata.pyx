@@ -3,8 +3,8 @@ import math
 #Ensure that the elemental database has been loaded first
 import chemeng.elementdata
 from chemeng.components import Components
-from chemeng.speciesdata import speciesData, registerSpecies, registerCpFitFunction, relativeError
-from chemeng.speciesdata cimport SpeciesDataType
+from chemeng.speciesdata import speciesData, registerSpecies, relativeError
+from chemeng.speciesdata cimport SpeciesDataType,ThermoConstantsType
 
 ####################################################################
 # Physical constants
@@ -15,14 +15,34 @@ cdef public double R = 8.31451
 T0 = 273.15 + 25.0
 P0 = 1.0e5
 
-##Add the NASA polynomial
-registerCpFitFunction("Poly",
-                      #The function (f)
-                      lambda T, C : R * sum([constant * (T ** order) for constant, order in C]),
-                      #The integrated function (f) (without the integration constant)
-                      lambda T, C : R * sum([constant * math.log(T) if order == -1 else constant * (T ** (order+1)) / (order+1) for constant, order in C]),
-                      #The integrated function over temperature (f/T)
-                      lambda T, C : R * sum([constant * math.log(T) if order == 0 else constant * (T ** (order)) / (order) for constant, order in C]))
+cdef class NASAPolynomial(ThermoConstantsType):
+    cdef double a[7]
+    cdef double b[2]
+    def __init__(NASAPolynomial self, double Tmin, double Tmax, a, b):
+        ThermoConstantsType.__init__(self, Tmin, Tmax)
+        cdef int i
+        for i in range(7):
+            self.a[i] = a[i]
+        for i in range(2):
+            self.b[i] = b[i]
+
+    def __str__(self):
+        retval = "NASAPolynomial{Tmin="+str(self.Tmin)+", Tmax="+str(self.Tmax)+", "
+        for i in range(7):
+            retval+=str(self.a[i])+", "
+        for i in range(2):
+            retval+=str(self.b[i])+", "
+        return retval[:-2]+"}"
+
+    cpdef double Cp0(self, double T):
+        return R * (self.a[0] * T ** (-2) + self.a[1] / T + self.a[2] + self.a[3] * T + self.a[4] * T**2 + self.a[5] * T**3 + self.a[6] * T**4)
+
+    cpdef double Hf0(self, double T):
+        return R * (-self.a[0] / T + self.a[1] * math.log(T) + self.a[2] * T + self.a[3] * T**2 / 2 + self.a[4] * T**3 / 3 + self.a[5] * T**4 / 4 + self.a[6] * T**5 / 5 + self.b[0])
+
+    cpdef double S0(self, double T):
+        return R * (-self.a[0] * T ** (-2) / 2 - self.a[1] / T + self.a[2] * math.log(T) + self.a[3] * T + self.a[4] * T**2 / 2 + self.a[5] * T**3 / 3 + self.a[6] * T**4 / 4 + self.b[1])
+
 
 ####################################################################
 # Test functions
@@ -125,11 +145,11 @@ cpdef parseNASADataFile(filename, quiet=True):
                     orders.append(float(line[start:start + 5].strip()))
                 if Ncoeffs > 8:
                     raise Exception("Cannot handle more than 8 Cp coefficients")
-                C=[]
-                C2 = []
 
                 linecount += 1
                 line = lineit.next()
+
+                C=[]
                 for offset in range(5):
                     C.append(parseFortanFloat(line[16 * offset: 16 * (offset + 1)]))
 
@@ -139,11 +159,8 @@ cpdef parseNASADataFile(filename, quiet=True):
                     C.append(parseFortanFloat(line[16 * offset: 16 * (offset + 1)]))
 
                 HConst = parseFortanFloat(line[48:48 + 16])
-                Sconst = parseFortanFloat(line[64:64 + 16])
-
-                fitFunction = "Poly"
-                constants = [[C[i], orders[i]] for i in range(Ncoeffs)]
-                coeffs.append([Tmin, Tmax, fitFunction, constants, R * HConst, R * Sconst])
+                SConst = parseFortanFloat(line[64:64 + 16])
+                coeffs.append(NASAPolynomial(Tmin, Tmax, C, [HConst, SConst]))
             
             phasename = "Gas"
             if species[-1] == ")":
@@ -156,17 +173,14 @@ cpdef parseNASADataFile(filename, quiet=True):
                     phasename = "Liquid"
                 else:
                     phasename = str(phase)+phasename
+
             registerSpecies(species, MolecularFormula, MW)
-
             sp = speciesData[species]
-
             sp.registerPhase(phasename, comments=comments)
+            
             for C in coeffs:
                 sp.registerPhaseCoeffs(C, phasename)
                     
-            if quiet:
-                continue
-            
             if sp.inDataRange(T0, phasename):
                 HfCalc = sp.Hf0(T0, phasename)
                 error = relativeError(HfCalc, HfRef)
@@ -174,12 +188,11 @@ cpdef parseNASADataFile(filename, quiet=True):
                     print "Warning: Species \""+species+"\" and phase "+phasename+" in file:"+filename+" at line "+str(linecount)+" has a Hf of "+str(HfRef)+" but a calculated value of "+str(HfCalc)+" a relative error of "+str(error)+" for Hf at "+str(T0)
 
         except Exception as e:
-            if not quiet:
-                import traceback
-                print traceback.print_exc()
-                print "Error parsing record for",species,"in file:",filename,"at line",linecount
-                print "   ",e.message
-                raise
+            import traceback
+            print traceback.print_exc()
+            print "Error parsing record for",species,"in file:",filename,"at line",linecount
+            print "   ",e.message
+            raise
 
 def initDataDir(directory):
     import os

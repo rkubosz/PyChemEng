@@ -6,7 +6,7 @@ from Cython.Distutils import build_ext
 ext_modules = [Extension('chemeng.elementdata', ['src/chemeng/elementdata.pyx'], language='c++', include_dirs=['.']),
                Extension('chemeng.NASAdata', ['src/chemeng/NASAdata.pyx'], language='c++', include_dirs=['.']),
                Extension('chemeng.speciesdata', ['src/chemeng/speciesdata.pyx'], language='c++', include_dirs=['.']),
-               Extension('chemeng.antoinedata', ['src/chemeng/antoinedata.pyx'], language='c++', include_dirs=['.']),
+               #Extension('chemeng.antoinedata', ['src/chemeng/antoinedata.pyx'], language='c++', include_dirs=['.']),
                Extension('chemeng.transportdata', ['src/chemeng/transportdata.pyx'], language='c++', include_dirs=['.']),
                Extension('chemeng.components', ['src/chemeng/components.pyx'], language='c++', include_dirs=['.']),
                Extension('chemeng.phase', ['src/chemeng/phase.pyx'], language='c++', include_dirs=['.']),
@@ -26,8 +26,7 @@ setup(
                 ('PyChemEng/data', ['src/chemeng/data/antoine.inp',
                                     'src/chemeng/data/mass.mas03round.txt',
                                     'src/chemeng/data/isotopicCompositions.inp',
-                                    'src/chemeng/data/NASA_CEA.inp',
-                                    'src/chemeng/data/NEWNASA.inp'])],
+                                    'src/chemeng/data/NASA_CEA.inp'])],
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules
 )

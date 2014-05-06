@@ -4,6 +4,13 @@
 from libcpp.string cimport string
 from chemeng.components cimport Components
 
+cdef class ThermoConstantsType:
+    cdef public double Tmin
+    cdef public double Tmax    
+    cpdef double Cp0(ThermoConstantsType, double T)
+    cpdef double S0(ThermoConstantsType, double T)
+    cpdef double Hf0(ThermoConstantsType, double T)
+
 cdef class SpeciesDataType:
     cdef public string name
     cdef public double mass
@@ -15,6 +22,5 @@ cdef class SpeciesDataType:
     cpdef double Cp0(SpeciesDataType self, double T, string phase)
     cpdef double Hf0(SpeciesDataType self, double T, string phase)
     cpdef double S0(SpeciesDataType self, double T, string phase)
-    cpdef double Psat(SpeciesDataType self, double T)
-    cpdef PsatTRange(SpeciesDataType self)
     cpdef double Gibbs0(SpeciesDataType self, double T, string phase)
+    cpdef str validRanges(self, phase)
