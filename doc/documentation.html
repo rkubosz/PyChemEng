@@ -174,7 +174,7 @@ print air
 	The names of the species within the Components class (e.g.,
 	"O2") must correspond to species within the thermodynamics
 	dataset (<a href="#Thermo">see the next section</a> on how to
-	search this).
+	search this database for chemical names).
       </p>
       <p>
 	You can add/mix and scale Components to make new Components.
@@ -223,8 +223,9 @@ print stochiometricMix.elementalComposition()
 	thermodynamic data. All data within PyChemEng is stored within
 	the speciesData dictionary. This data is for a fixed pressure
 	of 1 bar, any pressure corrections will need to be applied
-	using the Phase classes (<a href="#Phases">see the next section</a>) Species can be
-	looked up using their chemical formula:
+	using the Phase classes (<a href="#Phases">see the next
+	section</a>). Species can be looked up using their chemical
+	formula:
       </p>
       <pre class="brush:python;">
 print speciesData['CO2']
@@ -241,7 +242,7 @@ print speciesData['CO2'].phases['Gas']
       </pre>
       <p>
 	Here we can see that thermodynamic data is available for
-	CO${}_2$ gases over the range $200\to20000$~K.
+	CO${}_2$ gases over the range $200$K$\to20000$K.
       </p>
       <p>
 	The chemical formula can be difficult to determine for some
@@ -258,14 +259,17 @@ print findSpeciesData("C8")
 # Species{'C8H10,ethylbenz', phases=[Gas], elementalComposition=C{'C':8, 'H':10}}]
       </pre>
       <p>
-	Please note, the database included with PyChemEng does not have
-	many keywords defined within it. So simple name searches
-	(e.g. benzene) may fail. It is best to search for a partially
-	complete chemical formula (or add your own data).
+	Please note, the database included with PyChemEng does not
+	have many keywords/common names defined within it yet. So
+	simple name searches (e.g. benzene) will probably fail. It is
+	best to search for a partially complete chemical formula. If
+	the data does not exist within the database, it is relatively
+	easy to <a href="#AddingThermoData">add your own data</a>.
       </p>
       <p>
-	Once we have found the species, we can query for the pure phase
-	properties (at standard pressure).
+	Once we have found the species of chemical we're looking for,
+	we can query for the pure phase properties (at the reference
+	pressure).
       </p>
       <pre class="brush:python;">
 print speciesData['H2O'].Cp0(298.15, 'Gas')#Heat capacity
@@ -285,21 +289,20 @@ print speciesData['SO'].S0(298.15, 'Gas') #Entropy
       <h1 id="Phases">Calculating thermodynamic properties of phases (Phase classes)</h1>
       <p>
 	To simplify enthalpy, free energy, and heat capacity
-	calculations, there are Phase classes. These extend a Components
-	class to also track the thermodynamic state of the system
-	(Temperature, Pressure, Volume etc). There are a few Phase
-	classes, depending on the thermodynamic model used for
-	calculations, but the two most useful ones are IdealGasPhase and
-	IncompressiblePhase.
+	calculations, there are Phase classes. These extend a
+	Components class to also track the thermodynamic state of the
+	system (Temperature, Pressure, Volume etc). The two most
+	immediately useful are the IdealGasPhase and
+	IncompressiblePhase classes.
       </p>
       <p>
 	When we create an IdealGasPhase, we specify a component list
-	and the state variables.For example, water at $10$ bar boils
+	and the state variables. For example, water at $10$ bar boils
 	at $179.9^\circ$C. Creating an ideal gas phase at this
 	temperature we have:
       </p>
       <pre class="brush:python;">
-vapour=IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)
+vapour = IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)
       </pre>
       <p>
 	We can then directly query this phase for the heat capacity
@@ -312,7 +315,7 @@ print vapour.enthalpy()
 #-236543.780767 (J)
       </pre>
       <p>
-	The enthalpy might appear very high, but this includes the
+	The enthalpy might appear very large, but this includes the
 	enthalpy of formation of water, as well as its sensible heat
 	and latent heat of vapourisation.
       </p>
@@ -329,7 +332,7 @@ print vapour.enthalpy()
 print speciesData['H2O']
 #Species{'H2O', phases=[1cr, Gas, Liquid], elementalComposition=C{'H':2, 'O':1}}
 
-liquid=IncompressiblePhase({'H2O':1.0}, T=179.9+273.15, P=10.e5, phaseID="Liquid", molarvolume=0.018 / 998.0)
+liquid = IncompressiblePhase({'H2O':1.0}, T=179.9+273.15, P=10.e5, phaseID="Liquid", molarvolume=0.018 / 998.0)
       </pre>
       <p>
 	Then we can calculate enthalpy differences.
@@ -343,26 +346,28 @@ print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
       <p>
 	Examining steam tables, we see values of $\approx 2016$
 	kJ/kg. The discrepancy here will be caused by non-ideal
-	interactions and differences in thermodynamic data. It could
-	also be caused by the molarvolume used; however, we can turn
-	off this contriubtion by setting the molarvolume to zero (or
-	not specifying it).
+	interactions and errors in the thermodynamic data. It could
+	also be caused by the molar volume used for the
+	IncompressiblePhase; however, we can turn off this
+	contriubtion by setting the molarvolume to zero (or not
+	specifying it).
       </p>
       <pre class="brush:python;">
-liquid=IncompressiblePhase({'H2O':1.0}, T=179.9+273.15, P=10.e5, phaseID="Liquid")
+liquid = IncompressiblePhase({'H2O':1.0}, T=179.9+273.15, P=10.e5, phaseID="Liquid")
 print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
 #2080.18373622 (J/g)
       </pre>
       <p>
-	We can see that the volume contribution is very small, hence
-	why it is often ignored.
+	We can see that the volume contribution to the enthalpy is
+	very small (hence why it is often ignored), thus the
+	discrepancy is due to the thermodynamic data set.
       </p>
       <p>
 	We can also mix IdealGasPhases using the addition operator:
       </p>
       <pre class="brush:python;">
-stream1=IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)
-stream2=IdealGasPhase({'O2':0.21, 'N2':0.79}, T=298.15, P=1.e5)
+stream1 = IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)
+stream2 = IdealGasPhase({'O2':0.21, 'N2':0.79}, T=298.15, P=1.e5)
 print stream1 + stream2
 #&lt;IdealGasPhase, 2 mol, 381.879 K, 1 bar, C{'H2O':1, 'N2':0.79, 'O2':0.21}&gt;
       </pre>
@@ -375,31 +380,31 @@ print stream1 + stream2
 	equilibria of the system. The saturation temperature was
 	obtained from steam tables and used as input to the
 	calculations. The real power of PyChemEng comes from its
-	ability to perform Gibbs free energy minimisations.
+	ability to determine the equilibrium of phases.
       </p>
       <h1>Finding equilibrium (Gibb's free energy minimisation/Entropy
       maximization, etc.)</h1>
       <p>
 	At equilibrium, the temperature and pressure are equal between
-	all phases, and the entropy is at a maximum. This statement
-	allows us to calculate everything from phase equilbria to
-	reaction equilibria. PyChemEng makes these kinds of
-	calculations extremely simple using its findEquilibrium
-	function.
+	all phases and the entropy is at a maximum. By maximising the
+	entropy under these constraints (and the mass constraint), we
+	can calculate phase equilbria and/or reaction equilibria
+	between phases. PyChemEng makes these kinds of calculations
+	extremely simple using its findEquilibrium function.
       </p>
       <h2>Worked example: Superheated water flash</h2>
       <p>
 	For example, consider the adiabatic flashing of superheated
 	water at $185^\circ$C to steam at a constant pressure of 1
-	bar. We first create a superheated water phase and an ideal
-	gas phase with zero water in it (we are specifying that there
-	may be water in it). Once this is done, we can find the
-	equilibrium state at constant pressure and enthalpy using
-	findEquilibrium:
+	bar. We first create a superheated liquid water phase and an
+	ideal gas phase with zero water in it (we are specifying that
+	water may enter this phase from the liquid phase). Once this
+	is done, we can find the equilibrium state at constant
+	pressure and enthalpy using findEquilibrium:
       </p>
       <pre class="brush:python;">
-water=IncompressiblePhase({'H2O':1.0}, T=185+273.15, P=1e5, phaseID="Liquid", molarvolume=0.018/998)
-steam=IdealGasPhase({'H2O':0}, T=273.15, P=1e5)
+water = IncompressiblePhase({'H2O':1.0}, T=185+273.15, P=1e5, phaseID="Liquid", molarvolume=0.018/998)
+steam = IdealGasPhase({'H2O':0}, T=273.15, P=1e5)
 result = findEquilibrium([water, steam], constP=True, constH=True)
 print result[0]
 #&lt;IncompressiblePhase, 0.838897 mol, 373.173 K, 1 bar, C{'H2O':0.838897}&gt;
@@ -407,11 +412,14 @@ print result[1]
 #&lt;IdealGasPhase, 0.161103 mol, 373.173 K, 1 bar, C{'H2O':0.161103}&gt;
       </pre>
       <p>
-	Here we notice that, unsurprisingly, at 1 bar water boils at
-	$\approx 373$ K, and that around 16% of the water boils off under
-	its own superheat.  We can also do more complex phase
-	equilibria, such as multicomponent or multi-phase flashes
-	simply by adding more phases or components.
+	At 1 bar of pressure, water boils at $\approx 373$ K as
+	expected. Around 16% of the superheated water boils off under
+	its own superheat.  
+      </p>
+      <p>
+	We can also do more complex phase equilibria, such as
+	multicomponent or multi-phase flashes simply by adding more
+	phases or components.
       </p>
       <p>
 	Please note that we passed a list of phases to equilibrate to
@@ -420,7 +428,7 @@ print result[1]
 	from the first phase in the list.
       </p>
       <p>
-	Currently supported modes are:
+	The currently supported equilibrium modes are:
       </p>
       <ul>
 	<li>Constant temperature, $T$, and pressure, $P$ (constT=True, constP=True).</li>
@@ -431,8 +439,9 @@ print result[1]
 	<li>Constant entropy, $S$, and pressure, $P$ (constS=True, constP=True).</li>
       </ul>
       <p>
-	So far, we've only looked at phase equilibria, but PyChemEng
-	can perform reaction simulations as well.
+	So far we've only considered phase equilibria; however,
+	PyChemEng can perform reaction simulations as well as outlined
+	below.
       </p>
       <h2>Worked example: Adiabatic flame temperature/combustion of stochiometric methane</h2>
       <p>
@@ -451,14 +460,12 @@ print result[1]
 print stochiometricMix 
 #C{'CH4':1, 'N2':7.52381, 'O2':2}
 
-#Add the possible reaction products, we can get exotic if needed as we
-#use the NASA rocket database for the gas phase thermodynamics.
-#Create a list of some reaction products, we can get quite exotic if
-#needed as we use the NASA rocket database for the gas phase
-#thermodynamics
+#Create a list of some reaction products. We can get quite exotic if
+#needed as we use the NASA rocket and Burcat database for the gas
+#phase thermodynamics
 combustionproducts = Components({'H2O':0, 'CO2':0, 'CO':0, 'NO':0, 'C':0, 'OH':0, 'N':0})
 
-fuelmix=IdealGasPhase(stochiometricMix + combustionproducts, T=273.15, P=1e5)
+fuelmix = IdealGasPhase(stochiometricMix + combustionproducts, T=273.15, P=1e5)
 result = findEquilibrium([fuelmix], constP=True, constH=True, elemental=True)
 print result[0]
 #&lt;IdealGasPhase, 10.5837 mol, 2227.23 K, 1 bar, C{'C':-4.70366e-18, 'CH4':1.45657e-18, 'CO':0.106244, 'CO2':0.893756, 'H2O':1.98653, 'N':-7.04731e-19, 'N2':7.51458, 'NO':0.0184681, 'O2':0.0371525, 'OH':0.0269416}&gt;
@@ -475,29 +482,34 @@ print StandardHydrocarbonCombustionComponents
 #C{'CO':0, 'CO2':0, 'H':0, 'H2':0, 'H2O':0, 'N2':0, 'NO':0, 'O':0, 'O2':0, 'OH':0}
       </pre>
       <p>
-	Please note that reactions will take place between multiple
-	phases; however, <b>you should not use multiple
-	IdealGasPhase's in findEquilibrium</b> (i.e., to keep products
-	and reactants separate), as this will alter the calculation of
-	the mixing entropy.
+	Please note that, whenever the option elemental=True is set,
+	reactions will take place between any of the phases
+	present.
+      </p>
+      <p>
+	You should be careful when using multiple phases in
+	findEquilibrium, as you may inadvertently alter the
+	calculation of the mixing entropy. Ensure that only the unique
+	phases are present and that you do not use redundant phases.
       </p>
       <h2>Worked example: Combustion of solid sulphur in excess air</h2>
       <p>
-	Here we will create a solid phase containing the sulphur, and
-	add a gas stream with the supplied air (using the built in
-	DryAir standard definition) and any reaction products that
-	might form. There are two solid phases of sulphur within the
-	database, these are identified as 1a and 1b:
+	In this example we will calculate the adiabatic combustion of
+	solid sulphur with air, both initially at room
+	temperature. There are two solid phases of sulphur within the
+	database, these are identified as "1a" and "1b":
       </p>
       <pre class="brush:python;">
 print speciesData['S']
 #Species{'S', phases=[1a, Gas, Liquid, 2b], elementalComposition=C{'S':1}}
       </pre>
       <p>
-	The phases are numbered in increasing formation temperature
-	and have a name corresponding to the type (so 1a is the low
-	temperature "alpha" phase, and 2b is the higher temperature
-	"beta" phase). 
+	Phases other than "Gas" and "Liquid" phases are usually
+	numbered in increasing formation temperature and have a name
+	corresponding to the type of phase (so 1a is the low
+	temperature "alpha" solid phase, and 2b is the higher
+	temperature "beta" solid phase). Taking a look at the
+	thermodynamic data:
       </p>
       <pre class="brush:python;">
 print speciesData['S'].phases['1a']
@@ -506,11 +518,16 @@ print speciesData['S'].phases['2b']
 #Phase{'2b', T=[368.3->388.36K], comments='Beta. Ref-Elm. Gurvich,1989 pt1 p265 pt2 p160.'}
       </pre>
       <p>
-	We will use the "alpha" solid here as it is the stable form at
-	room temperature but there is a problem with using this phase
-	directly for the combustion: its thermodynamic data only is
-	valid over a limited temperature range
-	$T\in[200.0K,\,368.3K]$. Fortunately, the thermodynamic data
+	We can see that the alpha phase appears to transition to the
+	beta phase at 368.3K.
+      </p>
+      <p>
+	We will use the "alpha" solid as input to our calculations as
+	it is the stable form at room temperature; however, there is a
+	problem with using this phase directly in findEquilibrium for
+	combustion: its thermodynamic data only is valid over a narrow
+	temperature range $T\in[200.0K,\,368.3K]$ which probably does
+	not include the combustion temperature. The thermodynamic data
 	for the gas phase has a much wider range of applicability:
       </p>
       <pre class="brush:python;">
@@ -523,19 +540,23 @@ print speciesData['S'].phases['Gas']
 	vapourise the sulphur:
       </p>
       <pre class="brush:python;">
-solidS=IncompressiblePhase({'S':1}, T=298.15, P=1e5, phaseID='1a')
-vapourS=IdealGasPhase({'S':solidS.components['S']}, T=298.15, P=1e5)
+solidS = IncompressiblePhase({'S':1}, T=298.15, P=1e5, phaseID='1a')
+vapourS = IdealGasPhase({'S':solidS.components['S']}, T=298.15, P=1e5)
 hsv = vapourS.enthalpy() - solidS.enthalpy()
       </pre>
       <p>
-	We will now "borrow" this energy/enthalpy and vapourise the
-	sulphur, then perform a gas phase combustion to release
-	additional sensible heat, then pay back the "borrowed" energy
-	from this sensible heat before finding equilibrium/combusting
-	again. This is simply to stay within the valid range of data,
-	and is thermodynamically equivalent to a direct combustion
-	calculation. Performing the first combustion of the
-	artificially vapourised sulphur:
+	We will now "borrow" this energy/enthalpy and artificially
+	vapourise the sulphur. Once this is in the gas phase we can
+	perform an initial gas phase combustion to release additional
+	sensible heat. Then we can "pay back" the enthalpy used to
+	vapourise the sulphur from the sensible heat before
+	recalculating the equilibrium. This thermodynamic path is used
+	just to stay within the valid range of data and is equivalent
+	to a direct combustion calculation. 
+      </p>
+      <p>
+	Performing the first combustion of the artificially vapourised
+	sulphur:
       </p>
       <pre class="brush:python;">
 from chemeng.standarddefinitions import DryAir
@@ -543,7 +564,7 @@ print DryAir
 #C{'Ar':0.934, 'CH4':0.000179, 'CO2':0.0397, 'He':0.000524, 'Kr':0.000114, 'N2':78.084, 'Ne':0.001818, 'O2':20.946}
 
 #Assuming all sulfur burns to SO3, calculate the stochiometric air
-air=IdealGasPhase(DryAir * (1.5 * solidS.components['S'] / DryAir['O2']), T=298.15, P=1e5)
+air = IdealGasPhase(DryAir * (1.5 * solidS.components['S'] / DryAir['O2']), T=298.15, P=1e5)
 
 #Mix the vapourised sulphur and air, then combust at constant pressure.
 input = air + vapourS
@@ -554,9 +575,9 @@ print product1
       </pre>
       <p>
 	Now we can pay back the enthalpy we borrowed using sensible
-	heat (the temperature is nearly $2500$K!), but we will need to
-	perform another combustion calculation to determine how this
-	affects the equilibrium:
+	heat (the temperature is nearly $2500$K), then we can perform
+	another combustion calculation to determine how the resultant
+	temperature drop affects the equilibrium:
       </p>
       <pre class="brush:python;">
 #Now subtract the enthalpy of vapourisation
@@ -570,10 +591,10 @@ print product2
       <p>
 	We can see that, in comparison to the first combustion, the
 	flame temperature is significantly lower at $1495K$, there is
-	little to no SO produced and the amount of SO${}_3$ produced
+	little to no SO produced, and the amount of SO${}_3$ produced
 	is greatly reduced.
       </p>
-      <h1>Adding your own thermodynamic data</h1>
+      <h1 id="AddingThermoData">Adding your own thermodynamic data</h1>
     </div>
     <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js"
 	    type="text/javascript"></script>
