@@ -64,8 +64,8 @@ print speciesData['H2O'].Cp0(298.15, 'Gas')#Heat capacity
 print speciesData['H2O'].Hf0(298.15, 'Gas')#Enthalpy of formation
 #-241826.00034 (J/mol)
 
-print speciesData['SO'].Hf0(298.15, 'Gas') #Entropy
-#188.829115517 (J/(mol K))
+print speciesData['SO'].S0(298.15, 'Gas') #Entropy
+#221.941409816 (J/(mol K))
 
 
 vapour=IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)
@@ -85,3 +85,50 @@ print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
 liquid=IncompressiblePhase({'H2O':1.0}, T=179.9+273.15, P=10.e5, phaseID="Liquid")
 print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
 #2080.18373622 (J/g)
+
+
+#Flash at constant P and H (standard flash)
+#Flash at constant P and S (condensing turbine)
+#Flash at constant U and V (dynamic simulation of an adiabatic flash drum)
+
+water=IncompressiblePhase({'H2O':1.0}, T=185+273.15, P=1e5, phaseID="Liquid", molarvolume=0.018/998)
+steam=IdealGasPhase({'H2O':0}, T=273.15, P=1e5)
+
+result = findEquilibrium([water, steam], constP=True, constH=True)
+print result[0]
+print result[1]
+
+
+print stochiometricMix 
+#C{'CH4':1, 'N2':7.52381, 'O2':2}
+
+#Add the possible reaction products, we can get exotic if needed as we
+#use the NASA rocket database for the gas phase thermodynamics
+stochiometricMix += Components({'H2O':0, 'CO2':0, 'CO':0, 'NO':0, 'C':0, 'OH':0, 'N':0})
+
+fuelmix=IdealGasPhase(stochiometricMix, T=273.15, P=1e5)
+result = findEquilibrium([fuelmix], constP=True, constH=True, elemental=True)
+print result[0]
+#&lt;IdealGasPhase, 10.5837 mol, 2227.23 K, 1 bar, C{'C':-4.70366e-18, 'CH4':1.45657e-18, 'CO':0.106244, 'CO2':0.893756, 'H2O':1.98653, 'N':-7.04731e-19, 'N2':7.51458, 'NO':0.0184681, 'O2':0.0371525, 'OH':0.0269416}&gt;
+
+
+print speciesData['S']
+#Species{'S', phases=[1a, Gas, Liquid, 2b], elementalComposition=C{'S':1}}
+
+print speciesData['S'].phases['1a']
+#
+from chemeng.standarddefinitions import DryAir
+print DryAir
+#C{'Ar':0.934, 'CH4':0.000179, 'CO2':0.0397, 'He':0.000524, 'Kr':0.000114, 'N2':78.084, 'Ne':0.001818, 'O2':20.946}
+
+solid=IncompressiblePhase({'S':1}, T=298.15, P=1e5, phaseID="1a")
+
+gas = DryAir + Components({'SO':0, 'SO2':0})
+excessAir=0.5 #50% excess air
+airScaling = solid.components['S'] * (excessAir + 1) / gas['O2']
+air=IdealGasPhase(gas * airScaling, T=298.15, P=1e5)
+#result = findEquilibrium([air, solid], constP=True, constH=True, elemental=True)
+print result[0]
+#&lt;&gt;
+print result[1]
+#&lt;&gt;	

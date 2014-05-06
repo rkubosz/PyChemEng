@@ -6,3 +6,4 @@ from chemeng.reaction import reaction
 import chemeng.thermodata
 import chemeng.antoinedata
 from chemeng.phase import IdealGasPhase, IncompressiblePhase
+from chemeng.entropymaximiser import findEquilibrium

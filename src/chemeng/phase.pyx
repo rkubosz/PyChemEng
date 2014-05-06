@@ -24,7 +24,10 @@ cdef class Phase:
         #The temperature of the phase
         self.T = T
         #The component species of the phase
-        self.components = Components(components)
+        if type(components) is Components:
+            self.components = components
+        else:
+            self.components = Components(components)
         #The pressure of the phase
         self.P = P
         #An identifier used to fetch thermodynamic properties for the phase
@@ -99,15 +102,6 @@ cdef class Phase:
             self.T = T
             return self.enthalpy() - enthalpy
         self.T = scipy.optimize.fsolve(worker, self.T)[0]
-
-    cpdef list createStateVector(Phase self):
-        return [moles for moles in self.components.values()] + [self.T, self.P]
-
-    cpdef restoreStateVector(Phase self, list vec):
-        for key, val in zip(self.components.keys(), vec[:-2]):
-            self.components[key] = val
-        self.T = vec[-2]
-        self.P = vec[-1]
 
 #Functions which must be overridden by derived classes
     cpdef double volume(self):

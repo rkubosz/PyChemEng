@@ -17,8 +17,6 @@ cdef class Phase:
     cpdef double internalEnergy(Phase)
     cpdef double volume(Phase)
     cpdef double helmholtzFreeEnergy(Phase)
-    cpdef list createStateVector(Phase)
-    cpdef restoreStateVector(Phase, list)
 
 cdef class IdealGasPhase(Phase):
     cpdef IdealGasPhase copy(IdealGasPhase)
