@@ -61,6 +61,11 @@
 	from { background-color: yellow; }
 	to { background-color: white; }
     }
+    
+    .syntaxhighlighter {
+    border: 1px solid #000000;
+    padding:15px;
+    }
     </style>
     <script src="prefixfree.min.js"></script>    
   </head>
@@ -359,7 +364,8 @@ print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
 	calculations. The real power of PyChemEng comes from its
 	ability to perform Gibbs free energy minimisations.
       </p>
-      <h1>Gibb's free energy minimisation/Entropy maximization</h1>
+      <h1>Finding equilibrium (Gibb's free energy minimisation/Entropy
+      maximization, etc.)</h1>
       <p>
 	At equilibrium, the temperature and pressure are equal between
 	all phases, and the entropy is at a maximum. This statement
@@ -371,7 +377,7 @@ print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
       <h2>Worked example: Superheated water flash</h2>
       <p>
 	For example, consider the adiabatic flashing of superheated
-	water at $185^\circ$C and to steam at a constant pressure of 1
+	water at $185^\circ$C to steam at a constant pressure of 1
 	bar. We first create a superheated water phase and an ideal
 	gas phase with zero water in it (we are specifying that there
 	may be water in it). Once this is done, we can find the
@@ -388,17 +394,17 @@ print result[1]
 #&lt;IdealGasPhase, 0.161103 mol, 373.173 K, 1 bar, C{'H2O':0.161103}&gt;
       </pre>
       <p>
-	Here we notice that at 1 bar water boils at 373.173 K, and
-	that around 16% of the water boils off under its own
-	superheat.  We can also do more complex phase equilibria, such
-	as multicomponent or multi-phase flashes simply by adding more
-	phases or components.
+	Here we notice that, unsurprisingly, at 1 bar water boils at
+	$\approx 373$ K, and that around 16% of the water boils off under
+	its own superheat.  We can also do more complex phase
+	equilibria, such as multicomponent or multi-phase flashes
+	simply by adding more phases or components.
       </p>
       <p>
 	Please note that we passed a list of phases to equilibrate to
 	findEquilibrium. If either the temperature (constT=True) or
 	pressure (constP=True) are held constant, the values are taken
-	from the first phase in the list. 
+	from the first phase in the list.
       </p>
       <p>
 	Currently supported modes are:
@@ -412,9 +418,8 @@ print result[1]
 	<li>Constant entropy, $S$, and pressure, $P$ (constS=True, constP=True).</li>
       </ul>
       <p>
-	These modes correspond to different approximations of a range
-	of thermodynamic processes, but only include phase
-	equilibria. PyChemEng can also calculate
+	So far, we've only looked at phase equilibria, but PyChemEng
+	can perform reaction simulations as well.
       </p>
       <h2>Worked example: Adiabatic flame temperature/combustion of stochiometric methane</h2>
       <p>
@@ -422,7 +427,7 @@ print result[1]
 	was conserved; however, if we replace this with an elemental
 	balance (using the option elemental=True), findEquilibrium
 	will rearrange or ``react'' these elements into the available
-	species to maximise the entropy.
+	species and phases in order to maximise the entropy.
       </p>
       <p>
 	For example, consider the adiabatic combustion of the
@@ -434,17 +439,34 @@ print stochiometricMix
 #C{'CH4':1, 'N2':7.52381, 'O2':2}
 
 #Add the possible reaction products, we can get exotic if needed as we
-#use the NASA rocket database for the gas phase thermodynamics
-stochiometricMix += Components({'H2O':0, 'CO2':0, 'CO':0, 'NO':0, 'C':0, 'OH':0, 'N':0})
+#use the NASA rocket database for the gas phase thermodynamics.
+#Create a list of some reaction products, we can get quite exotic if
+#needed as we use the NASA rocket database for the gas phase
+#thermodynamics
+combustionproducts = Components({'H2O':0, 'CO2':0, 'CO':0, 'NO':0, 'C':0, 'OH':0, 'N':0})
 
-fuelmix=IdealGasPhase(stochiometricMix, T=273.15, P=1e5)
+fuelmix=IdealGasPhase(stochiometricMix + combustionproducts, T=273.15, P=1e5)
 result = findEquilibrium([fuelmix], constP=True, constH=True, elemental=True)
 print result[0]
 #&lt;IdealGasPhase, 10.5837 mol, 2227.23 K, 1 bar, C{'C':-4.70366e-18, 'CH4':1.45657e-18, 'CO':0.106244, 'CO2':0.893756, 'H2O':1.98653, 'N':-7.04731e-19, 'N2':7.51458, 'NO':0.0184681, 'O2':0.0371525, 'OH':0.0269416}&gt;
       </pre>
       <p>
-	Here you can see the production of CO, NO, and OH due to the
-	high flame temperature of 2200 K. 
+	Here you can see the production of CO, NO, and OH and a flame
+	temperature of 2200 K. PyChemEng has lists of standard
+	combustion products built in, so you don't have to type these
+	in every time:
+      </p>
+      <pre class="brush:python;">
+from chemeng.standarddefinitions import StandardHydrocarbonCombustionComponents
+print StandardHydrocarbonCombustionComponents
+#C{'CO':0, 'CO2':0, 'H':0, 'H2':0, 'H2O':0, 'N2':0, 'NO':0, 'O':0, 'O2':0, 'OH':0}
+      </pre>
+      <p>
+	Please note that reactions will take place between multiple
+	phases; however, <b>you should not use multiple
+	IdealGasPhase's in findEquilibrium</b> (i.e., to keep products
+	and reactants separate), as this will alter the calculation of
+	the mixing entropy.
       </p>
       <h2>Worked example: Combustion of solid sulphur in excess air</h2>
       <p>
@@ -462,17 +484,20 @@ print speciesData['S']
 	The phases are numbered in increasing formation temperature
 	and have a name corresponding to the type (so 1a is the low
 	temperature "alpha" phase, and 2b is the higher temperature
-	"beta" phase). We will use the "alpha" solid here.
-      </p>
-      <p>
-	There is a problem in using this phase directly for the
-	combustion, its thermodynamic data only is valid over a
-	limited temperature range $T\in[200.0K,\,368.3K]$:
+	"beta" phase). 
       </p>
       <pre class="brush:python;">
 print speciesData['S'].phases['1a']
 #Phase{'1a', T=[200.0->368.3K], comments='Alpha. Ref-Elm. Gurvich,1989 pt1 p265 pt2 p160.'}
+print speciesData['S'].phases['2b']
+#Phase{'2b', T=[368.3->388.36K], comments='Beta. Ref-Elm. Gurvich,1989 pt1 p265 pt2 p160.'}
       </pre>
+      <p>
+	We will use the "alpha" solid here but there is a problem in
+	using this phase directly for the combustion: its
+	thermodynamic data only is valid over a limited temperature
+	range $T\in[200.0K,\,368.3K]$:
+      </p>
       <p>
 	We will have to perform this combustion in two stages, first
 	we will calculate the input enthalpy of the solid sulphur
