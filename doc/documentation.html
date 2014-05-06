@@ -232,8 +232,8 @@ print speciesData['CO2']
       </pre>
       <p>
 	Here we note that the database has thermodynamic data for the
-	gas phase of CO2 only. We can see what temperature ranges this
-	is defined over by querying the phase:
+	gas phase of CO${}_2$ only. We can see what temperature ranges
+	this is defined over by querying the phase:
       </p>
       <pre class="brush:python;">
 print speciesData['CO2'].phases['Gas']
@@ -358,7 +358,20 @@ print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
 	why it is often ignored.
       </p>
       <p>
-	In the above example, we didn't actually calculate the phase
+	We can also mix IdealGasPhases using the addition operator:
+      </p>
+      <pre class="brush:python;">
+stream1=IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)
+stream2=IdealGasPhase({'O2':0.21, 'N2':0.79}, T=298.15, P=1.e5)
+print stream1 + stream2
+#&lt;IdealGasPhase, 2 mol, 381.879 K, 1 bar, C{'H2O':1, 'N2':0.79, 'O2':0.21}&gt;
+      </pre>
+      <p>
+	You should note that the phases are mixed adiabatically at the
+	pressure of the lowest pressure phase.
+      </p>
+      <p>
+	In the above examples, we didn't actually calculate the phase
 	equilibria of the system. The saturation temperature was
 	obtained from steam tables and used as input to the
 	calculations. The real power of PyChemEng comes from its
@@ -493,30 +506,73 @@ print speciesData['S'].phases['2b']
 #Phase{'2b', T=[368.3->388.36K], comments='Beta. Ref-Elm. Gurvich,1989 pt1 p265 pt2 p160.'}
       </pre>
       <p>
-	We will use the "alpha" solid here but there is a problem in
-	using this phase directly for the combustion: its
-	thermodynamic data only is valid over a limited temperature
-	range $T\in[200.0K,\,368.3K]$:
+	We will use the "alpha" solid here as it is the stable form at
+	room temperature but there is a problem with using this phase
+	directly for the combustion: its thermodynamic data only is
+	valid over a limited temperature range
+	$T\in[200.0K,\,368.3K]$. Fortunately, the thermodynamic data
+	for the gas phase has a much wider range of applicability:
       </p>
+      <pre class="brush:python;">
+print speciesData['S'].phases['Gas']
+#Phase{'Gas', T=[200.0->1000.0K, 1000.0->6000.0K, 6000.0->20000.0K], comments='Hf: Cox,1989 p22. Martin,W.C.,1990. Gordon,1999.'}
+      </pre>
       <p>
 	We will have to perform this combustion in two stages, first
-	we will calculate the input enthalpy of the solid sulphur
+	we will calculate how much additional enthalpy is required to
+	vapourise the sulphur:
+      </p>
+      <pre class="brush:python;">
+solidS=IncompressiblePhase({'S':1}, T=298.15, P=1e5, phaseID='1a')
+vapourS=IdealGasPhase({'S':solidS.components['S']}, T=298.15, P=1e5)
+hsv = vapourS.enthalpy() - solidS.enthalpy()
+      </pre>
+      <p>
+	We will now "borrow" this energy/enthalpy and vapourise the
+	sulphur, then perform a gas phase combustion to release
+	additional sensible heat, then pay back the "borrowed" energy
+	from this sensible heat before finding equilibrium/combusting
+	again. This is simply to stay within the valid range of data,
+	and is thermodynamically equivalent to a direct combustion
+	calculation. Performing the first combustion of the
+	artificially vapourised sulphur:
       </p>
       <pre class="brush:python;">
 from chemeng.standarddefinitions import DryAir
 print DryAir
-#
-gas = DryAir + Components({'SO':0, 'SO2':0)}
+#C{'Ar':0.934, 'CH4':0.000179, 'CO2':0.0397, 'He':0.000524, 'Kr':0.000114, 'N2':78.084, 'Ne':0.001818, 'O2':20.946}
 
-solid=IncompressiblePhase({'S':1}, T=298.15, P=1e5)
-excessAir=0.2 #50% excess air
-air=IdealGasStream(DryAir * solid['S'] * (excessAir + 1) / DryAir['O2'], T=298.15, P=1e5)
-result = findEquilibrium([air, solid], constP=True, constH=True, elemental=True)
-print result[0]
-#&lt;&gt;
-print result[1]
-#&lt;&gt;	
-      </pre>      
+#Assuming all sulfur burns to SO3, calculate the stochiometric air
+air=IdealGasPhase(DryAir * (1.5 * solidS.components['S'] / DryAir['O2']), T=298.15, P=1e5)
+
+#Mix the vapourised sulphur and air, then combust at constant pressure.
+input = air + vapourS
+input.components += Components({'SO':0, 'SO2':0, 'SO3':0})
+product1 = findEquilibrium([input], constP=True, constH=True, elemental=True)[0]
+print product1
+#&lt;IdealGasPhase, 7.17027 mol, 2467.05 K, 1 bar, C{'Ar':0.0668863, 'CH4':1.28187e-05, 'CO2':0.00284302, 'He':3.75251e-05, 'Kr':8.16385e-06, 'N2':5.59181, 'Ne':0.000130192, 'O2':0.508548, 'S':7.49857e-05, 'SO':0.0174563, 'SO2':0.981957, 'SO3':0.000511232}&gt;
+      </pre>
+      <p>
+	Now we can pay back the enthalpy we borrowed using sensible
+	heat (the temperature is nearly $2500$K!), but we will need to
+	perform another combustion calculation to determine how this
+	affects the equilibrium:
+      </p>
+      <pre class="brush:python;">
+#Now subtract the enthalpy of vapourisation
+product1.setEnthalpy(product1.enthalpy() - hsv)
+
+#Perform the combustion calculation again
+product2 = findEquilibrium([product1], constP=True, constH=True, elemental=True)[0]
+print product2
+#&lt;IdealGasPhase, 7.15677 mol, 1495 K, 1 bar, C{'Ar':0.0668863, 'CH4':1.28187e-05, 'CO2':0.00284302, 'He':3.75251e-05, 'Kr':8.16385e-06, 'N2':5.59181, 'Ne':0.000130192, 'O2':0.495044, 'S':-4.59879e-17, 'SO':8.3346e-07, 'SO2':0.990086, 'SO3':0.00991313}&gt;
+      </pre>
+      <p>
+	We can see that, in comparison to the first combustion, the
+	flame temperature is significantly lower at $1495K$, there is
+	little to no SO produced and the amount of SO${}_3$ produced
+	is greatly reduced.
+      </p>
       <h1>Adding your own thermodynamic data</h1>
     </div>
     <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js"
@@ -546,7 +602,7 @@ var ToC = "<nav role='navigation' class='table-of-contents'>" +
     "<h1>Contents:</h1>" +
     "<ul>";
 var newLine, el, title, linkid;
-$("h1").each(function() {
+$("h1,h2").each(function() {
     el = $(this);
     title = el.text();
     if (el.is('[id]')) {
@@ -556,7 +612,10 @@ $("h1").each(function() {
 	linkid = title.replace(/[^a-z0-9]+/gi,'');
     }
     el.attr("id", linkid);
-    ToC += "<li><a href='#" + linkid + "'>" + title +"</a></li>";
+    listyle=""
+    if (el.is("h2"))
+	listyle='style="margin-left:2em;"'
+    ToC += "<li "+listyle+"><a href='#" + linkid + "'>" + title +"</a></li>";
 });
 ToC +="</ul>" +"</nav>";
 $(".contentwrapper").prepend(ToC);
