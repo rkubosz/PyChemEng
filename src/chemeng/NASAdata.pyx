@@ -46,8 +46,7 @@ cpdef parseFortanFloat(string):
     return float(string.strip())
 
 cpdef parseNASADataFile(filename, quiet=True):
-    cdef SpeciesDataType sp     
-
+    cdef SpeciesDataType sp
     file = open(filename, "r")
     lineit = iter(file)
     commentlines=2
@@ -60,32 +59,27 @@ cpdef parseNASADataFile(filename, quiet=True):
         except StopIteration:
             break
 
-        #Skip comments
-        if line[0] == "!": continue
-        
-        #Skip first two record lines
-        if commentlines > 0:
-            commentlines -= 1
+        #Skip blank lines, comments, section markers
+        if (line.strip() == "") or (line[0] == "!") or (line.strip() == "END PRODUCTS") or (line.strip() == "END REACTANTS"):
             continue
-        
-        #Skip blank lines
-        if line.strip() == "":
-            continue
-        
-        #Find the exit conditions
-        if line[0:12] == "END PRODUCTS":
-            break
-        
+
         #component=line.split(" ",1)[0]
         startline=linecount
 
         ######NEED A SMART COMPONENT PARSER#####
-        firstline = line.strip()
+        species = line[0:15].split()[0].strip()
+        comments = line[15:-1].strip()
+        if not quiet:
+            print ">>>Parsing:'"+species+"' '"+comments+"'"
         ########################################
         linecount += 1
-        line = lineit.next()
-        intervals=int(line[1])
         try:
+            line = lineit.next()
+        except StopIteration:
+            break
+        try:
+            if not quiet:
+                print "  Chemical Formula:",line
             refdatecode=line[3:9].strip()
             ####Parse Chemical formula?
             phase=int(line[50:52])
@@ -94,20 +88,30 @@ cpdef parseNASADataFile(filename, quiet=True):
             coeffs = []
             MolecularFormula = {}
             for offset in range(5):
-                startatom=10+8*offset
-                endatom=startatom+3
-                startnumber=13+8*offset
-                endnumber=startnumber+5
-                atom = line[startatom:endatom].strip()
+                shift = 8 * offset
+                atom = line[10+shift:12+shift].strip()
+                natom = float(line[12+shift:18+shift].strip())
+                if atom == "E ":
+                    atom = 'e-'
                 if len(atom) == 1 and atom[0] == "E":
                     atom = atom[0].lower()+"-"
                 if len(atom)==2:
                     atom = atom[0]+atom[1].lower()
                 if len(atom)==3:
                     atom = atom[0]+atom[1].lower()+atom[2].lower()
-                natom = float(line[startnumber:endnumber].strip())
                 if natom != 0:
                     MolecularFormula[atom] = natom
+            
+            intervals=int(line[1:2])
+            if intervals == 0:
+                #If there are no intervals, there is still the first
+                #line of the record, but we skip this data
+                if not quiet:
+                    print "Skipping Record for",species
+                linecount += 1
+                line = lineit.next()
+                continue
+
             for entry in range(intervals):
                 linecount += 1
                 line = lineit.next()
@@ -140,9 +144,7 @@ cpdef parseNASADataFile(filename, quiet=True):
                 fitFunction = "Poly"
                 constants = [[C[i], orders[i]] for i in range(Ncoeffs)]
                 coeffs.append([Tmin, Tmax, fitFunction, constants, R * HConst, R * Sconst])
-
-            species, comments = firstline.split(" ", 1)
-            comments = comments.strip()
+            
             phasename = "Gas"
             if species[-1] == ")":
                 #This has a phase qualifier at the end in parentheses, grab it
@@ -154,8 +156,6 @@ cpdef parseNASADataFile(filename, quiet=True):
                     phasename = "Liquid"
                 else:
                     phasename = str(phase)+phasename
-            #print firstline
-            #print "species =",species," phase =",phasetype
             registerSpecies(species, MolecularFormula, MW)
 
             sp = speciesData[species]
@@ -179,19 +179,12 @@ cpdef parseNASADataFile(filename, quiet=True):
                 print traceback.print_exc()
                 print "Error parsing record for",species,"in file:",filename,"at line",linecount
                 print "   ",e.message
-            while linecount < startline + 1 + intervals * 3:
-                linecount += 1
-                lineit.next()
-    print ""
+                raise
 
 def initDataDir(directory):
     import os
-    print "Loading thermodynamic data"
-    parseNASADataFile(os.path.join(directory, 'thermo.inp'), quiet=False)
-    print "Loaded",len(speciesData),"thermodynamic species"
-    #The Burcat database is very inconsistent which makes it hard to
-    #parse in Hf just due to its non-standard formatting
-    #parseNASADataFile(os.path.join(directory, '/NEWNASA.inp'), quiet=False)
+    parseNASADataFile(os.path.join(directory, 'NASA_CEA.inp'), quiet=True)
+    print "Loaded NASA dataset (database at",len(speciesData),"species)"
 
 import sys
 import os.path

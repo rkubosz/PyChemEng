@@ -5,11 +5,11 @@
 from chemeng.components cimport Components
 from chemeng.speciesdata import speciesData
 from chemeng.speciesdata cimport SpeciesDataType
-#Ensure that the thermodata is loaded, so the data is available
-from chemeng.thermodata import T0, P0
 import math
 
 cdef public double R = 8.31451
+cdef public double T0 = 273.15 + 25.0
+cdef public double P0 = 1.0e5
 
 ####################################################################
 # Phase base class
