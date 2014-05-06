@@ -67,8 +67,8 @@ cpdef parseNASADataFile(filename, quiet=True):
         startline=linecount
 
         ######NEED A SMART COMPONENT PARSER#####
-        species = line[0:15].split()[0].strip()
-        comments = line[15:-1].strip()
+        species = line[0:18].split()[0].strip()
+        comments = line[18:-1].strip()
         if not quiet:
             print ">>>Parsing:'"+species+"' '"+comments+"'"
         ########################################
