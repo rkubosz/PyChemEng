@@ -5,6 +5,7 @@ from Cython.Distutils import build_ext
 
 ext_modules = [Extension('chemeng.elementdata', ['src/chemeng/elementdata.pyx'], language='c++', include_dirs=['.']),
                Extension('chemeng.NASAdata', ['src/chemeng/NASAdata.pyx'], language='c++', include_dirs=['.']),
+               Extension('chemeng.chemkindata', ['src/chemeng/chemkindata.pyx'], language='c++', include_dirs=['.']),
                Extension('chemeng.speciesdata', ['src/chemeng/speciesdata.pyx'], language='c++', include_dirs=['.']),
                #Extension('chemeng.antoinedata', ['src/chemeng/antoinedata.pyx'], language='c++', include_dirs=['.']),
                Extension('chemeng.transportdata', ['src/chemeng/transportdata.pyx'], language='c++', include_dirs=['.']),
