@@ -11,7 +11,6 @@ ext_modules = [Extension('chemeng.elementdata', ['src/chemeng/elementdata.pyx'],
                Extension('chemeng.transportdata', ['src/chemeng/transportdata.pyx'], language='c++', include_dirs=['.']),
                Extension('chemeng.components', ['src/chemeng/components.pyx'], language='c++', include_dirs=['.']),
                Extension('chemeng.phase', ['src/chemeng/phase.pyx'], language='c++', include_dirs=['.']),
-               Extension('chemeng.reaction', ['src/chemeng/reaction.pyx'], language='c++', include_dirs=['.']),
                Extension('chemeng.standarddefinitions', ['src/chemeng/standarddefinitions.pyx'], language='c++', include_dirs=['.']),
                Extension('chemeng.entropymaximiser', ['src/chemeng/entropymaximiser.pyx'], language='c++', include_dirs=['.']),
                ]
