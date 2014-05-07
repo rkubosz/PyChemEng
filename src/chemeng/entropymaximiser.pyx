@@ -5,8 +5,9 @@
 from chemeng.phase cimport Phase
 from chemeng.phase import IdealGasPhase
 from chemeng.components cimport Components
-from itertools import izip
+import pyOpt
 import math
+
 cpdef double R = 8.3144621
 
 cpdef Components getTotalSpecies(list phaselist):
@@ -45,12 +46,12 @@ cdef class EquilibriumFinder:
                 
         if not self.constT:
             for phase in self.outputPhases:
-                phase.T = statevec[var_count]
+                phase.T = statevec[var_count] * self.inputPhases[0].T
             var_count +=1
 
         if not self.constP:
             for phase in self.outputPhases:
-                phase.P = statevec[var_count]
+                phase.P = statevec[var_count] * self.inputPhases[0].P
             var_count +=1
 
     #Create the constraints
@@ -148,17 +149,18 @@ cdef class EquilibriumFinder:
         self.inputElements = self.inputSpecies.elementalComposition()
         self.inputMoles = self.inputSpecies.total()
 
-        #Phase data setup
-        cdef double stepsize = min(0.1, self.inputMoles * xtol)
-        cdef Phase phase
-        if self.logMolar:
-            for phase in self.inputPhases:
-                for key in phase.components.keys():
-                    if phase.components[key] == 0:
-                        phase.components[key] = stepsize
+        #In the minimisation, we try to scale all variables to be of
+        #order unity. This means we divide the molar amounts by the
+        #number of input moles, and the temperature/pressure are
+        #scaled by the input values.
 
+        #Setup of the "output" phases. These are working copies of the
+        #"input" phases.
+        cdef Phase phase
         for phase in self.inputPhases:
             newphase = phase.copy()
+            #Scale the phases by the total number of input moles
+            newphase.components /= self.inputMoles
             #Ensure all phases have the same temperature and pressure
             newphase.T = self.inputPhases[0].T
             newphase.P = self.inputPhases[0].P
@@ -168,12 +170,12 @@ cdef class EquilibriumFinder:
         self.constraintTargets = self.constraint_func()
         
         #########  Create Optimisation System
-        import pyOpt
-        opt_prob = pyOpt.Optimization('Entropy maximisation', lambda x : self.obj_func(x))
+        opt_prob = pyOpt.Optimization('Entropy maximisation', self.obj_func)
         opt_prob.addObj('ThermoPotential')
         opt = pyOpt.pySLSQP.SLSQP()
 
         ######### Step size
+        cdef double stepsize = min(0.1, xtol)
         opt.setOption('ACC', stepsize)
 
         #########  Load optimisation variables, bounds, and constraints
@@ -194,16 +196,16 @@ cdef class EquilibriumFinder:
             for key, moles in phase.components.iteritems():
                 if self.logMolar:
                     if moles == 0.0:
-                        opt_prob.addVar(str(phase_count)+':ln('+key+')', type='c', value=math.log(stepsize))
+                        opt_prob.addVar(str(phase_count)+':ln('+key+')', type='c', value=math.log(xtol))
                     else:
                         opt_prob.addVar(str(phase_count)+':ln('+key+')', type='c', value=math.log(moles))
                 else:
                     opt_prob.addVar(str(phase_count)+':'+key, type='c', value=moles, lower=0.0)
                 
         if not self.constT:
-            opt_prob.addVar('T', type='c', value=self.outputPhases[0].T, lower=0)
+            opt_prob.addVar('T/Tinitial', type='c', value=1.0, lower= 200 / self.inputPhases[0].T)
         if not self.constP:
-            opt_prob.addVar('P', type='c', value=self.outputPhases[0].P, lower=0)
+            opt_prob.addVar('P/Pinitial', type='c', value=1.0, lower=0)
         
 
         if self.elemental:
@@ -228,14 +230,20 @@ cdef class EquilibriumFinder:
             opt.setOption('IPRINT', 0)
 
         [fstr, xstr, inform] = opt(opt_prob, sens_type='FD', disp_opts=debug)
+    
+        if inform['value'] != 0:
+            print "Warning findEquilibrium error:"+str(inform['value'])+": "+inform['text']
 
         if debug:
-            print fstr
-            print xstr
-            print inform
+            print fstr #The optimial minimum value of the objective function
+            print xstr #The final state vector
+            print inform #dictionary of 
             print opt_prob._solutions[0]
 
+        #recreate the output system for output
         self.restoreStateVector(xstr)
+        for phase in self.outputPhases:
+            phase.components *= self.inputMoles
 
 def findEquilibrium(*args, **kwrdargs):
     solver = EquilibriumFinder(*args, **kwrdargs)
