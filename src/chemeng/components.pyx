@@ -35,6 +35,9 @@ cdef class Components:
    cpdef iteritems(Components self):
       return self._list.iteritems()
 
+   def __contains__(self, key):
+       return self._list.count(key) != 0
+
    def __add__(self, Components other):
        cdef Components copy = self.copy()
        copy.mix(other)

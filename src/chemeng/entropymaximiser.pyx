@@ -6,7 +6,7 @@ from chemeng.phase cimport Phase
 from chemeng.phase import IdealGasPhase
 from chemeng.components cimport Components
 from itertools import izip
-
+import math
 cpdef double R = 8.3144621
 
 cpdef Components getTotalSpecies(list phaselist):
@@ -25,33 +25,22 @@ cdef class EquilibriumFinder:
     cdef public bint constU
     cdef public bint constS
     cdef public bint elemental
+    cdef public bint logMolar
     cdef public double initialObjVal
     cdef public double inputMoles
     cdef public Components inputSpecies
     cdef public Components inputElements
     cdef public list constraintTargets
 
-    cpdef list getStateVector(EquilibriumFinder self):
-        cdef list variables = []
-        cdef Phase phase
-        cdef double moles
-        for phase in self.outputPhases:
-            variables += [moles for moles in phase.components.values()]
-
-        #Add the temperature and pressure of the first phase
-        if not self.constT:
-            variables.append(self.outputPhases[0].T)
-        if not self.constP:
-            variables.append(self.outputPhases[0].P)
-
-        return variables
-
     cpdef restoreStateVector(EquilibriumFinder self, statevec):
         cdef int var_count = 0
         cdef Phase phase
         for phase in self.outputPhases:
             for key in phase.components.keys():
-                phase.components[key] = statevec[var_count]
+                if self.logMolar:
+                    phase.components[key] = math.exp(statevec[var_count])
+                else:
+                    phase.components[key] = statevec[var_count]
                 var_count +=1
                 
         if not self.constT:
@@ -62,7 +51,7 @@ cdef class EquilibriumFinder:
         if not self.constP:
             for phase in self.outputPhases:
                 phase.P = statevec[var_count]
-            var_count +=1            
+            var_count +=1
 
     #Create the constraints
     cpdef list constraint_func(EquilibriumFinder self):
@@ -138,10 +127,36 @@ cdef class EquilibriumFinder:
             constraints[i] -= self.constraintTargets[i]
         return f, constraints, 0
 
-    def __init__(EquilibriumFinder self, list inputPhases, bint constT = False, bint constP = False, bint constH = False, bint constV = False, bint constU = False, bint constS = False, bint elemental = False, double Tmax = 20000, double Pmax = 500, double xtol=1e-8):
+    def __init__(EquilibriumFinder self, list inputPhases, bint constT = False, bint constP = False, bint constH = False, bint constV = False, bint constU = False, bint constS = False, bint elemental = False, double Tmax = 20000, double Pmax = 500, double xtol=1e-5, bint logMolar = True, bint debug=True):
+
+        #Sanity checks
+        if (constT + constP + constH + constV + constU + constS) != 2:
+            raise Exception("EquilibriumFinder requires exactly 2 constant state variables from T, P, H, V, U, and S.")
+
+        #Data initialisation
+        self.constT = constT
+        self.constP = constP
+        self.constH = constH
+        self.constV = constV
+        self.constU = constU
+        self.constS = constS
+        self.logMolar = logMolar
+        self.elemental = elemental
         self.inputPhases = inputPhases
         self.outputPhases = []
+        self.inputSpecies = getTotalSpecies(self.inputPhases)
+        self.inputElements = self.inputSpecies.elementalComposition()
+        self.inputMoles = self.inputSpecies.total()
+
+        #Phase data setup
+        cdef double stepsize = min(0.1, self.inputMoles * xtol)
         cdef Phase phase
+        if self.logMolar:
+            for phase in self.inputPhases:
+                for key in phase.components.keys():
+                    if phase.components[key] == 0:
+                        phase.components[key] = stepsize
+
         for phase in self.inputPhases:
             newphase = phase.copy()
             #Ensure all phases have the same temperature and pressure
@@ -149,17 +164,21 @@ cdef class EquilibriumFinder:
             newphase.P = self.inputPhases[0].P
             self.outputPhases.append(newphase)
             
-        if (constT + constP + constH + constV + constU + constS) != 2:
-            raise Exception("EquilibriumFinder requires exactly 2 constant state variables from T, P, H, V, U, and S.")
-        self.constT = constT
-        self.constP = constP
-        self.constH = constH
-        self.constV = constV
-        self.constU = constU
-        self.constS = constS
-        self.elemental = elemental
-        self.inputSpecies = getTotalSpecies(self.inputPhases)
-        self.inputElements = self.inputSpecies.elementalComposition()
+        self.initialObjVal = self.optimisation_func()
+        self.constraintTargets = self.constraint_func()
+        
+        #########  Create Optimisation System
+        import pyOpt
+        opt_prob = pyOpt.Optimization('Entropy maximisation', lambda x : self.obj_func(x))
+        opt_prob.addObj('ThermoPotential')
+        opt = pyOpt.pySLSQP.SLSQP()
+
+        ######### Step size
+        opt.setOption('ACC', stepsize)
+
+        #########  Load optimisation variables, bounds, and constraints
+        
+        #This also names them within the optimiser to enable debugging later on.
 
         #We need to provide bounds on the optimizer parameters, which may
         #include the number of species, the temperature, and the pressure.
@@ -169,39 +188,41 @@ cdef class EquilibriumFinder:
         #and that there is not a significant production of electrons/ions).
         cdef double maxmoles = max(self.inputElements.values())
 
-        ### Step size
-        #The step size should be some small fraction of the available
-        #moles in the system. The same value is used for temperature, so
-        #we limit it to a max of 0.1 mol/K.
-        self.inputMoles = self.inputSpecies.total()
-        cdef double stepsize = min(0.1, self.inputMoles * xtol)
-
-        cdef list initialState = self.getStateVector()
-        self.initialObjVal = self.optimisation_func()
-        self.constraintTargets = self.constraint_func()
-
-        cdef list variableBounds = []
-        for phase in self.inputPhases:
-            for i in range(len(phase.components)):
-                variableBounds += [[0, maxmoles]]
-            if not self.constT:
-                variableBounds.append([0, Tmax])
-            if not self.constP:
-                variableBounds.append([0, Pmax])
+        cdef int phase_count = 0
+        for phase in self.outputPhases:
+            phase_count += 1
+            for key, moles in phase.components.iteritems():
+                if self.logMolar:
+                    if moles == 0.0:
+                        opt_prob.addVar(str(phase_count)+':ln('+key+')', type='c', value=math.log(stepsize))
+                    else:
+                        opt_prob.addVar(str(phase_count)+':ln('+key+')', type='c', value=math.log(moles))
+                else:
+                    opt_prob.addVar(str(phase_count)+':'+key, type='c', value=moles, lower=0.0)
+                
+        if not self.constT:
+            opt_prob.addVar('T', type='c', value=self.outputPhases[0].T, lower=0)
+        if not self.constP:
+            opt_prob.addVar('P', type='c', value=self.outputPhases[0].P, lower=0)
         
-        import pyOpt
-        opt_prob = pyOpt.Optimization('Entropy maximisation',lambda x : self.obj_func(x))
-        opt_prob.addObj('-S', value=0.0)
-        for i,var in enumerate(initialState):
-            opt_prob.addVar('x'+str(i), type='c', value=var, lower=0)
-        for i,cons in enumerate(self.constraintTargets):
-            opt_prob.addCon('cons'+str(i), type='e')
-            
-            
-        opt = pyOpt.pySLSQP.SLSQP()
-        opt.setOption('ACC', stepsize)
 
-        cdef bint debug = False
+        if self.elemental:
+            for key in self.inputElements.keys():
+                opt_prob.addCon('Element:'+key, type='e')
+        else: #not elemental
+            for key in self.inputSpecies.keys():
+                opt_prob.addCon('Species:'+key, type='e')
+
+        if self.constH:
+            opt_prob.addCon('Enthalpy', type='e')
+        if self.constU:
+            opt_prob.addCon('InternalE', type='e')
+        if self.constV:
+            opt_prob.addCon('Volume', type='e')
+        if self.constS:
+            opt_prob.addCon('Entropy', type='e')
+
+        ######### Run optimisation
         if debug:
             print opt_prob
             opt.setOption('IPRINT', 0)
