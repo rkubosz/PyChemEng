@@ -27,12 +27,13 @@ cdef class NASAPolynomial(ThermoConstantsType):
             self.b[i] = b[i]
 
     def __str__(self):
-        retval = "NASAPolynomial{Tmin="+str(self.Tmin)+", Tmax="+str(self.Tmax)+", "
+        retval = "NASAPolynomial{Tmin="+str(self.Tmin)+", Tmax="+str(self.Tmax)+", notes='"+self.comments+"', a=["
         for i in range(7):
             retval+=str(self.a[i])+", "
+        retval = retval[:-2] + "], b=["
         for i in range(2):
             retval+=str(self.b[i])+", "
-        return retval[:-2]+", notes='"+self.comments+"'}"
+        return retval[:-2]+"]}"
 
     def __repr__(self):
         return self.__str__()

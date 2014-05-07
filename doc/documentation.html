@@ -61,10 +61,10 @@
 	from { background-color: yellow; }
 	to { background-color: white; }
     }
-    
-    .syntaxhighlighter {
+
+    pre {
+    overflow-x:auto;
     border: 1px solid #000000;
-    padding:15px;
     }
     </style>
     <script src="prefixfree.min.js"></script>    
@@ -87,31 +87,23 @@
 	You will need several prequisites installed to build both
 	PyChemEng and the pyOpt library it relies on:
       </p>
-      <pre class="brush:bash;">
-sudo apt-get install swig gfortran cython
-      </pre>
+      <pre><code class="language-bash">sudo apt-get install swig gfortran cython</code></pre>
       <p>
 	Now you can download, unpack, build, and install pyOpt.
       </p>
-      <pre class="brush:bash;">
-wget http://www.pyopt.org/_downloads/pyOpt-1.1.0.tar.gz
+      <pre><code class="language-bash">wget http://www.pyopt.org/_downloads/pyOpt-1.1.0.tar.gz
 tar -xf pyOpt-1.1.0.tar.gz
 cd pyOpt-1.1.0
 python setup.py build
-sudo python setup.py install
-      </pre>
+sudo python setup.py install</code></pre>
       <p>
 	Now, download the code. You can check it out from git using
 	the following command:
       </p>
-      <pre class="brush:bash;">
-git clone https://github.com/toastedcrumpets/PyChemEng.git
-      </pre>
-      <pre class="brush:bash;">
-cd PyChemEng
+      <pre><code class="language-bash">git clone https://github.com/toastedcrumpets/PyChemEng.git</code></pre>
+      <pre><code class="language-bash">cd PyChemEng
 ./setup.py build
-sudo ./setup.py install
-      </pre>
+sudo ./setup.py install</code></pre>
       <h1>Loading PyChemEng in python</h1>
       <p>
 	Most of PyChemEng is accessed through a single python module,
@@ -119,9 +111,7 @@ sudo ./setup.py install
 	default thermodynamic data and import the standard
 	functionality.
       </p>
-      <pre class="brush:python;">
-from chemeng import *
-      </pre>
+      <pre><code class="language-python">from chemeng import *</code></pre>
       <p>
 	We'll take a tour of the features and how we can apply them.
       </p>
@@ -131,29 +121,23 @@ from chemeng import *
 	within PyChemEng. This contains accurate isotopic masses and
 	abundance data:
       </p>
-      <pre class="brush:python;">
-print elements['Ca']
+      <pre><code class="language-python">print elements['Ca']
 #Element{Ca, Z=20, AW=40.078, 24 isotopes}
 print elements['Li'].mass
-#6.941 (g/mol)
-      </pre>
+#6.941 (g/mol)</code></pre>
       <p>
 	The average atomic weight (AW) is calculated from the abundance
 	of each isotope and its mass. We can examine this information by
 	accessing the isotope using its neutron number, e.g.
       </p>
-      <pre class="brush:python;">
-print elements['C'].isotopes[6]
-#Isotope{C, Z=6, N=6, M=12.0(0.0), P=0.9893}
-      </pre>
+      <pre><code class="language-python">print elements['C'].isotopes[6]
+#Isotope{C, Z=6, N=6, M=12.0(0.0), P=0.9893}</code></pre>
       <p>
 	Or by directly specifying the proton (Z) and neutron (N) number
 	as a tuple
       </p>
-      <pre class="brush:python;">
-print elements[(1,2)] #Tritium
-#Element{T, Z=1, AW=3.0160492777}
-      </pre>
+      <pre><code class="language-python">print elements[(1,2)] #Tritium
+#Element{T, Z=1, AW=3.0160492777}</code></pre>
       <p>
 	Even though this is an Isotope, PyChemEng always returns an
 	Element for anything accessed via the elements array operator.
@@ -165,11 +149,9 @@ print elements[(1,2)] #Tritium
 	dictionary of chemical formulas/species and their molar
 	amounts. For example:
       </p>
-      <pre class="brush:python;">
-air = Components({'O2':0.21, 'N2':0.79})
+      <pre><code class="language-python">air = Components({'O2':0.21, 'N2':0.79})
 print air
-#C{'N2':0.79, 'O2':0.21}
-      </pre>
+#C{'N2':0.79, 'O2':0.21}</code></pre>
       <p>
 	The names of the species within the Components class (e.g.,
 	"O2") must correspond to species within the thermodynamics
@@ -181,8 +163,7 @@ print air
 	For example, here is a calculation of a stochiometic methane-air
 	fuel mixture, its mole fractions, and its mass.
       </p>
-      <pre class="brush:python;">
-#Specify fuel and air streams
+      <pre><code class="language-python">#Specify fuel and air streams
 fuel = Components({'CH4':1.0})
 air = Components({'N2':0.79, 'O2':0.21})
 
@@ -203,17 +184,14 @@ print stochiometricMix.total()
 #10.5238095238 (mol)
 
 print stochiometricMix.totalMass() 
-#290.807545714 (g)
-      </pre>
+#290.807545714 (g)</code></pre>
       <p>
 	Please note the handy ability
 	to break Components down to
 	their elemental composition.
       </p>
-      <pre class="brush:python;">
-print stochiometricMix.elementalComposition()
-#C{'C':1, 'H':4, 'N':15.0476, 'O':4}
-      </pre>
+      <pre><code class="language-python">print stochiometricMix.elementalComposition()
+#C{'C':1, 'H':4, 'N':15.0476, 'O':4}</code></pre>
       <p>
 	The elemental composition which is returned is also a Components class, so you can add and scale this as required.
       </p>
@@ -227,60 +205,72 @@ print stochiometricMix.elementalComposition()
 	section</a>). Species can be looked up using their chemical
 	formula:
       </p>
-      <pre class="brush:python;">
-print speciesData['CO2']
-#Species{CO2, phases=[Gas], elementalComposition=C{'C':1, 'O':2}}
-      </pre>
+      <pre><code class="language-python">print speciesData['CO2']
+#Species{CO2, phases=[Gas], elementalComposition=C{'C':1, 'O':2}}</code></pre>
       <p>
 	Here we note that the database has thermodynamic data for the
 	gas phase of CO${}_2$ only. We can see what temperature ranges
 	this is defined over by querying the phase:
       </p>
-      <pre class="brush:python;">
-print speciesData['CO2'].phases['Gas']
-#Phase{Gas, T=[200.0-&gt;1000.0K, 1000.0-&gt;6000.0K, 6000.0-&gt;20000.0K], comments='Gurvich,1991 pt1 p27 pt2 p24.'}
-      </pre>
+      <pre><code class="language-python">print speciesData['CO2'].phases['Gas']
+#Phase{Gas, T=[200.0-&gt;1000.0K, 1000.0-&gt;6000.0K, 6000.0-&gt;20000.0K]}</code></pre>
       <p>
 	Here we can see that thermodynamic data is available for
-	CO${}_2$ gases over the range $200$K$\to20000$K.
+	CO${}_2$ gases over the range $200$K$\to20000$K. We can
+	inspect each temperature range
+      </p>
+      <pre><code class="language-python">print speciesData['CO2'].phases['Gas'].constants
+#[NASAPolynomial{Tmin=200.0, Tmax=1000.0, notes='Gurvich,1991 pt1 p27 pt2 p24.', a=[49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-07, -7.68998878e-10, 2.849677801e-13], b=[-45281.9846, -7.04827944]}, 
+# NASAPolynomial{Tmin=1000.0, Tmax=6000.0, notes='Gurvich,1991 pt1 p27 pt2 p24.', a=[117696.2419, -1788.791477, 8.29152319, -9.22315678e-05, 4.86367688e-09, -1.891053312e-12, 6.33003659e-16], b=[-39083.5059, -26.52669281]},
+# NASAPolynomial{Tmin=6000.0, Tmax=20000.0, notes='Gurvich,1991 pt1 p27 pt2 p24.', a=[-1544423287.0, 1016847.056, -256.140523, 0.0336940108, -2.181184337e-06, 6.99142084e-11, -8.8423515e-16], b=[-8043214.51, 2254.177493]}]</code></pre>
+      <p>
+	Here we can see that three 9-coefficient NASA
+	polynomials are used to approximate the heat capacity.
       </p>
       <p>
 	The chemical formula can be difficult to determine for some
 	compounds. To simplify finding the appropriate formula, there
-	are some search functions.
+	are some search functions. The first allows you to search by
+	keyword through the formula, phase name, and constants
+	comments:
       </p>
-      <pre class="brush:python;">
-print findSpeciesData("C8")
+      <pre><code class="language-python">print findSpeciesData("C8")
 #[Species{'C8H18,isooctane', phases=[Gas], elementalComposition=C{'C':8, 'H':18}},
 # Species{'C8H18,n-octane', phases=[Gas], elementalComposition=C{'C':8, 'H':18}},
 # Species{'C8H8,styrene', phases=[Gas], elementalComposition=C{'C':8, 'H':8}},
 # Species{'C8H16,1-octene', phases=[Gas], elementalComposition=C{'C':8, 'H':16}},
 # Species{'C8H17,n-octyl', phases=[Gas], elementalComposition=C{'C':8, 'H':17}},
-# Species{'C8H10,ethylbenz', phases=[Gas], elementalComposition=C{'C':8, 'H':10}}]
-      </pre>
+# Species{'C8H10,ethylbenz', phases=[Gas], elementalComposition=C{'C':8, 'H':10}}]</code></pre>
       <p>
-	Please note, the database included with PyChemEng does not
-	have many keywords/common names defined within it yet. So
-	simple name searches (e.g. benzene) will probably fail. It is
-	best to search for a partially complete chemical formula. If
-	the data does not exist within the database, it is relatively
-	easy to <a href="#AddingThermoData">add your own data</a>.
+	Please note, the NASA database does not have many
+	keywords/common names defined within it yet. So simple name
+	searches (e.g. benzene) will probably fail. It is best to
+	search for a partially complete chemical formula. 
+      </p>
+      <p>
+	Searches can be performed by specifying the minimum amount of
+	each element required. For example:
+      </p>
+      <pre><code class="language-python">print findSpeciesData(elements=Components({'C':5, 'O':3}))
+#[Species{'Fe(CO)5', phases=[Gas, Liquid], elementalComposition=C{'C':5, 'Fe':1, 'O':5}}]</code></pre>
+      <p>
+	If the data does not exist within the database, it is
+	relatively easy to <a href="#AddingThermoData">add your own
+	data</a>.
       </p>
       <p>
 	Once we have found the species of chemical we're looking for,
 	we can query for the pure phase properties (at the reference
 	pressure).
       </p>
-      <pre class="brush:python;">
-print speciesData['H2O'].Cp0(298.15, 'Gas')#Heat capacity
+      <pre><code class="language-python">print speciesData['H2O'].Cp0(298.15, 'Gas')#Heat capacity
 #33.5877103224 (J/(mol K))
 
 print speciesData['H2O'].Hf0(298.15, 'Gas')#Enthalpy of formation
 #-241826.00034 (J/mol)
 
 print speciesData['SO'].S0(298.15, 'Gas') #Entropy
-#221.941409816 (J/(mol K))
-      </pre>
+#221.941409816 (J/(mol K))</code></pre>
       <p>
 	Using these properties in energy balances, or free energy
 	calculations can rapidly get tedious, so there are some Phase
@@ -301,19 +291,15 @@ print speciesData['SO'].S0(298.15, 'Gas') #Entropy
 	at $179.9^\circ$C. Creating an ideal gas phase at this
 	temperature we have:
       </p>
-      <pre class="brush:python;">
-vapour = IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)
-      </pre>
+      <pre><code class="language-python">vapour = IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)</code></pre>
       <p>
 	We can then directly query this phase for the heat capacity
 	and enthalpy (and other properties).
       </p>
-      <pre class="brush:python;">
-print vapour.Cp() 
+      <pre><code class="language-python">print vapour.Cp() 
 #34.7503667276 (J/ K) 
 print vapour.enthalpy() 
-#-236543.780767 (J)
-      </pre>
+#-236543.780767 (J)</code></pre>
       <p>
 	The enthalpy might appear very large, but this includes the
 	enthalpy of formation of water, as well as its sensible heat
@@ -327,22 +313,18 @@ print vapour.enthalpy()
 	dependence of the enthalpy, and a phaseID to select the
 	appropriate thermodynamic data.
       </p>
-      <pre class="brush:python;">
-#Check that we have thermodynamic data for a "Liquid" phase
+      <pre><code class="language-python">#Check that we have thermodynamic data for a "Liquid" phase
 print speciesData['H2O']
 #Species{'H2O', phases=[1cr, Gas, Liquid], elementalComposition=C{'H':2, 'O':1}}
 
-liquid = IncompressiblePhase({'H2O':1.0}, T=179.9+273.15, P=10.e5, phaseID="Liquid", molarvolume=0.018 / 998.0)
-      </pre>
+liquid = IncompressiblePhase({'H2O':1.0}, T=179.9+273.15, P=10.e5, phaseID="Liquid", molarvolume=0.018 / 998.0)</code></pre>
       <p>
 	Then we can calculate enthalpy differences.
       </p>
-      <pre class="brush:python;">
-print vapour.enthalpy() - liquid.enthalpy()
+      <pre><code class="language-python">print vapour.enthalpy() - liquid.enthalpy()
 #37427.074787 (J/mol)
 print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
-#2079.28193261 (J/g)
-      </pre>
+#2079.28193261 (J/g)</code></pre>
       <p>
 	Examining steam tables, we see values of $\approx 2016$
 	kJ/kg. The discrepancy here will be caused by non-ideal
@@ -352,11 +334,9 @@ print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
 	contriubtion by setting the molarvolume to zero (or not
 	specifying it).
       </p>
-      <pre class="brush:python;">
-liquid = IncompressiblePhase({'H2O':1.0}, T=179.9+273.15, P=10.e5, phaseID="Liquid")
+      <pre><code class="language-python">liquid = IncompressiblePhase({'H2O':1.0}, T=179.9+273.15, P=10.e5, phaseID="Liquid")
 print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
-#2080.18373622 (J/g)
-      </pre>
+#2080.18373622 (J/g)</code></pre>
       <p>
 	We can see that the volume contribution to the enthalpy is
 	very small (hence why it is often ignored), thus the
@@ -365,12 +345,10 @@ print (vapour.enthalpy() - liquid.enthalpy()) / 18.0
       <p>
 	We can also mix IdealGasPhases using the addition operator:
       </p>
-      <pre class="brush:python;">
-stream1 = IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)
+      <pre><code class="language-python">stream1 = IdealGasPhase({'H2O':1.0}, T=179.9+273.15, P=10.e5)
 stream2 = IdealGasPhase({'O2':0.21, 'N2':0.79}, T=298.15, P=1.e5)
 print stream1 + stream2
-#&lt;IdealGasPhase, 2 mol, 381.879 K, 1 bar, C{'H2O':1, 'N2':0.79, 'O2':0.21}&gt;
-      </pre>
+#&lt;IdealGasPhase, 2 mol, 381.879 K, 1 bar, C{'H2O':1, 'N2':0.79, 'O2':0.21}&gt;</code></pre>
       <p>
 	You should note that the phases are mixed adiabatically at the
 	pressure of the lowest pressure phase.
@@ -402,15 +380,13 @@ print stream1 + stream2
 	is done, we can find the equilibrium state at constant
 	pressure and enthalpy using findEquilibrium:
       </p>
-      <pre class="brush:python;">
-water = IncompressiblePhase({'H2O':1.0}, T=185+273.15, P=1e5, phaseID="Liquid", molarvolume=0.018/998)
+      <pre><code class="language-python">water = IncompressiblePhase({'H2O':1.0}, T=185+273.15, P=1e5, phaseID="Liquid", molarvolume=0.018/998)
 steam = IdealGasPhase({'H2O':0}, T=273.15, P=1e5)
 result = findEquilibrium([water, steam], constP=True, constH=True)
 print result[0]
 #&lt;IncompressiblePhase, 0.838897 mol, 373.173 K, 1 bar, C{'H2O':0.838897}&gt;
 print result[1]
-#&lt;IdealGasPhase, 0.161103 mol, 373.173 K, 1 bar, C{'H2O':0.161103}&gt;
-      </pre>
+#&lt;IdealGasPhase, 0.161103 mol, 373.173 K, 1 bar, C{'H2O':0.161103}&gt;</code></pre>
       <p>
 	At 1 bar of pressure, water boils at $\approx 373$ K as
 	expected. Around 16% of the superheated water boils off under
@@ -456,8 +432,7 @@ print result[1]
 	stochiometric methane/air mixture we prepared earlier at a
 	constant pressure:
       </p>
-      <pre class="brush:python;">
-print stochiometricMix 
+      <pre><code class="language-python">print stochiometricMix 
 #C{'CH4':1, 'N2':7.52381, 'O2':2}
 
 #Create a list of some reaction products. We can get quite exotic if
@@ -468,19 +443,16 @@ combustionproducts = Components({'H2O':0, 'CO2':0, 'CO':0, 'NO':0, 'C':0, 'OH':0
 fuelmix = IdealGasPhase(stochiometricMix + combustionproducts, T=273.15, P=1e5)
 result = findEquilibrium([fuelmix], constP=True, constH=True, elemental=True)
 print result[0]
-#&lt;IdealGasPhase, 10.5837 mol, 2227.23 K, 1 bar, C{'C':-4.70366e-18, 'CH4':1.45657e-18, 'CO':0.106244, 'CO2':0.893756, 'H2O':1.98653, 'N':-7.04731e-19, 'N2':7.51458, 'NO':0.0184681, 'O2':0.0371525, 'OH':0.0269416}&gt;
-      </pre>
+#&lt;IdealGasPhase, 10.5837 mol, 2227.23 K, 1 bar, C{'C':-4.70366e-18, 'CH4':1.45657e-18, 'CO':0.106244, 'CO2':0.893756, 'H2O':1.98653, 'N':-7.04731e-19, 'N2':7.51458, 'NO':0.0184681, 'O2':0.0371525, 'OH':0.0269416}&gt;</code></pre>
       <p>
 	Here you can see the production of CO, NO, and OH and a flame
 	temperature of 2200 K. PyChemEng has lists of standard
 	combustion products built in, so you don't have to type these
 	in every time:
       </p>
-      <pre class="brush:python;">
-from chemeng.standarddefinitions import StandardHydrocarbonCombustionComponents
+      <pre><code class="language-python">from chemeng.standarddefinitions import StandardHydrocarbonCombustionComponents
 print StandardHydrocarbonCombustionComponents
-#C{'CO':0, 'CO2':0, 'H':0, 'H2':0, 'H2O':0, 'N2':0, 'NO':0, 'O':0, 'O2':0, 'OH':0}
-      </pre>
+#C{'CO':0, 'CO2':0, 'H':0, 'H2':0, 'H2O':0, 'N2':0, 'NO':0, 'O':0, 'O2':0, 'OH':0}</code></pre>
       <p>
 	Please note that, whenever the option elemental=True is set,
 	reactions will take place between any of the phases
@@ -499,10 +471,8 @@ print StandardHydrocarbonCombustionComponents
 	temperature. There are two solid phases of sulphur within the
 	database, these are identified as "1a" and "1b":
       </p>
-      <pre class="brush:python;">
-print speciesData['S']
-#Species{'S', phases=[1a, Gas, Liquid, 2b], elementalComposition=C{'S':1}}
-      </pre>
+      <pre><code class="language-python">print speciesData['S']
+#Species{'S', phases=[1a, Gas, Liquid, 2b], elementalComposition=C{'S':1}}</code></pre>
       <p>
 	Phases other than "Gas" and "Liquid" phases are usually
 	numbered in increasing formation temperature and have a name
@@ -511,12 +481,10 @@ print speciesData['S']
 	temperature "beta" solid phase). Taking a look at the
 	thermodynamic data:
       </p>
-      <pre class="brush:python;">
-print speciesData['S'].phases['1a']
+      <pre><code class="language-python">print speciesData['S'].phases['1a']
 #Phase{'1a', T=[200.0->368.3K], comments='Alpha. Ref-Elm. Gurvich,1989 pt1 p265 pt2 p160.'}
 print speciesData['S'].phases['2b']
-#Phase{'2b', T=[368.3->388.36K], comments='Beta. Ref-Elm. Gurvich,1989 pt1 p265 pt2 p160.'}
-      </pre>
+#Phase{'2b', T=[368.3->388.36K], comments='Beta. Ref-Elm. Gurvich,1989 pt1 p265 pt2 p160.'}</code></pre>
       <p>
 	We can see that the alpha phase appears to transition to the
 	beta phase at 368.3K.
@@ -530,20 +498,16 @@ print speciesData['S'].phases['2b']
 	not include the combustion temperature. The thermodynamic data
 	for the gas phase has a much wider range of applicability:
       </p>
-      <pre class="brush:python;">
-print speciesData['S'].phases['Gas']
-#Phase{'Gas', T=[200.0->1000.0K, 1000.0->6000.0K, 6000.0->20000.0K], comments='Hf: Cox,1989 p22. Martin,W.C.,1990. Gordon,1999.'}
-      </pre>
+      <pre><code class="language-python">print speciesData['S'].phases['Gas']
+#Phase{'Gas', T=[200.0->1000.0K, 1000.0->6000.0K, 6000.0->20000.0K], comments='Hf: Cox,1989 p22. Martin,W.C.,1990. Gordon,1999.'}</code></pre>
       <p>
 	We will have to perform this combustion in two stages, first
 	we will calculate how much additional enthalpy is required to
 	vapourise the sulphur:
       </p>
-      <pre class="brush:python;">
-solidS = IncompressiblePhase({'S':1}, T=298.15, P=1e5, phaseID='1a')
+      <pre><code class="language-python">solidS = IncompressiblePhase({'S':1}, T=298.15, P=1e5, phaseID='1a')
 vapourS = IdealGasPhase({'S':solidS.components['S']}, T=298.15, P=1e5)
-hsv = vapourS.enthalpy() - solidS.enthalpy()
-      </pre>
+hsv = vapourS.enthalpy() - solidS.enthalpy()</code></pre>
       <p>
 	We will now "borrow" this energy/enthalpy and artificially
 	vapourise the sulphur. Once this is in the gas phase we can
@@ -558,8 +522,7 @@ hsv = vapourS.enthalpy() - solidS.enthalpy()
 	Performing the first combustion of the artificially vapourised
 	sulphur:
       </p>
-      <pre class="brush:python;">
-from chemeng.standarddefinitions import DryAir
+      <pre><code class="language-python">from chemeng.standarddefinitions import DryAir
 print DryAir
 #C{'Ar':0.934, 'CH4':0.000179, 'CO2':0.0397, 'He':0.000524, 'Kr':0.000114, 'N2':78.084, 'Ne':0.001818, 'O2':20.946}
 
@@ -571,23 +534,20 @@ input = air + vapourS
 input.components += Components({'SO':0, 'SO2':0, 'SO3':0})
 product1 = findEquilibrium([input], constP=True, constH=True, elemental=True)[0]
 print product1
-#&lt;IdealGasPhase, 7.17027 mol, 2467.05 K, 1 bar, C{'Ar':0.0668863, 'CH4':1.28187e-05, 'CO2':0.00284302, 'He':3.75251e-05, 'Kr':8.16385e-06, 'N2':5.59181, 'Ne':0.000130192, 'O2':0.508548, 'S':7.49857e-05, 'SO':0.0174563, 'SO2':0.981957, 'SO3':0.000511232}&gt;
-      </pre>
+#&lt;IdealGasPhase, 7.17027 mol, 2467.05 K, 1 bar, C{'Ar':0.0668863, 'CH4':1.28187e-05, 'CO2':0.00284302, 'He':3.75251e-05, 'Kr':8.16385e-06, 'N2':5.59181, 'Ne':0.000130192, 'O2':0.508548, 'S':7.49857e-05, 'SO':0.0174563, 'SO2':0.981957, 'SO3':0.000511232}&gt;</code></pre>
       <p>
 	Now we can pay back the enthalpy we borrowed using sensible
 	heat (the temperature is nearly $2500$K), then we can perform
 	another combustion calculation to determine how the resultant
 	temperature drop affects the equilibrium:
       </p>
-      <pre class="brush:python;">
-#Now subtract the enthalpy of vapourisation
+      <pre><code class="language-python">#Now subtract the enthalpy of vapourisation
 product1.setEnthalpy(product1.enthalpy() - hsv)
 
 #Perform the combustion calculation again
 product2 = findEquilibrium([product1], constP=True, constH=True, elemental=True)[0]
 print product2
-#&lt;IdealGasPhase, 7.15677 mol, 1495 K, 1 bar, C{'Ar':0.0668863, 'CH4':1.28187e-05, 'CO2':0.00284302, 'He':3.75251e-05, 'Kr':8.16385e-06, 'N2':5.59181, 'Ne':0.000130192, 'O2':0.495044, 'S':-4.59879e-17, 'SO':8.3346e-07, 'SO2':0.990086, 'SO3':0.00991313}&gt;
-      </pre>
+#&lt;IdealGasPhase, 7.15677 mol, 1495 K, 1 bar, C{'Ar':0.0668863, 'CH4':1.28187e-05, 'CO2':0.00284302, 'He':3.75251e-05, 'Kr':8.16385e-06, 'N2':5.59181, 'Ne':0.000130192, 'O2':0.495044, 'S':-4.59879e-17, 'SO':8.3346e-07, 'SO2':0.990086, 'SO3':0.00991313}&gt;</code></pre>
       <p>
 	We can see that, in comparison to the first combustion, the
 	flame temperature is significantly lower at $1495K$, there is
@@ -596,13 +556,9 @@ print product2
       </p>
       <h1 id="AddingThermoData">Adding your own thermodynamic data</h1>
     </div>
-    <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js"
-	    type="text/javascript"></script>
-    <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushPython.js" type="text/javascript"></script>
-    <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushBash.js" type="text/javascript"></script>
-    <link href="http://alexgorbatchev.com/pub/sh/current/styles/shCore.css" rel="stylesheet" type="text/css" />
-    <link href="http://alexgorbatchev.com/pub/sh/current/styles/shThemeEclipse.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript">SyntaxHighlighter.all();</script>
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/8.0/styles/googlecode.min.css">
+    <script src="http://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">
       MathJax.Hub.Config({

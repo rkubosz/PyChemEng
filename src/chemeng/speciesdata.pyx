@@ -135,16 +135,39 @@ from libcpp.map cimport map
 
 speciesData = {}
 
-cpdef list findSpeciesData(str search):
+cpdef list findSpeciesData(str keyword ="", Components elements = Components({})):
     cdef list retval = []
+
     for key,species in speciesData.iteritems():
-        if search in key:
-            retval.append(species)
+        #Check that the requested elements are there
+        fail = False
+        for element,amount in elements.iteritems():
+            if element not in species.elementalComposition:
+                fail = True
+                break
+            if amount > species.elementalComposition[element]:
+                fail = True
+                break
+
+        if fail:
             continue
+
+        fail = True
+        #Now check for keywords
+        if keyword in key:
+            fail = False
         for phasekey, phase in species.phases.iteritems():
-            if search in phasekey or search in phase.name or search in phase.comments:
-                retval.append(species)
-                continue
+            if keyword in phasekey or keyword in phase.name:
+                fail = False
+                break
+            for constants in phase.constants:
+                if keyword in constants.comments:
+                    fail = False
+                    break
+                
+        if not fail:
+            retval.append(species)
+
     return retval
 
 cpdef registerSpecies(name, Components elementalComposition):
