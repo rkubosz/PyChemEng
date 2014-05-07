@@ -36,6 +36,9 @@ cdef class Phase:
     def __str__(self):
         return "<"+self.__class__.__name__+", %g mol, %g K, %g bar, " % (self.components.total(), self.T, self.P / 1e5) + str(self.components)+">"
 
+    def __contains(self, key):
+        return key in self.components
+
 #The thermodynamic functions below do not include any effect of
 #pressure (they assume the phase is at the reference pressure P0), and
 #assumes that the phase is an ideal mixture. Classes which derive from

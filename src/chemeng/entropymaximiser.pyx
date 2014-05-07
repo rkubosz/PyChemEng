@@ -127,7 +127,7 @@ cdef class EquilibriumFinder:
             constraints[i] -= self.constraintTargets[i]
         return f, constraints, 0
 
-    def __init__(EquilibriumFinder self, list inputPhases, bint constT = False, bint constP = False, bint constH = False, bint constV = False, bint constU = False, bint constS = False, bint elemental = False, double Tmax = 20000, double Pmax = 500, double xtol=1e-5, bint logMolar = True, bint debug=True):
+    def __init__(EquilibriumFinder self, list inputPhases, bint constT = False, bint constP = False, bint constH = False, bint constV = False, bint constU = False, bint constS = False, bint elemental = False, double Tmax = 20000, double Pmax = 500, double xtol=1e-5, bint logMolar = False, bint debug=False):
 
         #Sanity checks
         if (constT + constP + constH + constV + constU + constS) != 2:
