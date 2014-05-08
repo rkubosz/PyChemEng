@@ -555,6 +555,78 @@ print product2
 	is greatly reduced.
       </p>
       <h1 id="AddingThermoData">Adding your own thermodynamic data</h1>
+      <p>
+	To add your own thermodynamic data, you need to define the
+	polynomials used for the pure phase heat capacity $C_p$,
+	enthalpy of formation $H_f$, and entropy $S$ at constant
+	pressure. These are related by the following expressions:
+      </p>
+      \[\begin{align*}
+      H_f\left(T,\,P=P_{ref}\right) &= \int_{T_{ref}}^{T} C_p\left(T,\,P=P_{ref}\right)\,{\rm d}T\\
+      S\left(T,\,P=P_{ref}\right) &= \int_{T_{ref}}^{T} \frac{C_p\left(T,\,P=P_{ref}\right)}{T}\,{\rm d}T
+      \end{align*}\]
+      <p>
+	The reference pressure in PyChemEng is $P_{ref}=1~$bar, and
+	the reference temperature is $T_{ref}=298.15K$. Enthalpies are
+	defined with zero corresponding to the reference elements at
+	the reference state. As an example, the NASA dataset uses
+	the <i>NASAPolynomial</i> class
+	defined <i>chemeng.NASAdata</i>. This uses the following
+	expressions:
+      </p>
+      \[\begin{align*}
+      C_p\left(T,\,P=P_{ref}\right) &= R\left(a_1\,T^{-2} + a_2\,T^{-1} + a_3 + a_4\,T + a_5\,T^{2} + a_6\,T^{3} + a_7\,T^{4}\right)\\
+      H_f\left(T,\,P=P_{ref}\right) &= R\left(-a_1\,T^{-1} + a_2\ln(T) + a_3\,T + \frac{a_4\,T^{2}}{2} + \frac{a_5\,T^{3}}{3} + \frac{a_6\,T^{4}}{4} + \frac{a_7\,T^{5}}{5} + H_{c}\right)\\
+      S\left(T,\,P=P_{ref}\right) &= R\left(-\frac{a_1\,T^{-2}}{2} - a_2\,T^{-1} + a_3\ln(T) + a_4\,T + \frac{a_5\,T^{2}}{2} + \frac{a_6\,T^{3}}{3} + \frac{a_7\,T^{4}}{4} + S_{c}\right)
+      \end{align*}\]
+      <p>
+	where $a_1,\ldots,a_7$ are the heat capacity coefficients and
+	$H_{c}$/$S_{c}$ are the enthalpy/entropy integration
+	constants. These integration constants are set so that the
+	enthalpy and entropy at $T=T_{ref}$ is recovered.
+      </p>
+      <h2>Defining your own polynomials</h2>
+      <p>
+	This is done by inheriting from the <i>ThermoConstantsType</i>
+	class, and providing implementations of Cp, H, and S
+	functions. For example, consider a constant heat capacity
+	system. We have the following relationships:
+      </p>
+      \[\begin{align*}
+      C_p\left(T,\,P=P_{ref}\right) &= C_{p,c}\\
+      H_f\left(T,\,P=P_{ref}\right) &= C_{p,c}\,T + H_{c}\\
+      S\left(T,\,P=P_{ref}\right) &= C_{p,c}\ln(T) + S_{c}
+      \end{align*}\]
+      <p>
+	We can then create a class for this:
+      </p>
+      <pre><code class="language-python">class ConstCp(ThermoConstantsType):
+    def __init__(self, Tmin, Tmax, Cpc, Hc, Sc, notes=""):
+        ThermoConstantsType.__init__(self, Tmin, Tmax, notes) #Required 
+        self.Cpc = Cpc
+        self.Hc = Hc
+        self.Sc = Sc
+    
+    def Cp0(self, T):
+        return self.Cpc
+
+    def Hf0(self, T):
+        return self.Cpc * T + self.Hc
+
+    def S0(self, T):
+        return self.Cpc * math.log(T) + self.Sc
+      </code></pre>
+      <p>
+	Once we have this form, we can load data like so:
+      </p>
+      <pre><code class="language-python">#Register the species and its elemental composition
+registerSpecies('CaBi2O4', Components({'Ca':1, 'Bi':2, 'O':4}))
+#Register that it has a solid phase
+speciesData['CaBi2O4'].registerPhase('Solid')
+
+#Add coefficients for the solid phase, please note, the enthalpy and
+#entropy here are not calibrated to the same reference as the NASA dataset.
+speciesData['CaBi2O4'].registerPhaseCoeffs(ConstCp(Tmin=298, Tmax=400, Cp=151.3, Hc=26470, Sc=188.5, notes="http://cdn.intechopen.com/pdfs-wm/42265.pdf"), 'Solid')</code></pre>
     </div>
     <link rel="stylesheet" href="http://yandex.st/highlightjs/8.0/styles/googlecode.min.css">
     <script src="http://yandex.st/highlightjs/8.0/highlight.min.js"></script>

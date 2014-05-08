@@ -144,3 +144,27 @@ product2 = findEquilibrium([product1], constP=True, constH=True, elemental=True)
 print product2
 #&lt;IdealGasPhase, 7.15677 mol, 1495 K, 1 bar, C{'Ar':0.0668863, 'CH4':1.28187e-05, 'CO2':0.00284302, 'He':3.75251e-05, 'Kr':8.16385e-06, 'N2':5.59181, 'Ne':0.000130192, 'O2':0.495044, 'S':-4.59879e-17, 'SO':8.3346e-07, 'SO2':0.990086, 'SO3':0.00991313}&gt;
 
+class ConstCp(ThermoConstantsType):
+    def __init__(self, Tmin, Tmax, Cp, Hc, Sc, notes=""):
+        ThermoConstantsType.__init__(self, Tmin, Tmax, notes) #Required 
+        self.Cp = Cp
+        self.Hc = Hc
+        self.Sc = Sc
+    
+    def Cp0(self, T):
+        return self.Cp
+
+    def Hf0(self, T):
+        return self.Cp * T + self.Hc
+
+    def S0(self, T):
+        return self.Cp * math.log(T) + self.Sc
+
+#Register the species and its elemental composition
+registerSpecies('CaBi2O4', Components({'Ca':1, 'Bi':2, 'O':4}))
+#Register that it has a solid phase
+speciesData['CaBi2O4'].registerPhase('Solid')
+
+#Add coefficients for the solid phase, please note, the enthalpy and
+#entropy here are not calibrated to the same reference as the NASA dataset.
+speciesData['CaBi2O4'].registerPhaseCoeffs(ConstCp(Tmin=298, Tmax=400, Cp=151.3, Hc=26470, Sc=188.5, notes="http://cdn.intechopen.com/pdfs-wm/42265.pdf"), 'Solid')
