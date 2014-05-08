@@ -100,7 +100,9 @@ steam=IdealGasPhase({'H2O':0}, T=273.15, P=1e5)
 
 result = findEquilibrium([water, steam], constP=True, constH=True)
 print result[0]
+print result[0].chemicalPotentials()
 print result[1]
+print result[1].chemicalPotentials()
 
 
 print stochiometricMix 

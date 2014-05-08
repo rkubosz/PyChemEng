@@ -12,6 +12,7 @@ cdef class Phase:
 
     cpdef double Cp(Phase) except +
     cpdef double enthalpy(Phase) except +
+    cpdef Components chemicalPotentials(Phase)
     cpdef double entropy(Phase) except +
     cpdef double gibbsFreeEnergy(Phase)
     cpdef double internalEnergy(Phase)

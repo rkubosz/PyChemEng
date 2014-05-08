@@ -3,8 +3,10 @@
 # cython: profile=True
 
 from chemeng.components cimport Components
-from chemeng.speciesdata import speciesData
 from chemeng.speciesdata cimport SpeciesDataType
+from libcpp.pair cimport pair
+from libcpp.string cimport string
+from chemeng.speciesdata import speciesData
 import math
 
 cdef public double R = 8.31451
@@ -48,6 +50,7 @@ cdef class Phase:
         """A calculation of the isobaric heat capacity (Cp) of the phase"""
         cdef double sum = 0.0
         cdef SpeciesDataType sp
+        cdef pair[string, double] entry
         for entry in self.components._list:
             sp = speciesData[entry.first]
             sum += entry.second * sp.Cp0(self.T, phase=self.phase)
@@ -57,6 +60,7 @@ cdef class Phase:
         """A calculation of the enthalpy (H) of the Phase"""
         cdef double sum = 0.0
         cdef SpeciesDataType sp
+        cdef pair[string, double] entry
         for entry in self.components._list:
             sp = speciesData[entry.first]
             sum += entry.second * sp.Hf0(self.T, phase=self.phase)
@@ -68,6 +72,7 @@ cdef class Phase:
         #Individual component entropy
         cdef double sumEntropy = 0.0
         cdef SpeciesDataType sp
+        cdef pair[string, double] entry
         for entry in self.components._list:
             sp = speciesData[entry.first]
             sumEntropy += entry.second * sp.S0(self.T, phase=self.phase)
@@ -77,6 +82,20 @@ cdef class Phase:
             if entry.second > 0.0:
                 sumEntropy -= R * entry.second * math.log(entry.second / total)
         return sumEntropy
+
+    cpdef Components chemicalPotentials(Phase self):
+        cdef Components retval = Components({})
+        cdef pair[string, double] entry
+        cdef SpeciesDataType sp
+        cdef double G0 
+        cdef double total = self.components.total()
+        cdef double mixing
+        for entry in self.components._list:
+            sp = speciesData[entry.first]
+            G0 = sp.Hf0(self.T, phase=self.phase) - self.T * sp.S0(self.T, phase=self.phase)
+            mixing = R * self.T * math.log(1e-300 + entry.second / total)
+            retval[entry.first] = G0 + mixing
+        return retval
 
     cpdef double gibbsFreeEnergy(Phase self): #J
         """A calculation of the Gibbs free energy (G) of the phase"""
@@ -132,6 +151,14 @@ cdef class IdealGasPhase(Phase):
         cdef double pressureEntropy =  - R * self.components.total() * math.log(self.P / P0)
         return Phase.entropy(self) + pressureEntropy
 
+    cpdef Components chemicalPotentials(IdealGasPhase self):
+        cdef double vdp = R * self.T * math.log(self.P / P0)
+        cdef pair[string, double] entry
+        cdef Components retval = Phase.chemicalPotentials(self)
+        for entry in self.components._list:
+            retval[entry.first] += vdp 
+        return retval
+
     cpdef double volume(self):
         return self.components.total() * R * self.T / self.P
 
@@ -170,6 +197,14 @@ cdef class IncompressiblePhase(Phase):
     
     cpdef double volume(IncompressiblePhase self):
         return self.components.total()  * self.molarvolume
+
+    cpdef Components chemicalPotentials(IncompressiblePhase self):
+        cdef double vdp = self.molarvolume * (self.P - P0)
+        cdef pair[string, double] entry
+        cdef Components retval = Phase.chemicalPotentials(self)
+        for entry in self.components._list:
+            retval[entry.first] += vdp
+        return retval
 
     cpdef double Cv(self) except + :
         return self.Cp()
