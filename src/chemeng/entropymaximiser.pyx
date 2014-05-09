@@ -34,6 +34,10 @@ cdef class EquilibriumFinder:
     cdef public list constraintTargets
 
     cpdef restoreStateVector(EquilibriumFinder self, statevec):
+        '''This loads the optimisation variables (stored in a
+        list/array for the optimizer) from statevec into
+        self.outputPhases so that we might calculate thermodynamic
+        properties used for the constraints and objective function.'''
         cdef int var_count = 0
         cdef Phase phase
         for phase in self.outputPhases:
@@ -43,7 +47,9 @@ cdef class EquilibriumFinder:
                 else:
                     phase.components[key] = statevec[var_count]
                 var_count +=1
-                
+        
+        #Here we can "constrain" the temperature and/or pressure by
+        #deciding whether to use it as a variable of the minimisation
         if not self.constT:
             for phase in self.outputPhases:
                 phase.T = statevec[var_count] * self.inputPhases[0].T
@@ -56,6 +62,8 @@ cdef class EquilibriumFinder:
 
     #Create the constraints
     cpdef list constraint_func(EquilibriumFinder self):
+        '''This function returns a list of the constrained values of
+        the system, depending on what is held constant'''
         cdef Components currentSpecies = getTotalSpecies(self.outputPhases)
         cdef Components currentElements = currentSpecies.elementalComposition()
         constraintvals=[]
@@ -88,25 +96,30 @@ cdef class EquilibriumFinder:
             for phase in self.outputPhases:
                 sumX += phase.entropy()
             constraintvals.append(sumX)
+        #Constant temperature and pressure are handled in
+        #restoreStateVector, where we decided wheter to use them as
+        #optimisation variables or not
         return constraintvals
 
     cpdef double optimisation_func(EquilibriumFinder self) except +:
+        '''This function returns the required thermodynamic potential
+        to be minimised depending on the process studied (what is held constant).'''
         cdef double total = 0
         cdef Phase phase
         if (self.constT and self.constP):
             for phase in self.outputPhases:
                 total += phase.gibbsFreeEnergy()
-            #Scale the problem, G / (R * T)
+            #Using the dimensionless form, G / (R * T)
             total /= R * self.inputPhases[0].T
         elif (self.constT and self.constV):
             for phase in self.outputPhases:
                 total += phase.helmholtzFreeEnergy()
-            #Scale the problem, A / (R * T)
+            #Using the dimensionless form, A / (R * T)
             total /= R * self.inputPhases[0].T
         elif (self.constH and self.constP) or (self.constU and self.constV):
             for phase in self.outputPhases:
                 total -= phase.entropy()
-            #Scale the problem, S / R
+            #Using the dimensionless form, S / R
             total /= R
         elif (self.constS and self.constV):
             for phase in self.outputPhases:
@@ -119,22 +132,34 @@ cdef class EquilibriumFinder:
         return total
 
     cpdef obj_func(EquilibriumFinder self, variables):
-        self.restoreStateVector(variables)
-        #Remove the large constant offset of the objective function (if present)
-        cdef double f = self.optimisation_func() - self.initialObjVal
-        cdef list constraints = self.constraint_func()
+        '''Returns the objective function to be minimised, a list of
+        constraint values which must be zero, and a
+        success(0)/fail(-1) parameter.'''
+        cdef double f
+        cdef list constraints
         cdef int i
-        for i in range(len(constraints)):
-            constraints[i] -= self.constraintTargets[i]
-        return f, constraints, 0
+        try:
+            self.restoreStateVector(variables)
+            #Remove any constant offset of the objective function
+            f = self.optimisation_func() - self.initialObjVal
+            #Take the current constraint values and subtract the
+            #target values, as the optimizer expects constraints to
+            #have a value of zero when they are satisfied.
+            constraints = self.constraint_func()
+            for i in range(len(constraints)):
+                constraints[i] -= self.constraintTargets[i]
+            return f, constraints, 0
+        except:
+            return 0, self.constraintTargets, -1
 
-    def __init__(EquilibriumFinder self, list inputPhases, bint constT = False, bint constP = False, bint constH = False, bint constV = False, bint constU = False, bint constS = False, bint elemental = False, double Tmax = 20000, double Pmax = 500, double xtol=1e-5, bint logMolar = False, bint debug=False):
+    def __init__(EquilibriumFinder self, list inputPhases, bint constT = False, bint constP = False, bint constH = False, bint constV = False, bint constU = False, bint constS = False, bint elemental = False, double Tmax = 20000, double Pmax = 500, double xtol=1e-5, bint logMolar = False, bint debug=False, double Tmin = 200):
+        '''Sets up and runs the optimisation process to find equilibrium'''
 
         #Sanity checks
         if (constT + constP + constH + constV + constU + constS) != 2:
             raise Exception("EquilibriumFinder requires exactly 2 constant state variables from T, P, H, V, U, and S.")
 
-        #Data initialisation
+        #Data member initialisation
         self.constT = constT
         self.constP = constP
         self.constH = constH
@@ -150,23 +175,38 @@ cdef class EquilibriumFinder:
         self.inputMoles = self.inputSpecies.total()
 
         #In the minimisation, we try to scale all variables to be of
-        #order unity. This means we divide the molar amounts by the
-        #number of input moles, and the temperature/pressure are
-        #scaled by the input values.
+        #order unity. This means we divide all molar amounts by the
+        #number of input moles, and rescale back
+        #afterwards. Temperatures and pressures are scaled by the
+        #input values when being passed back and forth from the
+        #optimizer. Objective functions, such as the Gibb's free
+        #energy, are scaled to their dimensionless forms where
+        #possible.
 
         #Setup of the "output" phases. These are working copies of the
-        #"input" phases.
+        #"input" phases to calculate thermodynamic properties, and
+        #will hold the final solution of the problem.
         cdef Phase phase
         for phase in self.inputPhases:
+            #We must copy the phases, as python tends to take things
+            #by reference. We cannot assume that we can change
+            #inputPhases (and we need the properties of the input
+            #phases anyway).
             newphase = phase.copy()
             #Scale the phases by the total number of input moles
             newphase.components /= self.inputMoles
             #Ensure all phases have the same temperature and pressure
+            #(taken from the first phase)
             newphase.T = self.inputPhases[0].T
             newphase.P = self.inputPhases[0].P
             self.outputPhases.append(newphase)
-            
+        
+        #Determine the initial value of the optimisation function, so
+        #that we can remove the constant offset of its value.
         self.initialObjVal = self.optimisation_func()
+
+        #Grab the current values of the constrained variables. These
+        #are the target values the optimisation must satisfy.
         self.constraintTargets = self.constraint_func()
         
         #########  Create Optimisation System
@@ -178,18 +218,9 @@ cdef class EquilibriumFinder:
         cdef double stepsize = min(0.1, xtol)
         opt.setOption('ACC', stepsize)
 
-        #########  Load optimisation variables, bounds, and constraints
-        
-        #This also names them within the optimiser to enable debugging later on.
-
-        #We need to provide bounds on the optimizer parameters, which may
-        #include the number of species, the temperature, and the pressure.
-        #Determine what the maximum number of moles of any species is. We
-        #estimate this by looking for the maximum number of any single
-        #element is (assuming that there is no fractional element species,
-        #and that there is not a significant production of electrons/ions).
-        cdef double maxmoles = max(self.inputElements.values())
-
+        #########  Load optimisation variables and their bounds        
+        #Here, we also name the variables within the optimiser to
+        #enable debugging later on.
         cdef int phase_count = 0
         for phase in self.outputPhases:
             phase_count += 1
@@ -201,13 +232,15 @@ cdef class EquilibriumFinder:
                         opt_prob.addVar(str(phase_count)+':ln('+key+')', type='c', value=math.log(moles))
                 else:
                     opt_prob.addVar(str(phase_count)+':'+key, type='c', value=moles, lower=0.0)
-                
+             
         if not self.constT:
-            opt_prob.addVar('T/Tinitial', type='c', value=1.0, lower= 200 / self.inputPhases[0].T)
+            opt_prob.addVar('T/Tinitial', type='c', value=1.0, lower= Tmin / self.inputPhases[0].T)
+            
         if not self.constP:
             opt_prob.addVar('P/Pinitial', type='c', value=1.0, lower=0)
         
 
+        #########  Load optimisation constraints
         if self.elemental:
             for key in self.inputElements.keys():
                 opt_prob.addCon('Element:'+key, type='e')
@@ -240,7 +273,7 @@ cdef class EquilibriumFinder:
             print inform #dictionary of 
             print opt_prob._solutions[0]
 
-        #recreate the output system for output
+        #recreate the output system, ready for output
         self.restoreStateVector(xstr)
         for phase in self.outputPhases:
             phase.components *= self.inputMoles
