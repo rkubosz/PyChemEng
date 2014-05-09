@@ -144,6 +144,7 @@ product1.setEnthalpy(product1.enthalpy() - hsv)
 #Perform the combustion calculation again
 product2 = findEquilibrium([product1], constP=True, constH=True, elemental=True)[0]
 print product2
+print product2.chemicalPotentials()
 #&lt;IdealGasPhase, 7.15677 mol, 1495 K, 1 bar, C{'Ar':0.0668863, 'CH4':1.28187e-05, 'CO2':0.00284302, 'He':3.75251e-05, 'Kr':8.16385e-06, 'N2':5.59181, 'Ne':0.000130192, 'O2':0.495044, 'S':-4.59879e-17, 'SO':8.3346e-07, 'SO2':0.990086, 'SO3':0.00991313}&gt;
 
 class ConstCp(ThermoConstantsType):

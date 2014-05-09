@@ -89,6 +89,8 @@ cdef class Phase:
         cdef SpeciesDataType sp
         cdef double G0 
         cdef double total = self.components.total()
+        if total == 0:
+            return retval
         cdef double mixing
         for entry in self.components._list:
             sp = speciesData[entry.first]
