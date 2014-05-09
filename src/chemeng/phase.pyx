@@ -7,11 +7,17 @@ from chemeng.speciesdata cimport SpeciesDataType
 from libcpp.pair cimport pair
 from libcpp.string cimport string
 from chemeng.speciesdata import speciesData
-import math
+from libc.math cimport log
 
 cdef public double R = 8.31451
 cdef public double T0 = 273.15 + 25.0
 cdef public double P0 = 1.0e5
+
+cdef double fmin(double a, double b):
+    if a < b:
+        return a
+    else:
+        return b
 
 ####################################################################
 # Phase base class
@@ -21,24 +27,26 @@ cdef public double P0 = 1.0e5
 cdef class Phase:
     """A base class which holds fundamental methods and members of a single phase which may contain multiple components"""
 
-    def __init__(self, components, T, P, phase):
+    def __init__(Phase self, components, double T, double P, str phase):
         """The constructor for a stream"""
         #The temperature of the phase
         self.T = T
         #The component species of the phase
         if type(components) is Components:
             self.components = components
-        else:
+        elif type(components) is dict:
             self.components = Components(components)
+        else:
+            raise Exception("Require either a dict or Components to create a phase")
         #The pressure of the phase
         self.P = P
         #An identifier used to fetch thermodynamic properties for the phase
         self.phase = phase
 
-    def __str__(self):
+    def __str__(Phase self):
         return "<"+self.__class__.__name__+", %g mol, %g K, %g bar, " % (self.components.total(), self.T, self.P / 1e5) + str(self.components)+">"
 
-    def __contains(self, key):
+    def __contains__(Phase self, str key):
         return key in self.components
 
 #The thermodynamic functions below do not include any effect of
@@ -46,7 +54,7 @@ cdef class Phase:
 #assumes that the phase is an ideal mixture. Classes which derive from
 #Phase can override these methods to add corrections to these
 #assumptions.
-    cpdef double Cp(self) except + : # Units are J
+    cpdef double Cp(Phase self) except + : # Units are J
         """A calculation of the isobaric heat capacity (Cp) of the phase"""
         cdef double sum = 0.0
         cdef SpeciesDataType sp
@@ -80,7 +88,7 @@ cdef class Phase:
         #Mixing entropy
         for entry in self.components._list:
             if entry.second > 0.0:
-                sumEntropy -= R * entry.second * math.log(entry.second / total)
+                sumEntropy -= R * entry.second * log(entry.second / total)
         return sumEntropy
 
     cpdef Components chemicalPotentials(Phase self):
@@ -95,7 +103,7 @@ cdef class Phase:
         for entry in self.components._list:
             sp = speciesData[entry.first]
             G0 = sp.Hf0(self.T, phase=self.phase) - self.T * sp.S0(self.T, phase=self.phase)
-            mixing = R * self.T * math.log(max(1e-300, entry.second / total))
+            mixing = R * self.T * log(max(1e-300, entry.second / total))
             retval[entry.first] = G0 + mixing
         return retval
 
@@ -111,7 +119,7 @@ cdef class Phase:
         return self.gibbsFreeEnergy() - self.P * self.volume()
 
 #Helper functions to manipulate the thermodynamic properties of a phase
-    def setInternalEnergy(self, double U):
+    def setInternalEnergy(Phase self, double U):
         import scipy
         import scipy.optimize
         def worker(double T):
@@ -119,7 +127,7 @@ cdef class Phase:
             return self.internalEnergy() - U
         self.T = scipy.optimize.fsolve(worker, self.T+0.0)[0]
 
-    def setEnthalpy(self, double enthalpy):
+    def setEnthalpy(Phase self, double enthalpy):
         import scipy
         import scipy.optimize
         def worker(double T):
@@ -128,14 +136,14 @@ cdef class Phase:
         self.T = scipy.optimize.fsolve(worker, self.T)[0]
 
 #Functions which must be overridden by derived classes
-    cpdef double volume(self):
+    cpdef double volume(Phase self):
         raise Exception("Function missing from "+self.__class__.__name__+"!")
 
 ####################################################################
 # Ideal gas class
 ####################################################################
 cdef class IdealGasPhase(Phase):
-    def __init__(self, components, T, P):
+    def __init__(IdealGasPhase self, components, double T, double P):
         Phase.__init__(self, components, T=T, P=P, phase="Gas")
 
     cpdef IdealGasPhase copy(IdealGasPhase self):
@@ -149,12 +157,12 @@ cdef class IdealGasPhase(Phase):
     #As the enthalpy of an ideal gas is constant with pressure, we do
     #not need to override the base class definition
 
-    cpdef double entropy(self): # J / K
-        cdef double pressureEntropy =  - R * self.components.total() * math.log(self.P / P0)
+    cpdef double entropy(IdealGasPhase self): # J / K
+        cdef double pressureEntropy =  - R * self.components.total() * log(self.P / P0)
         return Phase.entropy(self) + pressureEntropy
 
     cpdef Components chemicalPotentials(IdealGasPhase self):
-        cdef double vdp = R * self.T * math.log(self.P / P0)
+        cdef double vdp = R * self.T * log(self.P / P0)
         cdef pair[string, double] entry
         cdef Components retval = Phase.chemicalPotentials(self)
         for entry in self.components._list:
@@ -169,7 +177,7 @@ cdef class IdealGasPhase(Phase):
 
     def __add__(self, IdealGasPhase other):
         cdef IdealGasPhase output = self.copy()
-        output.P = min(self.P, other.P)
+        output.P = fmin(self.P, other.P)
         output.components += other.components
         output.setEnthalpy(self.enthalpy() + other.enthalpy())
         return output
