@@ -108,10 +108,15 @@ sudo ./setup.py install</code></pre>
       <p>
 	Most of PyChemEng is accessed through a single python module,
 	called <i>chemeng</i>. If you import this, it will load the
-	default thermodynamic data and import the standard
-	functionality.
+	standard functionality.
       </p>
       <pre><code class="language-python">from chemeng import *</code></pre>
+      <p>
+	You then need to decide what thermodynamic dataset you wish to
+	use in the code. At the moment, the NASA CEA database is the
+	most useful and can be imported like so:
+      </p>
+      <pre><code class="language-python">import chemeng.NASAdata</code></pre>
       <p>
 	We'll take a tour of the features and how we can apply them.
       </p>

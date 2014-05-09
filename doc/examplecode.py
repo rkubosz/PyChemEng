@@ -2,6 +2,8 @@
 
 from chemeng import *
 
+import chemeng.NASAdata
+
 print elements['Ca']
 #Element{Ca, Z=20, AW=40.078, 24 isotopes}
 print elements['Li'].mass

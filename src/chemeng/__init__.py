@@ -5,5 +5,5 @@ from chemeng.speciesdata import speciesData,findSpeciesData,ThermoConstantsType,
 from chemeng.phase import IdealGasPhase, IncompressiblePhase
 from chemeng.entropymaximiser import findEquilibrium
 
-import chemeng.NASAdata
+#import chemeng.NASAdata
 #import chemeng.chemkindata
