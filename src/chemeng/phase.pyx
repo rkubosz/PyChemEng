@@ -95,7 +95,7 @@ cdef class Phase:
         for entry in self.components._list:
             sp = speciesData[entry.first]
             G0 = sp.Hf0(self.T, phase=self.phase) - self.T * sp.S0(self.T, phase=self.phase)
-            mixing = R * self.T * math.log(1e-300 + entry.second / total)
+            mixing = R * self.T * math.log(max(1e-300, entry.second / total))
             retval[entry.first] = G0 + mixing
         return retval
 
