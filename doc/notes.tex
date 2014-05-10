@@ -2,8 +2,10 @@
 
 \usepackage{times}
 \usepackage{amsmath}
+\usepackage{accents}
 \usepackage{geometry}
 \geometry{a4paper}
+\geometry{margin=20mm}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -119,9 +121,30 @@ gas chemical potential and its vapor-liquid equilibria:
 \end{align}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Equilibrium}
 
 
+$N_\alpha^{(A)}$ is the moles of component $\alpha$ in phase $A$.
 
+The total Gibbs free energy $\underaccent{\bar}{G}$ of the system
+is given by
+\begin{align*}
+\underaccent{\bar}{G} &= \sum_{\alpha A} N_\alpha^{(A)} \mu_\alpha^{(A)} 
+\end{align*}
+
+Component mole balances
+\begin{equation}
+\sum_A  N_\alpha^{(A)} = N_\alpha
+\end{equation}
+
+\begin{align*}
+d\underaccent{\bar}{G} &= \sum_{\alpha A}  \mu_\alpha^{(A)}  dN_\alpha^{(A)}
+\\
+d \underaccent{\bar}{F} 
+&= \sum_{\alpha A}  (\mu_\alpha^{(A)}- \lambda_\alpha) dN_\alpha^{(A)}
+\end{align*}
 
 
 

@@ -125,6 +125,7 @@ class UNIFAC(Phase):
         return ln_gamma
 
     def chemicalPotential(self):
+        ln_gamma = self.get_lngamma()
         mu = {}
         mu_ref = {}
         for i in self.conc:
@@ -133,5 +134,6 @@ class UNIFAC(Phase):
             mu[i] = -1.0e30
             if (self.x[i] > 0.0):
                 mu[i] = mu_ref[i] + R*self.T*log(self.x[i])
+                mu[i] += R*self.T*ln_gamma[i]
         return mu
 
