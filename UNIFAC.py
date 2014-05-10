@@ -129,8 +129,9 @@ class UNIFAC(Phase):
         mu = {}
         mu_ref = {}
         for i in self.conc:
-            pvap = Phase.moleculeDict[i].vaporPressure(self.T)
-            mu_ref[i] = R*self.T*log(pvap/self.p)
+#            pvap = Phase.moleculeDict[i].vaporPressure(self.T)
+#            mu_ref[i] = R*self.T*log(pvap/self.p)
+            mu_ref[i] = 0.0
             mu[i] = -1.0e30
             if (self.x[i] > 0.0):
                 mu[i] = mu_ref[i] + R*self.T*log(self.x[i])

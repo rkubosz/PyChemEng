@@ -34,3 +34,5 @@ class IdealGas(Phase):
         self.mu_ref = {}
         for i in self.conc:
             self.mu_ref[i] = self.moleculeDict[i].gRef()
+            pvap = Phase.moleculeDict[i].vaporPressure(self.T)
+            self.mu_ref[i] -= R*self.T*log(pvap/self.p)
