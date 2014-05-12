@@ -166,6 +166,13 @@ cpdef parseNASADataFile(filename, quiet=True):
                 SConst = parseFortanFloat(line[64:64 + 16])
                 coeffs.append(NASAPolynomial(Tmin, Tmax, C, [HConst, SConst], comments))
             
+            ##Apply fixes for NASA naming Cl->CL and Al->AL
+            if "Cl" in MolecularFormula:
+                species = species.replace('CL', 'Cl')
+
+            if "Al" in MolecularFormula:
+                species = species.replace('AL', 'Al')
+
             phasename = "Gas"
             if species[-1] == ")":
                 #This has a phase qualifier at the end in parentheses, grab it

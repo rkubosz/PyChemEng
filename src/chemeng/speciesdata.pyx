@@ -145,7 +145,7 @@ cpdef list findSpeciesData(str keyword ="", Components elements = Components({})
             if element not in species.elementalComposition:
                 fail = True
                 break
-            if amount > species.elementalComposition[element]:
+            if amount != species.elementalComposition[element]:
                 fail = True
                 break
 

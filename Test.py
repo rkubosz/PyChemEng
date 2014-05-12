@@ -160,3 +160,5 @@ validate(normComp["CO2"], 0.0950226)
 validate(normComp["H2O"], 0.190045)
 validate(normComp["N2"], 0.706787)
 validate(normComp["Ar"], 0.0081448)
+
+import chemeng.cementdata
