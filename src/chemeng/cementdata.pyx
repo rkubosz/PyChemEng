@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from chemeng import *
 import csv
 import math
@@ -40,10 +41,13 @@ with open('/usr/local/PyChemEng/data/Cement.csv', 'rb') as datafile:
         phase = row[1]
         Tmin = float(row[6])
         Tmax = float(row[7])
-        coeffs = map(float, row[8:15])
+        a = map(float, row[8:15])
+        if len(row[3].strip()) != 0:
+            Hf0 = float(row[3]) * 1000.0
+            a[1] += Hf0
         notes = row[15]
         speciesData[species].registerPhase(phase)
-        speciesData[species].registerPhaseCoeffs(CementThermoData(Tmin, Tmax, coeffs, notes), phase)
+        speciesData[species].registerPhaseCoeffs(CementThermoData(Tmin, Tmax, a, notes), phase)
 
         #Test data
         print species,phase,speciesData[species].phases[phase]
@@ -57,4 +61,5 @@ with open('/usr/local/PyChemEng/data/Cement.csv', 'rb') as datafile:
             V0 = float(row[4])
         if len(row[5].strip()) != 0:
             Gf0 = float(row[5]) * 1000.0
+            print 'GfEval =', Hf0 - 298.15 * S0
             print 'Gf0 =',Gf0,' calculated =', speciesData[species].Hf0(298.15, phase) - 298.15 * speciesData[species].S0(298.15, phase)
