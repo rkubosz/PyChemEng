@@ -49,20 +49,19 @@ with open('/usr/local/PyChemEng/data/Cement.csv', 'rb') as datafile:
         speciesData[species].registerPhase(phase)
         speciesData[species].registerPhaseCoeffs(CementThermoData(Tmin, Tmax, a, notes), phase)
 
+        continue
         #Test data
         print species,phase,speciesData[species].phases[phase]
         if len(row[2].strip()) != 0:
             S0 = float(row[2])
             S0calc = speciesData[species].S0(298.15, phase)
-            if abs(S0 - S0calc) / abs(S0) < 0.01:
-                continue
-            print '!!!!!!!!S0 =',S0,' calculated =', S0calc
+            print ' S0 =',S0,' calculated =', S0calc
         if len(row[3].strip()) != 0:
             Hf0 = float(row[3]) * 1000.0
-            print 'Hf0 =',Hf0,' calculated =', speciesData[species].Hf0(298.15, phase)
+            print ' Hf0 =',Hf0,' calculated =', speciesData[species].Hf0(298.15, phase)
         if len(row[4].strip()) != 0:
             V0 = float(row[4])
         if len(row[5].strip()) != 0:
             Gf0 = float(row[5]) * 1000.0
-            print 'GfEval =', Hf0 - 298.15 * S0
-            print 'Gf0 =',Gf0,' calculated =', speciesData[species].Hf0(298.15, phase) - 298.15 * speciesData[species].S0(298.15, phase)
+            print ' GfEval =', Hf0 - 298.15 * S0
+            print ' Gf0 =',Gf0,' calculated =', speciesData[species].Hf0(298.15, phase) - 298.15 * speciesData[species].S0(298.15, phase)
