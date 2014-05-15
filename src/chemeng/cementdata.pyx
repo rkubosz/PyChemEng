@@ -53,7 +53,10 @@ with open('/usr/local/PyChemEng/data/Cement.csv', 'rb') as datafile:
         print species,phase,speciesData[species].phases[phase]
         if len(row[2].strip()) != 0:
             S0 = float(row[2])
-            print 'S0 =',S0,' calculated =', speciesData[species].S0(298.15, phase)
+            S0calc = speciesData[species].S0(298.15, phase)
+            if abs(S0 - S0calc) / abs(S0) < 0.01:
+                continue
+            print '!!!!!!!!S0 =',S0,' calculated =', S0calc
         if len(row[3].strip()) != 0:
             Hf0 = float(row[3]) * 1000.0
             print 'Hf0 =',Hf0,' calculated =', speciesData[species].Hf0(298.15, phase)
