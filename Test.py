@@ -162,3 +162,27 @@ validate(normComp["N2"], 0.706787)
 validate(normComp["Ar"], 0.0081448)
 
 import chemeng.cementdata
+
+#Check species where we have altered constants from the source
+#Zoisite
+validate(speciesData["Ca2Al3Si3O12(OH)"].Cp0(1000, 'Zoisite'), 537.247)
+validate(speciesData["Ca2Al3Si3O12(OH)"].S0(1000, 'Zoisite'), 849.575)
+
+#Diaspore
+validate(speciesData["HAlO2"].Cp0(500, 'Diaspore'), 74.159)
+validate(speciesData["HAlO2"].S0(500, 'Diaspore'), 68.412)
+
+#Check the reference values given in the data set
+import csv
+with open('/usr/local/PyChemEng/data/Cement.csv', 'rb') as datafile:
+    reader = csv.reader(filter(lambda row: row[0]!='!', datafile), delimiter=',', quotechar='"')
+    reader.next() #Skip the header
+    for row in reader:
+        species = row[0]
+        phase = row[1]
+        #print species,phase
+        if len(row[2].strip()) != 0:#S0
+            validate(speciesData[species].S0(298.15, phase), float(row[2]))
+        #if len(row[3].strip()) != 0:#Hf0
+        #    validate(0.001 * speciesData[species].Hf0(298.15, phase), float(row[3]))
+

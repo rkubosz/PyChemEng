@@ -24,7 +24,7 @@ class CementThermoData(ThermoConstantsType):
         self.a = a
     
     def Cp0(self, T):
-        return self.a[0] * T**(-2) + self.a[2] * T**(-0.5) + self.a[4] +2 * self.a[5] * T + self.a6 * T ** 2
+        return self.a[0] * T**(-2) + self.a[2] * T**(-0.5) + self.a[4] +2 * self.a[5] * T + self.a[6] * T ** 2
 
     def Hf0(self, T):
         return -self.a[0] / T + self.a[1] + 2 * self.a[2] * T**(0.5) + self.a[4] * T + self.a[5] * T**2 + self.a[6] * T ** 3 / 3
@@ -33,7 +33,7 @@ class CementThermoData(ThermoConstantsType):
         return -self.a[0] / (2 * T**2) - 2 * self.a[2] * T**(-0.5) + self.a[3] + self.a[4] * math.log(T)+ 2 *  self.a[5] * T + self.a[6] * T**(2) / 2
 
 with open('/usr/local/PyChemEng/data/Cement.csv', 'rb') as datafile:
-    reader = csv.reader(datafile, delimiter=',', quotechar='"')
+    reader = csv.reader(filter(lambda row: row[0]!='!', datafile), delimiter=',', quotechar='"')
     reader.next() #Skip the header
     for row in reader:
         #Load data
@@ -48,20 +48,5 @@ with open('/usr/local/PyChemEng/data/Cement.csv', 'rb') as datafile:
         notes = row[15]
         speciesData[species].registerPhase(phase)
         speciesData[species].registerPhaseCoeffs(CementThermoData(Tmin, Tmax, a, notes), phase)
-
-        continue
-        #Test data
-        print species,phase,speciesData[species].phases[phase]
-        if len(row[2].strip()) != 0:
-            S0 = float(row[2])
-            S0calc = speciesData[species].S0(298.15, phase)
-            print ' S0 =',S0,' calculated =', S0calc
-        if len(row[3].strip()) != 0:
-            Hf0 = float(row[3]) * 1000.0
-            print ' Hf0 =',Hf0,' calculated =', speciesData[species].Hf0(298.15, phase)
         if len(row[4].strip()) != 0:
             V0 = float(row[4])
-        if len(row[5].strip()) != 0:
-            Gf0 = float(row[5]) * 1000.0
-            print ' GfEval =', Hf0 - 298.15 * S0
-            print ' Gf0 =',Gf0,' calculated =', speciesData[species].Hf0(298.15, phase) - 298.15 * speciesData[species].S0(298.15, phase)
