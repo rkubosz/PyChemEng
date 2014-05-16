@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from chemeng import *
+import chemeng.NASAdata
 import csv
 import math
 
