@@ -135,20 +135,23 @@ from libcpp.map cimport map
 
 speciesData = {}
 
-cpdef list findSpeciesData(str keyword ="", Components elements = Components({})):
+cpdef list findSpeciesData(str keyword = "", Components composition = Components({}), list elements = []):
     cdef list retval = []
 
     for key,species in speciesData.iteritems():
         #Check that the requested elements are there
         fail = False
-        for element,amount in elements.iteritems():
+        for element in elements:
+            if element not in species.elementalComposition:
+                fail = True
+                break
+        for element, amount in composition.iteritems():
             if element not in species.elementalComposition:
                 fail = True
                 break
             if amount != species.elementalComposition[element]:
                 fail = True
                 break
-
         if fail:
             continue
 

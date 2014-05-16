@@ -253,11 +253,17 @@ print stochiometricMix.totalMass()
 	search for a partially complete chemical formula. 
       </p>
       <p>
-	Searches can be performed by specifying the minimum amount of
+	Searches can be performed by specifying the exact amount of
 	each element required. For example:
       </p>
-      <pre><code class="language-python">print findSpeciesData(elements=Components({'C':5, 'O':3}))
+      <pre><code class="language-python">print findSpeciesData(composition=Components({'C':5, 'O':5}))
 #[Species{'Fe(CO)5', phases=[Gas, Liquid], elementalComposition=C{'C':5, 'Fe':1, 'O':5}}]</code></pre>
+      <p>
+	We can also search for species containing a list of elements
+	(in arbitrary amounts).
+      </p>
+      <pre><code class="language-python">print findSpeciesData(elements=['Al', 'Si'])
+#[Species{'Al2SiO5', phases=[1an], elementalComposition=C{'Al':2, 'O':5, 'Si':1}}]</code></pre>
       <p>
 	If the data does not exist within the database, it is
 	relatively easy to <a href="#AddingThermoData">add your own
