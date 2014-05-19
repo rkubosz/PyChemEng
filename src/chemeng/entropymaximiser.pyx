@@ -265,7 +265,7 @@ cdef class EquilibriumFinder:
         [fstr, xstr, inform] = opt(opt_prob, sens_type='FD', disp_opts=debug)
     
         if inform['value'] != 0:
-            print "Warning findEquilibrium error:"+str(inform['value'])+": "+inform['text']
+            raise Exception("findEquilibrium error:"+str(inform['value'])+": "+inform['text'])
 
         if debug:
             print fstr #The optimial minimum value of the objective function
