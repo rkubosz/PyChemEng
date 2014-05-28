@@ -27,22 +27,22 @@ air = Components({'N2':0.79, 'O2':0.21})
 elementalfuel = fuel.elementalComposition()
 requiredO2 = elementalfuel['C'] + elementalfuel['H'] / 4
 
-#Create a stochiometric mixture
-stochiometricMix = fuel + air * (requiredO2 / air['O2'])
+#Create a stoichiometric mixture
+stoichiometricMix = fuel + air * (requiredO2 / air['O2'])
 
-print stochiometricMix 
+print stoichiometricMix 
 #C{'CH4':1, 'N2':7.52381, 'O2':2}
 
-print stochiometricMix.normalised() 
+print stoichiometricMix.normalised() 
 #C{'CH4':0.0950226, 'N2':0.714932, 'O2':0.190045}
 
-print stochiometricMix.total() 
+print stoichiometricMix.total() 
 #10.5238095238 (mol)
 
-print stochiometricMix.totalMass() 
+print stoichiometricMix.totalMass() 
 #290.807545714 (g)
 
-print stochiometricMix.elementalComposition()
+print stoichiometricMix.elementalComposition()
 #C{'C':1, 'H':4, 'N':15.0476, 'O':4}
 
 print speciesData['CO2']
@@ -107,7 +107,7 @@ print result[1]
 print result[1].chemicalPotentials()
 
 
-print stochiometricMix 
+print stoichiometricMix 
 #C{'CH4':1, 'N2':7.52381, 'O2':2}
 
 #Create a list of some reaction products, we can get quite exotic if
@@ -115,7 +115,7 @@ print stochiometricMix
 #thermodynamics
 combustionproducts = Components({'H2O':0, 'CO2':0, 'CO':0, 'NO':0, 'C':0, 'OH':0, 'N':0})
 
-fuelmix=IdealGasPhase(stochiometricMix + combustionproducts, T=273.15, P=1e5)
+fuelmix=IdealGasPhase(stoichiometricMix + combustionproducts, T=273.15, P=1e5)
 result = findEquilibrium([fuelmix], constP=True, constH=True, elemental=True)
 print result[0]
 #&lt;IdealGasPhase, 10.5837 mol, 2227.23 K, 1 bar, C{'C':-4.70366e-18, 'CH4':1.45657e-18, 'CO':0.106244, 'CO2':0.893756, 'H2O':1.98653, 'N':-7.04731e-19, 'N2':7.51458, 'NO':0.0184681, 'O2':0.0371525, 'OH':0.0269416}&gt;
@@ -129,7 +129,7 @@ from chemeng.standarddefinitions import DryAir
 print DryAir
 #C{'Ar':0.934, 'CH4':0.000179, 'CO2':0.0397, 'He':0.000524, 'Kr':0.000114, 'N2':78.084, 'Ne':0.001818, 'O2':20.946}
 
-#Assuming all sulfur burns to SO3, calculate the stochiometric air
+#Assuming all sulfur burns to SO3, calculate the stoichiometric air
 air=IdealGasPhase(DryAir * (1.5 * solidS.components['S'] / DryAir['O2']), T=298.15, P=1e5)
 
 #Mix the vapourS and air, then combust at constant pressure.
