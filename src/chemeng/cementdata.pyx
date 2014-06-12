@@ -33,6 +33,16 @@ class CementThermoData(ThermoConstantsType):
     def S0(self, T):
         return -self.a[0] / (2 * T**2) - 2 * self.a[2] * T**(-0.5) + self.a[3] + self.a[4] * math.log(T)+ 2 *  self.a[5] * T + self.a[6] * T**(2) / 2
 
+    def __str__(self):
+        retval = "CementPolynomial{Tmin="+str(self.Tmin)+", Tmax="+str(self.Tmax)+", notes='"+self.comments+"', a=["
+        for i in range(7):
+            retval+=str(self.a[i])+", "
+        retval = retval[:-2] + "]}"
+        return retval
+
+    def __repr__(self):
+        return self.__str__()
+
 with open('/usr/local/PyChemEng/data/Cement.csv', 'rb') as datafile:
     reader = csv.reader(filter(lambda row: row[0]!='!', datafile), delimiter=',', quotechar='"')
     reader.next() #Skip the header
