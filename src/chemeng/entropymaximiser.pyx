@@ -152,7 +152,7 @@ cdef class EquilibriumFinder:
         except:
             return 0, self.constraintTargets, -1
 
-    def __init__(EquilibriumFinder self, list inputPhases, bint constT = False, bint constP = False, bint constH = False, bint constV = False, bint constU = False, bint constS = False, bint elemental = False, double Tmax = 20000, double Pmax = 500, double xtol=1e-5, bint logMolar = False, bint debug=False, double Tmin = 200):
+    def __init__(EquilibriumFinder self, list inputPhases, bint constT = False, bint constP = False, bint constH = False, bint constV = False, bint constU = False, bint constS = False, bint elemental = False, double Tmax = 20000, double Pmax = 500, double xtol=1e-5, bint logMolar = False, bint debug=False, double Tmin = 200.00001, iterations=50):
         '''Sets up and runs the optimisation process to find equilibrium'''
 
         #Sanity checks
@@ -215,8 +215,9 @@ cdef class EquilibriumFinder:
         opt = pyOpt.pySLSQP.SLSQP()
 
         ######### Step size
-        cdef double stepsize = min(0.1, xtol)
+        cdef double stepsize = xtol
         opt.setOption('ACC', stepsize)
+        opt.setOption('MAXIT', iterations)
 
         #########  Load optimisation variables and their bounds        
         #Here, we also name the variables within the optimiser to
