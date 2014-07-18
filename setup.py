@@ -30,6 +30,7 @@ setup(
                                     'src/chemeng/data/NASA_CEA.inp',
                                     'src/chemeng/data/NEWNASA.TXT',
                                     'src/chemeng/data/Cement.csv',
+                                    'src/chemeng/data/Cement2.csv',
                                     'src/chemeng/data/BurcatCHEMKIN.DAT'
                                    ])],
     cmdclass = {'build_ext': build_ext},
