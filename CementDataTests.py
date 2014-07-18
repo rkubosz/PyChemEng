@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 from chemeng import *
-#import chemeng.NASAdata
 import chemeng.cementdata
 import math
-from cementdata2 import *
 
 def Standard_States_Cement_enthalpy(element,T):
     if element == "Al" and T <= 933:
