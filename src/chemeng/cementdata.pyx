@@ -104,7 +104,9 @@ class Cement2ThermoData(ThermoConstantsType):
     def __repr__(self):
         return self.__str__()
 
-with open('/usr/local/PyChemEng/data/Cement2.csv', 'rb') as datafile:
+import chemeng.config
+import os
+with open(os.path.join(chemeng.config.datadir, 'Cement2.csv'), 'rb') as datafile:
     reader = csv.reader(filter(lambda row: row[0]!='!', datafile), delimiter=',', quotechar='"')
     reader.next() #Skip the header
     for row in reader:

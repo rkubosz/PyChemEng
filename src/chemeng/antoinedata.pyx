@@ -46,6 +46,5 @@ def initDataDir(directory):
 #speciesData["CO2"].registerAntoineData(273.0, 351.7, "Antoine", [5.37229, 1670.409, -40.191])
 #speciesData["CO2"].registerAntoineData(364.8, 513.91, "Antoine", [4.92531, 1432.526, -61.819])
 
-import sys
-import os.path
-initDataDir('/usr/local/PyChemEng/data')
+import chemeng.config
+initDataDir(chemeng.config.datadir)

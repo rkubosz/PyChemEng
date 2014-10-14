@@ -23,16 +23,15 @@ setup(
     author_email="m.bannerman@gmail.com",
     packages=['chemeng'],
     package_dir={'chemeng':'src/chemeng'},
-    data_files=[#('PyChemEng', ['tests/chemeng.py']),
-                ('PyChemEng/data', ['src/chemeng/data/antoine.inp',
-                                    'src/chemeng/data/mass.mas03round.txt',
-                                    'src/chemeng/data/isotopicCompositions.inp',
-                                    'src/chemeng/data/NASA_CEA.inp',
-                                    'src/chemeng/data/NEWNASA.TXT',
-                                    'src/chemeng/data/Cement.csv',
-                                    'src/chemeng/data/Cement2.csv',
-                                    'src/chemeng/data/BurcatCHEMKIN.DAT'
-                                   ])],
+    package_data={'chemeng' : ['data/antoine.inp',
+                               'data/mass.mas03round.txt',
+                               'data/isotopicCompositions.inp',
+                               'data/NASA_CEA.inp',
+                               'data/NEWNASA.TXT',
+                               'data/Cement.csv',
+                               'data/Cement2.csv',
+                               'data/BurcatCHEMKIN.DAT'
+                           ]},
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules
 )

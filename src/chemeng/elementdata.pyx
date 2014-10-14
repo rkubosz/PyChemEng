@@ -219,6 +219,5 @@ def initDataDir(directory):
     elements[-1] = ElementData(name="e-", Z=-1, mass=5.4857990943e-4)
 
 
-import sys
-import os.path
-initDataDir('/usr/local/PyChemEng/data')
+import chemeng.config
+initDataDir(chemeng.config.datadir)

@@ -159,6 +159,5 @@ def initDataDir(directory):
     parseCHEMKINDataFile(os.path.join(directory, 'BurcatCHEMKIN.DAT'), quiet=False)
     print "Loaded Burcat ChemKin dataset (database at",len(speciesData),"species)"
 
-import sys
-import os.path
-initDataDir('/usr/local/PyChemEng/data')
+import chemeng.config
+initDataDir(chemeng.config.datadir)

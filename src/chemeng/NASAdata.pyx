@@ -212,6 +212,5 @@ def initDataDir(directory):
     #parseNASADataFile(os.path.join(directory, 'NEWNASA.TXT'), quiet=False)
     #print "Loaded NEW_NASA dataset (database at",len(speciesData),"species)"
 
-import sys
-import os.path
-initDataDir('/usr/local/PyChemEng/data')
+import chemeng.config
+initDataDir(chemeng.config.datadir)
