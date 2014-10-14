@@ -33,5 +33,6 @@ setup(
                                'data/BurcatCHEMKIN.DAT'
                            ]},
     cmdclass = {'build_ext': build_ext},
+    py_modules = ['chemeng.config'],
     ext_modules = ext_modules
 )
