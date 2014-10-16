@@ -173,8 +173,9 @@ validate(speciesData["HAlO2"].Cp0(500, 'Diaspore'), 74.159)
 validate(speciesData["HAlO2"].S0(500, 'Diaspore'), 68.412)
 
 #Check the reference values given in the data set
-import csv
-with open('/usr/local/PyChemEng/data/Cement.csv', 'rb') as datafile:
+import chemeng.config
+import os
+with open(os.path.join(chemeng.config.datadir, 'Cement2.csv'), 'rb') as datafile:
     reader = csv.reader(filter(lambda row: row[0]!='!', datafile), delimiter=',', quotechar='"')
     reader.next() #Skip the header
     for row in reader:
