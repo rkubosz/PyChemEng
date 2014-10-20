@@ -184,7 +184,17 @@ cpdef parseNASADataFile(filename, quiet=True):
                     phasename = "Liquid"
                 else:
                     phasename = str(phase)+phasename
-
+                    
+            if "(" in species and ")" in species:
+                indcomma =species.find(")")+1 
+                if len(species) > indcomma+1 and species[indcomma] == ",":
+                    phasename = species[species.find("(") + 1: species.find(")")]
+                    species = species.replace('('+phasename+')','')
+                    if phasename == "L":
+                        phasename = "Liquid"
+                    else:
+                        phasename = str(phase)+phasename
+                        
             registerSpecies(species, MolecularFormula)
             sp = speciesData[species]
             sp.registerPhase(phasename)
