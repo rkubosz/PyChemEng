@@ -175,7 +175,8 @@ validate(speciesData["HAlO2"].S0(500, 'Diaspore'), 68.412)
 #Check the reference values given in the data set
 import chemeng.config
 import os
-with open(os.path.join(chemeng.config.datadir, 'Cement2.csv'), 'rb') as datafile:
+import csv
+with open(os.path.join(chemeng.config.datadir, 'Cement.csv'), 'rb') as datafile:
     reader = csv.reader(filter(lambda row: row[0]!='!', datafile), delimiter=',', quotechar='"')
     reader.next() #Skip the header
     for row in reader:
@@ -183,7 +184,14 @@ with open(os.path.join(chemeng.config.datadir, 'Cement2.csv'), 'rb') as datafile
         phase = row[1]
         #print species,phase
         if len(row[2].strip()) != 0:#S0
-            validate(speciesData[species].S0(298.15, phase), float(row[2]))
-        #if len(row[3].strip()) != 0:#Hf0
-        #    validate(0.001 * speciesData[species].Hf0(298.15, phase), float(row[3]))
-
+            try:
+                validate(speciesData[species].S0(298.15, phase), float(row[2]))
+            except:
+                print "Failure while validating S@298.15 for species =",species," phase =",phase
+                raise
+        if len(row[3].strip()) != 0:#Hf0
+            try:
+                validate(0.001 * speciesData[species].Hf0(298.15, phase), float(row[3]))
+            except:
+                print "Failure while validating Hf@298.15 for species =",species," phase =",phase
+                raise

@@ -174,27 +174,37 @@ cpdef parseNASADataFile(filename, quiet=True):
                 species = species.replace('AL', 'Al')
 
             phasename = "Gas"
-            if species[-1] == ")":
+            if (species[-1] == ")") or (")," in species):
                 #This has a phase qualifier at the end in parentheses, grab it
                 import re
-                m = re.match('(.*?)\(([^()]*?)\)$', species)
-                species = m.group(1)
-                phasename = m.group(2)
+                m = re.match('(?P<species>.*?)\((?P<phase>[^)]*?)\)($|,(?P<extra>.*?)$)', species)
+                species = m.group('species')
+                phasename = m.group('phase')
+                extra= m.group('extra')
+
+                if extra != None:
+                    if extra == "n-hexa":
+                        extra = "n-hexane"
+                    if extra == "n-hept":
+                        extra = "n-heptane"                    
+                    if extra == "n-octa":
+                        extra = "n-octane"
+                    if extra == "isooct":
+                        extra = "isooctane"
+                    species +=","+extra
+
                 if phasename == "L":
                     phasename = "Liquid"
+                elif phasename == "g":
+                    phasename = "Gas"
                 else:
                     phasename = str(phase)+phasename
-                    
-            if "(" in species and ")" in species:
-                indcomma =species.find(")")+1 
-                if len(species) > indcomma+1 and species[indcomma] == ",":
-                    phasename = species[species.find("(") + 1: species.find(")")]
-                    species = species.replace('('+phasename+')','')
-                    if phasename == "L":
-                        phasename = "Liquid"
-                    else:
-                        phasename = str(phase)+phasename
-                        
+        
+            if phasename == "Gas" and phase != 0:
+                raise Exception("Error, parsing phase number "+str(phase)+"!=0 as Gas")
+            if phasename != "Gas" and phase == 0:
+                raise Exception("Error, parsing phase number "+str(phase)+"==0 not as a Gas")
+
             registerSpecies(species, MolecularFormula)
             sp = speciesData[species]
             sp.registerPhase(phasename)
