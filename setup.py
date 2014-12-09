@@ -30,7 +30,10 @@ setup(
                                'data/NEWNASA.TXT',
                                'data/Cement.csv',
                                'data/Cement2.csv',
-                               'data/BurcatCHEMKIN.DAT'
+                               'data/BurcatCHEMKIN.DAT',
+                               'data/NistData.csv',
+                               'data/Cement_New_Tests.csv',
+                               'data/Cement_Therm_New2.csv'
                            ]},
     cmdclass = {'build_ext': build_ext},
     py_modules = ['chemeng.config'],

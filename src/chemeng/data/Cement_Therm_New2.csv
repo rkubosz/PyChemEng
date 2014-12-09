@@ -1,0 +1,112 @@
+"HT-H298.16 = aT + b*10^-3T^2 + c*10^5T-1+ d",,,,,,,,,,,,,
+"Species","Phase","S0298 Cal/deg mol","Source","Hf0298 cal/mol","Source","a","b","c","d","Tmin","Tmax","Source","Entropy at Tmin à S0298"
+"Ca3Al2O6","Crystal",49.1,1,-853420,23,62.28,2.29,12.01,-22801,298,1800,25,
+"Ca12Al14O33","alpha",249.7,1,-4644180,23,301.96,32.75,55.3,-111491,298,1310,25,
+"Ca12Al14O33","beta",249.7,1,-4644180,23,228.52,49.22,0,-39327,1310,1700,25,483.4
+"CaAl2O4","Crystal",27.3,1,-555940,23,36,2.98,7.96,-13668,298,1800,25,
+"CaAl4O7","Crystal",42.5,1,-962189.3,36,66.09,2.74,17.8,-25919,298,1800,25,
+"MgAl2O4","Crystal",19.26,1,-549689.3,36,36.8,3.2,9.78,-14537,298,1800,25,
+"LiAlO2","Crystal",12.7,2,-284330,22,22.08,1.45,6,-8724,298,2000,29,
+"LiFeO2","Crystal",18,2,,,,,,,,,,
+"NaAlO2","Crystal",16.9,2,-270840,22,,,,,,,,
+"NaFeO2","Crystal",21.1,2,-166869,36,,,,,,,,
+"CoFe2O4","Crystal",32.2,3,,,,,,,,,,
+"FeAl2O4","Crystal",25.4,3,-476888.1,36,,,,,,,,
+"FeCo2O4","Crystal",30,3,,,,,,,,,,
+"NiFe2O4","Crystal",30.1,3,,,,,,,,,,
+"ZnFe2O4","Crystal",32.2,3,,,,,,,,,,
+"Fe2TiO4","Crystal",39,4,,,33.34,7.54,3.4,-11751,298,1600,27,
+"Fe2TiO5","Crystal",37.4,4,,,46.03,2.63,7.41,-16443,298,1700,27,
+"Mg2TiO4","Crystal",24.76,5,-517495.2,36,35.96,4.27,6.89,-13412,298,1800,31,
+"MgTi2O5","Crystal",30.4,5,-599808.8,36,40.68,4.6,7.35,-15003,298,1800,31,
+"Al2TiO5","Crystal",26.2,6,,,43.63,2.65,11.21,-17004,298,1800,27,
+"Ca3Ti2O7","Crystal",56.1,6,-944192.16,36,,,,,,,,
+"Li2TiO3","alpha",21.9,6,-399306.9,36,33.16,2.06,6.98,-12411,298,1485,29,
+"Li2TiO3","beta",21.9,6,-399306.9,36,30.2,4,0,-9070,1485,1820,29,56.21
+"Li2TiO3","Liquid",21.9,6,-399306.9,36,48,0,0,-1890,1820,1850,29,79.5
+"Zn2TiO4","Crystal",32.8,6,,,39.82,2.77,7.69,-14698,298,1800,27,
+"Zn2SiO4","Crystal",31.4,7,-378700,36,,,,,,,,
+"CaMgSi2O6","Crystal",34.2,14,-766300.19,36,,,,,,,,
+"MgF2","Crystal",13.68,8,-268499,36,,,,,,,,
+"CaF2","Crystal",16.46,8,-291491.4,36,,,,,,,,
+"TiS2","alpha",18.73,9,-98064.05,33,8.08,13.67,0,-3624,298,420,9,
+"TiS2","beta",18.73,9,-98064.05,33,14.99,2.57,0,-4569,420,1010,9,6.09
+"FeCl3","Crystal",32.2,10,-95700,24,29.56,0,6.11,-10863,298,577,10,
+"Ca3B2O6","Crystal",43.9,11,-852800,12,56.44,5.21,13.02,-21685,298,1760,13,
+"Ca3B2O6","Liquid",43.9,11,-852800,12,94,0,0,-35400,1760,1900,13,128.6
+"Ca2B2O5","alpha",34.7,11,-692100,12,43.75,5.75,10.69,-17141,298,804,13,
+"Ca2B2O5","beta",34.7,11,-692100,12,52.29,1.2,0,-18633,804,1585,13,45.44
+"Ca2B2O5","Liquid",34.7,11,-692100,12,68.2,0,0,-16750,1585,1900,13,98
+"CaB2O4","Crystal",25.1,11,-524000,12,31.02,4.88,8.07,-12389,298,1435,13,
+"CaB2O4","Liquid",25.1,11,-524000,12,61.7,0,0,-28130,1435,1700,13,67.83
+"CaB4O7","Crystal",32.2,11,-880200,12,51.34,9.58,17.16,-21914,298,1260,13,
+"CaB4O7","Liquid",32.2,11,-880200,12,106.3,0,0,-47540,1260,1800,13,104.81
+"CaFe2O4","Crystal",34.7,15,-363370,36,39.42,2.38,3.66,-13194,298,1510,28,
+"CaFe2O4","Liquid",34.7,15,-363370,36,54.9,0,0,-5030,1510,1800,28,84.93
+"Ca2Fe2O5","Crystal",45.1,15,-511300.19,36,59.24,0,11.68,-21580,298,1750,28,
+"Ca2Fe2O5","Liquid",45.1,15,-511300.19,36,74.2,0,0,-10980,1750,1850,28,118.91
+"MgFe2O4","alpha",28.3,15,-341395.8,36,21.06,22.29,0,-8261,298,665,28,
+"MgFe2O4","beta",28.3,15,-341395.8,36,45.4,0,0,-14590,665,1230,28,33.31
+"MgFe2O4","gamma",28.3,15,-341395.8,36,25.67,6.79,0,-247,1230,1800,28,61.51
+"Na3AlF6","Crystal",57,16,-784800,21,,,,,,,,
+"NaF","Crystal",12.26,16,-136300,21,,,,,,,,
+"AlF3","Crystal",15.89,16,,,,,,,,,,
+"FeTiO3","Crystal",25.3,17,-297896.75,26,27.87,2.18,4.793,-10111,298,1640,19,
+"FeTiO3","Liquid",25.3,17,-297896.75,26,47.6,0,0,-14642,1640,1800,19,63.97
+"CaTiO3","alpha",22.4,17,-396892.9,36,30.47,0.68,6.69,-11389,298,1530,19,
+"CaTiO3","beta",22.4,17,-396892.9,36,32.03,0,0,-11197,1530,1800,19,48.35
+"MgTiO3","Crystal",17.8,17,-375908.2,36,28.29,1.64,6.53,-10771,298,1800,19,
+"Na2TiO3","alpha",29.1,18,-380305.9,36,25.18,10.36,0,-8429,298,560,20,
+"Na2TiO3","beta",29.1,18,-380305.9,36,25.95,8.5,0,-7880,560,1303,20,22.01
+"Na2TiO3","Liquid",29.1,18,-380305.9,36,46.9,0,0,-3940,1303,1600,20,69.45
+"Na2Ti2O5","Crystal",41.5,18,,,49.32,0.00353,4.6,-16560,298,1258,20,
+"Na2Ti2O5","Liquid",41.5,18,,,68.5,0,0,-8500,1258,1600,20,96.19
+"Na2Ti3O7","Crystal",55.9,18,,,63.46,0.00532,5.64,-21285,298,1401,20,
+"Na2Ti3O7","Liquid",55.9,18,,,94.15,0,0,-16335,1401,1700,20,133.38
+"MgSiO3","Crystal",16.19,36,-370219.9,36,,,,,,,,
+"Mg2SiO4","Crystal",22.739,36,-519598.5,36,35.81,3.27,8.52,-13825,298,1808,30,
+"Fe2SiO4","Crystal",34.7,36,-353704.6,36,36.51,4.68,6.7,-13549,298,1490,30,
+"Fe2SiO4","Liquid",34.7,36,-353704.6,36,57.5,0,0,-11954,1490,1724,30,81.06
+"CaTiSiO5","Crystal",30.9,32,-622203.6329,36,42.39,2.77,9.63,-16115,298,1670,32,
+"CaTiSiO5","Liquid",30.9,32,-622203.6329,36,66.8,0,0,-18990,1670,1811,32,93.13
+"Ca6Al4Fe2O15","Crystal",,,-1926791,34,,,,,,,,
+"Ca4Fe2Al2O10","Crystal",,,-1214000,35,,,,,,,,
+"MgSO4","Crystal",21.893,36,-307098.5,36,,,,,,,,
+"Exit",,,,,,,,,,,,,
+"1 = King, E. G. ""Heat Capacities at Low Temperatures and Entropies at 298.16 K. of Crystalline Calcium and Magnesium Aluminates."" The Journal of Physical Chemistry 59.3 (1955): 218-219.",,,,,,,,,,,,,
+"2 = King, E. G. ""Heat Capacities at Low Temperatures and Entropies at 298.16° K. of Aluminates and Ferrites of Lithium and Sodium."" Journal of the American Chemical Society 77.12 (1955): 3189-3190",,,,,,,,,,,,,
+"3= King, B. G. ""Heat capacities at low temperatures and entropies of five spinel minerals."" The Journal of Physical Chemistry 60.4 (1956): 410-412.",,,,,,,,,,,,,
+"4= Todd, S. S., and E. G. King. ""Heat capacities at low temperatures and entropies at 298.16 K. of titanomagnetite and ferric titanate."" Journal of the American Chemical Society 75.18 (1953): 4547-4549.",,,,,,,,,,,,,
+"5 = Todd, S. S. ""Low Temperature Heat Capacities and Entropies at 298.16° K. of Magnesium Orthotitanate and Magnesium Dititanate."" Journal of the American Chemical Society 74.18 (1952): 4669-4670.",,,,,,,,,,,,,
+"6 = King, E. G. ""Low-Temperature Heat Capacities and Entropies at 298.16° K. of Some Titanates of Aluminum, Calcium, Lithium and Zinc."" Journal of the American Chemical Society 77.8 (1955): 2150-2152.",,,,,,,,,,,,,
+"7 =  S. S. Todd, Low-temperature Heat Capacities and Entropies at 298.16°K. of Crystalline Calcium Orthosilicate, Zinc Orthosilicate and Tricalcium Silicate. Journal of the American Chemical Society 1951 73 (7), 3277-3278",,,,,,,,,,,,,
+"8 = S. S. Todd, Heat Capacities at Low Temperatures and Entropies of Magnesium and Calcium Fluorides. Journal of the American Chemical Society 1949 71 (12), 4115-4116",,,,,,,,,,,,,
+"9 =S. S. Todd and J. P. Coughlin, Low Temperature Heat Capacity, Entropy at 298.16°K. and High Temperature Heat Content of Titanium Disulfide. Journal of the American Chemical Society 1952 74 (2), 525-526.",,,,,,,,,,,,,
+"10 = S. S. Todd and J. P. Coughlin, Low-temperature Heat Capacity, Entropy at 298.16°K., and High-temperature Heat Content of Ferric Chloride. Journal of the American Chemical Society 1951 73 (9), 4184-4185",,,,,,,,,,,,,
+"11 = K. K. Kelley, S. S. Todd, and C. H. Shomate, Heat Capacities at Low Temperatures and Entropies of 3CaO·B2O3, 2CaO·B2O3, CaO·B2O3, and CaO·2B2O31. Journal of the American Chemical Society 1948 70 (4), 1350-1352",,,,,,,,,,,,,
+"12 = D. R. Torgeson and C. H. Shomate, Heats of Formation of 3CaO·B2O3, 2CaO·B2O3, CaO·B2O3 and CaO·2B2O31. Journal of the American Chemical Society 1947 69 (9), 2103-2105",,,,,,,,,,,,,
+"13 = E. G. King, D. R. Torgeson, and O. A. Cook, High-Temperature Heat Contents of 3CaO·B2O3, 2CaO·B2O3, CaO·B2O3, and CaO·2B2O31. Journal of the American Chemical Society 1948 70 (6), 2160-2163",,,,,,,,,,,,,
+"14 = E. G. King, Low Temperature Heat Capacities and Entropies at 298.15°K. of Some Crystalline Silicates Containing Calcium. Journal of the American Chemical Society 1957 79 (20), 5437-5438",,,,,,,,,,,,,
+"15 = E. G. King, Heat Capacities at Low Temperatures and Entropies at 298.16° K. of Calcium and Magnesium Ferrites. Journal of the American Chemical Society 1954 76 (22), 5849-5850",,,,,,,,,,,,,
+"16 = E. G. King, Low Temperature Heat Capacities and Entropies at 298.15° K. of Cryolite, Anhydrous Aluminum Fluoride and Sodium Fluoride. Journal of the American Chemical Society 1957 79 (9), 2056-2057",,,,,,,,,,,,,
+"17 = C. Howard Shomate, Heat Capacities at Low Temperatures of the Metatitanates of Iron, Calcium and Magnesium. Journal of the American Chemical Society 1946 68 (6), 964-966",,,,,,,,,,,,,
+"18 = C. Howard Shomate, Heat Capacities at Low Temperatures of Na2TiO3, Na2Ti2O5 and Na2Ti3O71. Journal of the American Chemical Society 1946 68 (8), 1634-1636",,,,,,,,,,,,,
+"19 = B. F. Naylor and O. A. Cook, High-Temperature Heat Contents of the Metatitanates of Calcium, Iron and Magnesium. Journal of the American Chemical Society 1946 68 (6), 1003-1005",,,,,,,,,,,,,
+"20 = B. F. Naylor, High-Temperature Heat Contents of Na2TiO3, Na2Ti2O5 and Na2Ti3O7. Journal of the American Chemical Society 1945 67 (12), 2120-2122",,,,,,,,,,,,,
+"21 = James P. Coughlin, Heats of Formation of Cryolite and Sodium Fluoride. Journal of the American Chemical Society 1958 80 (8), 1802-1804",,,,,,,,,,,,,
+"22 = James P. Coughlin, Heats of Formation of Crystalline Aluminates of Sodium and Lithium. Journal of the American Chemical Society 1957 79 (10), 2397-2399",,,,,,,,,,,,,
+"23 = James P. Coughlin, Heats of Formation of Crystalline CaO·Al2O3, 12CaO·7Al2O3, and 3CaO·Al2O3. Journal of the American Chemical Society 1956 78 (21), 5479-5482",,,,,,,,,,,,,
+"24 = Mary F. Koehler and J. P. Coughlin, Heats of Formation of Ferrous Chloride, Ferric Chloride and Manganous Chloride. The Journal of Physical Chemistry 1959 63 (4), 605-608",,,,,,,,,,,,,
+"25 = K. R. Bonnickson, High Temperature Heat Contents of Aluminates of Calcium and Magnesium. The Journal of Physical Chemistry 1955 59 (3), 220-221",,,,,,,,,,,,,
+"26 = Bard, Allen J., Roger Parsons, and Joseph Jordan. Standard potentials in aqueous solution. Vol. 6. CRC press, 1985.",,,,,,,,,,,,,
+"27 = K. R. Bonnickson, High Temperature Heat Contents of Some Titanates of Aluminum, Iron and Zinc. Journal of the American Chemical Society 1955 77 (8), 2152-2154",,,,,,,,,,,,,
+"28 = K. R. Bonnickson, High Temperature Heat Contents of Calcium and Magnesium Ferrites. Journal of the American Chemical Society 1954 76 (6), 1480-1482",,,,,,,,,,,,,
+"29 = Kelley, Kenneth Keith. High-temperature heat-content, heat-capacity, and entropy data for the elements and inorganic compounds. No. 584-585. US Govt. Print. Off., 1960.",,,,,,,,,,,,,
+"30 = Raymond L. Orr, High Temperature Heat Contents of Magnesium Orthosilicate and Ferrous Orthosilicate. Journal of the American Chemical Society 1953 75 (3), 528-529",,,,,,,,,,,,,
+"31 = R. L. Orr and J. P. Coughlin, High Temperature Heat Contents of Magnesium Orthotitanate and Magnesium Dititanate. Journal of the American Chemical Society 1952 74 (12), 3186-3187",,,,,,,,,,,,,
+"32 = E. G. King, R. L. Orr, and K. R. Bonnickson, Low Temperature Heat Capacity, Entropy at 298.16¡K., and High Temperature Heat Content of Sphene (CaTiSiO5). Journal of the American Chemical Society 1954 76 (17), 4320-4321",,,,,,,,,,,,,
+"33 = O'Hare, P. A. G., and G. K. Johnson. ""Thermochemistry of inorganic sulfur compounds VII. Standard molar enthalpy of formation at 298.15 K, high-temperature enthalpy increments, and other thermodynamic properties to 1100 K of titanium disulfide, TiS< sub> 2</sub>."" The Journal of Chemical Thermodynamics 18.2 (1986): 189-199.",,,,,,,,,,,,,
+"34 = Newman, E. S., and Roald Hoffman. ""Heats of Formation of Hexacalcium Dialumino Ferrite and Dicalcium Ferrite."" Journal of Research of the National Bureau of Standards 56.6 (1956): 313.",,,,,,,,,,,,,
+"35 = T. Thorvaldsen, R.R. Edwards and E.C. Bailey, Z. anorg. u. allgem. Chem. 236, 310 (1938).",,,,,,,,,,,,,
+"36 = Wagman, Donald D., et al. The NBS tables of chemical thermodynamic properties. Selected values for inorganic and C1 and C2 organic substances in SI units. National Standard Reference Data System, 1982.",,,,,,,,,,,,,
+"37 = Holland, T. J. B., and R. Powell. ""An improved and extended internally consistent thermodynamic dataset for phases of petrological interest, involving a new equation of state for solids."" Journal of Metamorphic Geology 29.3 (2011): 333-383.",,,,,,,,,,,,,
