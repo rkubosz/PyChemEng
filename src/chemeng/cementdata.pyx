@@ -164,7 +164,7 @@ class CemThermoData(ThermoConstantsType):
         retval = "CementPolynomial{Tmin="+str(self.Tmin)+", Tmax="+str(self.Tmax)+", notes='"+self.comments+"', a=["
         for i in range(5):
             retval+=str(self.a[i])+", "
-        retval = retval[:-2] + "]}" #WARNING, should remove this [-2], also from cement data
+        retval = retval[:-2] + "]}"  
         return retval
 
     def __repr__(self):
@@ -273,7 +273,7 @@ speciesData["NaAlSi3O8"].registerPhase("highAlbite")
 speciesData["NaAlSi3O8"].registerPhaseCoeffs(HPThermoData(298.0, 2000.0,[452.0,-0.013364,-1275900.0,-3953.6,-3926755.41852,-2813.04236975], "37"), "highAlbite")
 
 speciesData["CaAl2Si2O8"].registerPhase("Liquid")            
-speciesData["CaAl2Si2O8"].registerPhaseCoeffs(HPThermoData(298.0, 2000.0,[417.5,0.0,0.0,0.0,-4416117.625,-2339.74662875], "37"), "Liquid")
+speciesData["CaAl2Si2O8"].registerPhaseCoeffs(HPThermoData(298.0, 2000.0,[417.5,0.0,0.0,0.0,-4406117.625,-2339.74662875], "37"), "Liquid")
 
 speciesData["CaMgSi2O6"].registerPhase("Liquid")            
 speciesData["CaMgSi2O6"].registerPhaseCoeffs(HPThermoData(298.0, 2000.0,[345.3,0.0,0.0,0.0,-3312281.195,-1944.38014589], "37"), "Liquid")
