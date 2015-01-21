@@ -13,37 +13,48 @@ import sys
 from matplotlib.widgets import Button
 from datetime import datetime
 
+#print speciesData["SO"].phases["Gas"]
+
+
 # Auto refine plot , True for ON or False for off
 AutoRefinement = True
 # Default SO2 Partial pressure of 10-6 atm ,True for ON or False for off
 Default_SO2_pp = False
+# Include Radicals? (e.g. SO-, OH- ,etc.. ): True for yes or False for no
+Include_Radicals = False
 
-T_start = 1050
-T_Finish = 1300
-T_step = 30
+
+T_start = 1000
+T_Finish = 1350
+T_step = 10
 
 ###Factor to multiply by to keep partial pressure constant
 Factor = 100000
 
 Air_mass_flow_rate = 2.624* Factor 
-SO2_mass_flow_rate = 0.105 * Factor
+SO2_mass_flow_rate = 0.0000 * Factor
 
-####Clinker 1
-mass_Al2O3 = 32.172
-mass_CaO =  46.205
-mass_Fe2O3 =3.286
-mass_SiO2 = 10.465
+
+mass_Al2O3 = 5.2
+mass_CaO =  66.6
+mass_Fe2O3 =2.8
+mass_SiO2 = 21.5
 mass_MgO = 0.0
 mass_K2O =0.0
 mass_Na2O = 0.0
 mass_TiO2 = 0.0
 mass_CaSO4 = 0.0
 
-#Clinker 2
-#mass_Al2O3 = 14.629 #g
-#mass_CaO =  43.107  #g
-#mass_Fe2O3 = 3.286  #g
-#mass_SiO2 = 20.698  #g
+#mass_Al2O3 = 32.172
+#mass_CaO =  46.205
+#mass_Fe2O3 =3.286
+#mass_SiO2 = 10.465
+#mass_MgO = 0.0
+#mass_K2O =0.0
+#mass_Na2O = 0.0
+#mass_TiO2 = 0.0
+#mass_CaSO4 = 0.0
+
 
 ## INPUT AREA ENDED 
 ##########################################################################################################################################################################################################################################################################################################################################################################################################################################
@@ -82,6 +93,7 @@ if Default_SO2_pp and SO2_molar_flow_rate/(SO2_molar_flow_rate + Air_molar_flow_
     SO2_molar_flow_rate = (Air_molar_flow_rate*0.000001)/0.999999
 
     
+print "Starting SO2 pp = ", SO2_molar_flow_rate/(SO2_molar_flow_rate+Air_molar_flow_rate) *100
 
 moles_Al2O3 = mass_Al2O3 / Components({'Al2O3':1.0}).totalMass()  
 moles_CaO = mass_CaO / Components({'CaO':1.0}).totalMass()
@@ -94,7 +106,10 @@ moles_TiO2 = mass_TiO2/ Components({'TiO2':1.0}).totalMass()
 moles_CaSO4 = mass_CaSO4/Components({'CaSO4':1.0}).totalMass()
 
 ###Gaseous phases considered , Missing F and Cl containg Gases
-phases=[IdealGasPhase(DryAir*Air_molar_flow_rate, T=298.15, P=1e5) + IdealGasPhase({'CO2':0.0}, T=298.15, P=1e5) +IdealGasPhase({'H2O':0.0}, T=298.15, P=1e5) + IdealGasPhase({'CO':0.0}, T=298.15, P=1e5) + IdealGasPhase({'SO3':0.0}, T=298.15, P=1e5) + IdealGasPhase({'SO2':SO2_molar_flow_rate }, T=298.15, P=1e5) +  IdealGasPhase({'OH':0.0}, T=298.15, P=1e5) +IdealGasPhase({'NaOH':0.0}, T=298.15, P=1e5) +IdealGasPhase({'Na':0.0}, T=298.15, P=1e5)+IdealGasPhase({'KOH':0.0}, T=298.15, P=1e5)+IdealGasPhase({'K':0.0}, T=298.15, P=1e5) + IdealGasPhase({'Na2SO4':0.0}, T=298.15, P=1e5)   + IdealGasPhase({'K2SO4':0.0}, T=298.15, P=1e5)  ]
+phases=[IdealGasPhase(DryAir*Air_molar_flow_rate, T=298.15, P=1e5) + IdealGasPhase({'CO2':0.0}, T=298.15, P=1e5) +IdealGasPhase({'H2O':0.0}, T=298.15, P=1e5) + IdealGasPhase({'CO':0.0}, T=298.15, P=1e5) + IdealGasPhase({'SO3':0.0}, T=298.15, P=1e5) + IdealGasPhase({'SO2':SO2_molar_flow_rate }, T=298.15, P=1e5) +  IdealGasPhase({'OH':0.0}, T=298.15, P=1e5) +IdealGasPhase({'NaOH':0.0}, T=298.15, P=1e5) +IdealGasPhase({'Na':0.0}, T=298.15, P=1e5)+IdealGasPhase({'KOH':0.0}, T=298.15, P=1e5)+IdealGasPhase({'K':0.0}, T=298.15, P=1e5) + IdealGasPhase({'Na2SO4':0.0}, T=298.15, P=1e5)   + IdealGasPhase({'K2SO4':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'H2SO4':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'COS':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'S2O':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'C3OS':0.0}, T=298.15, P=1e5) + IdealGasPhase({'H':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'O':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'H2':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'NO':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'HCO':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'CH3':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'C2H4':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'HCN':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'NH3':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'CH2':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'N':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'N2O':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'NH':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'NH2':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'C2':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'HO2':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'CN':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'CH':0.0}, T=298.15, P=1e5) ]
+
+if Include_Radicals:
+    phases[0]+= IdealGasPhase({'e-':0.0}, T=298.15, P=1e5) + IdealGasPhase({'CO2+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'NO+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'H3O+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'NO3-':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'NO2-':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'OH+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'HCO+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'OH-':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'CaOH+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'O2+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'Al2O+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'SO-':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'H2O+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'Al2O2+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'CO+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'TiO+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'AlO2-':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'SO2-':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'O2-':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'Na2O+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'CH2OH+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'O+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'MgOH+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'CaO+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'AlO-':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'N2O+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'NaOH+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'AlO+':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'HO2-':0.0}, T=298.15, P=1e5)+ IdealGasPhase({'K2O+':0.0}, T=298.15, P=1e5)
 
 names=["Gas"]
 
@@ -331,9 +346,9 @@ def solveAtT(T):
         result = findEquilibrium(result, constP=True, constT=True, elemental = True,iterations=300, xtol=1e-8) 
     except Exception as e: 
         print "Did not converge for T=",T,'\n', e
-        return
+        return 
     for comp,amnt in result[0].components.iteritems():
-        if amnt/result[0].components.total() > 0.0000499:
+        if amnt/result[0].components.total() > 0.00000499:
             Ts_gas[comp].append(T-273.15)
             pp_gas[comp].append(math.log10(amnt/result[0].components.total()))	
 
@@ -388,7 +403,7 @@ def on_button_clicked(event):
     plt.tick_params(axis='y', labelsize=16) 
     plt.title("Partial Pressures",fontsize = 28)
 
-    plt.yticks([-4.0,-3.0,-2.0,-1.0,0.0])
+    plt.yticks([-5,-4.0,-3.0,-2.0,-1.0,0.0])
 
     plt.xlabel("Temperature $^\circ$C", fontsize = 18)
     plt.ylabel("$log_{10}$(P/atm) ", fontsize = 18)
