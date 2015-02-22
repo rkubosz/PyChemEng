@@ -34,7 +34,7 @@ def pVAP2(T):
 
 #Table by T
 f=open("table.tex", "w")
-complete=False
+complete=True
 if complete:
     print >>f,"\\documentclass{report}"
     print >>f,"\\usepackage{longtable}"
@@ -64,26 +64,29 @@ for TC in TCs:
     P = pVAP2(T)
     Liq = IncompressiblePhase({"H2O":1}, "Liquid", T=T, P=P, molarvolume=18.01528/999.97e3)
     Gas = IdealGasPhase({"H2O":1}, T=T, P=P)
-    print >>f," & ".join(("%4g"% TC,"%.4g"%(P/1e5), "%4g"%(Liq.Cp()/18.01528), "%4g"%(Gas.Cp()/18.01528), "%4g"%((Liq.enthalpy()-href)/18.01528), "%4g"%((Gas.enthalpy()- Liq.enthalpy())/18.01528), "%4g"%((Gas.enthalpy()-href)/18.01528), "%4g"%((Liq.entropy() - sref)/18.01528),"%4g"%((Gas.entropy()-sref)/18.01528)))+"\\\\\\hline"
+    print >>f," & ".join(("%4g"% TC,"%#.3g"%(P/1e5), "%#.4g"%(Liq.Cp()/18.01528), "%#.4g"%(Gas.Cp()/18.01528), "%#.4g"%((Liq.enthalpy()-href)/18.01528), "%.4g"%((Gas.enthalpy()- Liq.enthalpy())/18.01528), "%.4g"%((Gas.enthalpy()-href)/18.01528), "%#.4g"%((Liq.entropy() - sref)/18.01528),"%#.4g"%((Gas.entropy()-sref)/18.01528)))+"\\\\\\hline"
 print >>f,"\\end{longtable}"
 
 import scipy.optimize as opt
-Ps = map(float, [0.006117e5]+list(numpy.arange(0.010e5,0.10e5,0.005e5))+list(numpy.arange(0.12e5, 0.50e5, 0.02e5))+list(numpy.arange(0.50e5, 1.0e5, 0.05e5))+list(numpy.arange(1.0e5, 2.0e5, 0.1e5))+list(numpy.arange(2.0e5, 5.0e5, 0.5e5))+list(numpy.arange(5.0e5, 10.0e5, 1.0e5))+list(numpy.arange(10.0e5, 50.0e5, 5.0e5))+list(numpy.arange(50.0e5, 100.0e5, 10.0e5))+list(numpy.arange(100.0e5, 130.0e5, 20.0e5)))
+Ps = map(float, [pVAP2(Tref+273.15)]+list(numpy.arange(0.010e5,0.10e5,0.005e5))+list(numpy.arange(0.12e5, 0.50e5, 0.02e5))+list(numpy.arange(0.50e5, 1.0e5, 0.05e5))+list(numpy.arange(1.0e5, 2.0e5, 0.1e5))+list(numpy.arange(2.0e5, 5.0e5, 0.5e5))+list(numpy.arange(5.0e5, 10.0e5, 1.0e5))+list(numpy.arange(10.0e5, 50.0e5, 5.0e5))+list(numpy.arange(50.0e5, 100.0e5, 10.0e5))+list(numpy.arange(100.0e5, 130.0e5, 20.0e5)))
 print >>f,"\\clearpage\\begin{longtable}{|c|c|c|c|c|c|c|c|c|}"
 print >>f,"\\caption{\label{Tab:steambyp}Thermodynamic properties of saturated steam by pressure, calculated using the NASA CEA database and the vapour pressure data of Wexler or Wagner and Pruss (1990). The reference state is the triple point of saturated liquid water.}\\\\\\hline"
 print >>f,"$P$ & $T$ & $C_{p,l}$ & $C_{p,v}$ & $h_l$ & $h_{lv}$ & $h_v$ & $s_l$ & $s_v$\\\\"
-print >>f,"(bar) & (${}^\circ$C) & (kJ/kg~K) & (kJ/kg) & (kJ/kg) & (kJ/kg) & (kJ/kg) & (kJ/kg~K) & (kJ/kg~K)\\\\\\hline\hline"
+print >>f,"\\small(bar) & \\small(${}^\circ$C) & \\small(kJ/kg~K) & \\small(kJ/kg) & \\small(kJ/kg) & \\small(kJ/kg) & \\small(kJ/kg) & \\small(kJ/kg~K) & \\small(kJ/kg~K)\\\\\\hline\hline"
 print >>f,"\\endfirsthead"
 print >>f,"\\caption*{Table~\\ref{Tab:steambyp} continued: Thermodynamic properties of saturated steam by pressure.}\\\\\\hline"
 print >>f,"$P$ & $T$ & $C_{p,l}$ & $C_{p,v}$ & $h_l$ & $h_{lv}$ & $h_v$ & $s_l$ & $s_v$\\\\"
 print >>f,"(bar) & (${}^\circ$C) & (kJ/kg~K) & (kJ/kg) & (kJ/kg) & (kJ/kg) & (kJ/kg) & (kJ/kg~K) & (kJ/kg~K)\\\\\\hline\hline"
 print >>f,"\\endhead"
 for P in Ps:
-    T = opt.brentq(lambda T,P: pVAP2(T)-P, 273.15, 360.0+273.15, args=(P))
+    if P == pVAP2(Tref+273.15):
+        T = 273.15 + 0.01
+    else:
+        T = opt.brentq(lambda T,P: pVAP2(T)-P, 273.15, 360.0+273.15, args=(P))
     TC = T-273.15
     Liq = IncompressiblePhase({"H2O":1}, "Liquid", T=T, P=P, molarvolume=18.01528/999.97e3)
     Gas = IdealGasPhase({"H2O":1}, T=T, P=P)
-    print >>f," & ".join(("%.4g"%(P/1e5),"%.4g"% TC, "%4g"%(Liq.Cp()/18.01528), "%4g"%(Gas.Cp()/18.01528), "%4g"%((Liq.enthalpy()-href)/18.01528), "%4g"%((Gas.enthalpy()- Liq.enthalpy())/18.01528), "%4g"%((Gas.enthalpy()-href)/18.01528), "%4g"%((Liq.entropy() - sref)/18.01528),"%4g"%((Gas.entropy()-sref)/18.01528)))+"\\\\\\hline"
+    print >>f," & ".join(("%.4g"%(P/1e5),"%#.3g"% TC, "%#.4g"%(Liq.Cp()/18.01528), "%#.4g"%(Gas.Cp()/18.01528), "%#.4g"%((Liq.enthalpy()-href)/18.01528), "%.4g"%((Gas.enthalpy()- Liq.enthalpy())/18.01528), "%.4g"%((Gas.enthalpy()-href)/18.01528), "%#.4g"%((Liq.entropy() - sref)/18.01528),"%#.4g"%((Gas.entropy()-sref)/18.01528)))+"\\\\\\hline"
 print >>f,"\\end{longtable}"
 if complete:
     print >>f,"\\end{document}"
