@@ -1,22 +1,54 @@
 #!/usr/bin/env python
 import math
 import os
+
+from chemeng.speciesdata cimport SpeciesDataType,AntioneConstants
+from chemeng.speciesdata import speciesData
 from chemeng.components import Components
-from chemeng.speciesdata import speciesData, registerFitFunction
+import chemeng.NASAdata
 
 ####################################################################
 # Antoine polynomials
 # Functions should all take T as Kelvin and return P as Pascals, but
 # vary due to coefficients.
 ####################################################################
+
 #Original expression takes kelvin and produces bar, using the form 10^(A-B / (T+C))
-registerFitFunction("Antoine", lambda T, C : 1e5 * (10.0 ** (C[0] - C[1] / (T + C[2]))))
+cdef class AntionePolynomial(AntioneConstants):
+    cdef double C[3]
+    def __init__(AntionePolynomial self, double Tmin, double Tmax, C, comments):
+        AntioneConstants.__init__(self, Tmin, Tmax, comments)
+        cdef int i
+        for i in range(3):
+            self.C[i] = C[i]
+
+    cpdef double Pvap(self, double T):
+        return 1e5 * (10.0 ** (self.C[0] - self.C[1] / (T + self.C[2])))
+
 
 #Not sure about this one
-registerFitFunction("AntoineCnR", lambda T, C : (1.01325e5 / 760.0) * math.exp(C[0] - C[1] / (T + C[2])))
+cdef class AntioneCnRPolynomial(AntioneConstants):
+    cdef double C[3]
+    def __init__(AntionePolynomial self, double Tmin, double Tmax, C, comments):
+        AntioneConstants.__init__(self, Tmin, Tmax, comments)
+        cdef int i
+        for i in range(3):
+            self.C[i] = C[i]
+
+    cpdef double Pvap(self, double T):
+        return (1.01325e5 / 760.0) * math.exp(self.C[0] - self.C[1] / (T + self.C[2]))
 
 #Takes celcius and produces mmHg, using the form 10^(A-B / (T+C))
-registerFitFunction("Antoine10CmmHg", lambda T, C : (1.01325e5 / 760.0) * (10 ** (C[0] - C[1] / (T - 273.15 + C[2]))))
+cdef class Antoine10CmmHgPolynomial(AntioneConstants):
+    cdef double C[3]
+    def __init__(AntionePolynomial self, double Tmin, double Tmax, C, comments):
+        AntioneConstants.__init__(self, Tmin, Tmax, comments)
+        cdef int i
+        for i in range(3):
+            self.C[i] = C[i]
+
+    cpdef double Pvap(self, double T):
+        return (1.01325e5 / 760.0) * (10 ** (self.C[0] - self.C[1] / (T - 273.15 + self.C[2])))
 
 ####################################################################
 # Datafile loading
@@ -34,17 +66,21 @@ def initDataDir(directory):
         #Skip comments or other problems
         if line[0] == "#" or len(datafields) == 0:
             continue
-    
-        speciesData[datafields[0]].registerAntoineData(Tmin = parseTemperature(datafields[1]),
-                                                       Tmax = parseTemperature(datafields[2]),
-                                                       fitFunction = datafields[3], 
-                                                       constants = map(float, datafields[4:]))
 
-#Examples of manual loading
-#Taken from the NIST webbook
-#speciesData["CO2"].registerAntoineData(292.77, 366.63, "Antoine", [5.24677, 1598.673, -46.424])
-#speciesData["CO2"].registerAntoineData(273.0, 351.7, "Antoine", [5.37229, 1670.409, -40.191])
-#speciesData["CO2"].registerAntoineData(364.8, 513.91, "Antoine", [4.92531, 1432.526, -61.819])
+        Tmin = parseTemperature(datafields[1])
+        Tmax = parseTemperature(datafields[2])
+        fitFunction = datafields[3]
+        constants = map(float, datafields[4:])
+        speciesData[datafields[0]].registerPhase("Liquid")
+
+        if datafields[3] == "Antoine":
+            speciesData[datafields[0]].registerAntoineCoeffs(AntionePolynomial(Tmin, Tmax, constants, "antione.inp"), "Liquid")
+        elif datafields[3] == "AntoineCnR":
+            speciesData[datafields[0]].registerAntoineCoeffs(AntioneCnRPolynomial(Tmin, Tmax, constants, "antione.inp"), "Liquid")
+        elif datafields[3] == "Antoine10CmmHg":
+            speciesData[datafields[0]].registerAntoineCoeffs(Antoine10CmmHgPolynomial(Tmin, Tmax, constants, "antione.inp"), "Liquid")
+        else:
+            raise Exception("Unrecognised Antione polynomial type"+datafields[3])
 
 import chemeng.config
 initDataDir(chemeng.config.datadir)

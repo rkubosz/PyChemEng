@@ -19,13 +19,26 @@ cdef class ThermoConstantsType:
 
     cpdef double Hf0(self, double T):
         return 0.0
+
+cdef class AntioneConstants:
+    def __init__(AntioneConstants self, double Tmin, double Tmax, str comments):
+        self.Tmin = Tmin
+        self.Tmax = Tmax
+        self.comments = comments
+        
+    cpdef double Pvap(self, double T):
+        return 0.0
+
     
 cdef class PhaseData:
     cdef public string name
     cdef public list constants
+    cdef public list antioneconstants
+
     def __init__(self, name):
         self.name = name
         self.constants = []
+        self.antioneconstants = []
         
     def __str__(self):
         output = "Phase{'"+self.name+"', T=["
@@ -50,7 +63,6 @@ cdef class SpeciesDataType:
             self.mass += elements[key].mass * amount
         self.elementalComposition = elementalComposition
         self.phases = {}
-        self.antoineData = []
 
     def __str__(self):
         output = "Species{'"+self.name+"', phases=["
@@ -67,6 +79,11 @@ cdef class SpeciesDataType:
         
     def registerPhaseCoeffs(self, coeffs, string phasename):
         self.phases[phasename].constants.append(coeffs)
+
+    def registerAntoineCoeffs(self, coeffs, string phasename):
+        if not str(phasename) in self.phases.keys():
+            raise Exception("No phase "+phasename+" in species "+self.name)
+        self.phases[phasename].antioneconstants.append(coeffs)
         
     cpdef bint inDataRange(SpeciesDataType self, double T, string phase):
         cdef PhaseData data = self.phases[phase]
@@ -83,6 +100,14 @@ cdef class SpeciesDataType:
             if T >= datum.Tmin and T <= datum.Tmax:
                 return datum.Cp0(T)
         raise Exception("Cannot find valid Cp0 expression for "+self.name+" at "+str(T)+"K\n"+self.validRanges(phase))
+
+    cpdef double Pvap(SpeciesDataType self, double T, string phase):
+        cdef PhaseData data = self.phases[phase]
+        cdef AntioneConstants datum
+        for datum in data.antioneconstants:
+            if T >= datum.Tmin and T <= datum.Tmax:
+                return datum.Pvap(T)
+        raise Exception("Cannot find valid Pvap expression for "+self.name+" at "+str(T)+"K\n"+self.validRanges(phase))
 
     cpdef double Hf0(SpeciesDataType self, double T, string phase):
         cdef PhaseData data = self.phases[phase]
