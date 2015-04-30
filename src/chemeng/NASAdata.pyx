@@ -15,16 +15,17 @@ cdef public double R = 8.31451
 T0 = 273.15 + 25.0
 P0 = 1.0e5
 
+from cpython cimport array as c_array
+from array import array
+
 cdef class NASAPolynomial(ThermoConstantsType):
-    cdef double a[7]
-    cdef double b[2]
+    cdef public c_array.array a
+    cdef public c_array.array b
+
     def __init__(NASAPolynomial self, double Tmin, double Tmax, a, b, comments):
         ThermoConstantsType.__init__(self, Tmin, Tmax, comments)
-        cdef int i
-        for i in range(7):
-            self.a[i] = a[i]
-        for i in range(2):
-            self.b[i] = b[i]
+        self.a = array('d', a)
+        self.b = array('d', b)
 
     def __str__(self):
         retval = "NASAPolynomial{Tmin="+str(self.Tmin)+", Tmax="+str(self.Tmax)+", notes='"+self.comments+"', a=["
